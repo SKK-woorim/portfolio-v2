@@ -22,7 +22,29 @@ export function InviteActivationForm() {
       if (active) setStatus(hasSession ? "ready" : "expired");
     };
 
-    void supabase.auth.getSession().then(({ data }) => updateStatus(Boolean(data.session)));
+    async function restoreRecoverySession() {
+      const code = new URLSearchParams(window.location.search).get("code");
+      const result = code
+        ? await supabase.auth.exchangeCodeForSession(code)
+        : await supabase.auth.getSession();
+
+      if (!active) return;
+
+      if (result.error) {
+        setStatus("expired");
+        return;
+      }
+
+      if (code) {
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("code");
+        window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+      }
+
+      updateStatus(Boolean(result.data.session));
+    }
+
+    void restoreRecoverySession();
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       updateStatus(Boolean(session));
     });
@@ -61,7 +83,8 @@ export function InviteActivationForm() {
     event.preventDefault();
     setMessage("");
     setPending(true);
-    const { error } = await createClient().auth.resetPasswordForEmail(email.trim().toLowerCase());
+    const redirectTo = new URL("/admin/activate", window.location.origin).toString();
+    const { error } = await createClient().auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo });
     setPending(false);
     if (error) {
       setMessage("이메일을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.");
