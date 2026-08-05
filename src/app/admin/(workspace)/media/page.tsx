@@ -1,0 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
+import { Trash2 } from "lucide-react";
+import { MediaUploadForm } from "@/components/admin/media-upload-form";
+import { deleteMedia } from "@/app/admin/actions";
+import { getAdminMedia } from "@/lib/admin/queries";
+
+function fileSize(bytes: number) { return `${(bytes / 1024 / 1024).toFixed(bytes >= 1024 * 1024 ? 1 : 2)} MB`; }
+export default async function AdminMediaPage() { const media = await getAdminMedia(); return <div className="mx-auto max-w-6xl"><p className="eyebrow">Asset library</p><h1 className="display mt-3 text-4xl">미디어</h1><p className="mt-3 text-sm text-[var(--body)]">공개 콘텐츠에서 사용할 이미지를 업로드하고 관리합니다.</p><div className="mt-8 grid gap-6 lg:grid-cols-[340px_1fr]"><MediaUploadForm /><section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{media.map((item) => <article className="overflow-hidden rounded-3xl border border-[var(--border)] bg-white" key={item.id}><div className="aspect-[4/3] bg-[#edf3fb]"><img className="size-full object-cover" src={item.public_url} alt={item.alt || "업로드한 미디어"} /></div><div className="p-4"><p className="truncate text-sm font-semibold">{item.alt || item.storage_key}</p><p className="mt-1 text-xs text-[var(--muted)]">{item.mime_type} · {fileSize(Number(item.size_bytes))}</p><form className="mt-4" action={deleteMedia.bind(null, item.id, item.storage_key)}><button className="focus-ring inline-flex items-center gap-2 text-sm font-semibold text-[#b33d4a]"><Trash2 size={15} /> 삭제</button></form></div></article>)}{!media.length ? <div className="col-span-full grid min-h-64 place-items-center rounded-3xl border border-dashed border-[var(--border)] bg-white p-8 text-center text-sm text-[var(--body)]">업로드한 미디어가 없습니다.</div> : null}</section></div></div>; }

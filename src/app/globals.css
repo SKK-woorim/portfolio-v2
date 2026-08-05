@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #0b3a78;
+  --primary-action: #1463c3;
+  --primary-soft: #eaf3ff;
+  --canvas: #f5f9ff;
+  --surface: #ffffff;
+  --ink: #172033;
+  --body: #5e6b80;
+  --muted: #7d899b;
+  --border: #d7e4f5;
+  --dark: #0a1930;
+  --dark-elevated: #132844;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button, input, textarea, select { font: inherit; }
+
+::selection { background: #cfe4ff; color: var(--ink); }
+
+.page-shell { min-height: 100vh; }
+.container { width: min(100% - 40px, 1200px); margin-inline: auto; }
+.section { padding-block: 96px; }
+.eyebrow { color: var(--primary); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.display { letter-spacing: -.04em; font-weight: 400; }
+.focus-ring:focus-visible { outline: 3px solid #78b5ff; outline-offset: 3px; }
+.on-light-cta { color: var(--primary) !important; }
+
+@media (max-width: 767px) {
+  .container { width: min(100% - 32px, 1200px); }
+  .section { padding-block: 64px; }
+}

@@ -1,0 +1,27 @@
+# dependencies
+/node_modules
+
+# Next.js
+/.next
+/out
+
+# tests
+/coverage
+/playwright-report
+/test-results
+
+# environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# tooling
+*.tsbuildinfo
+*.log
+.DS_Store
+
+# temporary local tooling
+/tmp
+/.netlify
+/.pnpm-store
