@@ -14,9 +14,7 @@ export const portfolioInputSchema = z.object({
   slug,
   type: z.string().trim().min(1, "유형을 입력해 주세요.").max(80),
   summary: z.string().trim().min(1, "한 줄 요약을 입력해 주세요.").max(300),
-  contentJson: z.string().trim().min(1, "본문을 입력해 주세요.").refine((value) => {
-    try { JSON.parse(value); return true; } catch { return false; }
-  }, "올바른 본문 형식이 아닙니다."),
+  contentMarkdown: z.string().trim().min(1, "본문을 입력해 주세요.").max(100_000, "본문은 100,000자 이하여야 합니다."),
   startDate: optionalDate,
   endDate: optionalDate,
   status: z.enum(["draft", "published", "hidden", "trashed"]),
@@ -30,9 +28,7 @@ export const postInputSchema = z.object({
   title: z.string().trim().min(1, "제목을 입력해 주세요.").max(160),
   slug,
   excerpt: z.string().trim().min(1, "요약을 입력해 주세요.").max(300),
-  contentJson: z.string().trim().min(1, "본문을 입력해 주세요.").refine((value) => {
-    try { JSON.parse(value); return true; } catch { return false; }
-  }, "올바른 본문 형식이 아닙니다."),
+  contentMarkdown: z.string().trim().min(1, "본문을 입력해 주세요.").max(100_000, "본문은 100,000자 이하여야 합니다."),
   categoryId: z.string().uuid().nullable().optional(),
   status: z.enum(["draft", "published", "private", "trashed"]),
   seoTitle: z.string().trim().max(70).optional(),

@@ -23,6 +23,7 @@ export type PortfolioItem = {
   period: string;
   summary: string;
   body: string[];
+  contentMarkdown?: string;
   tags: string[];
   links: PortfolioLink[];
   featured: boolean;
@@ -35,6 +36,7 @@ export type BlogPost = {
   title: string;
   excerpt: string;
   body: string[];
+  contentMarkdown?: string;
   category: string;
   tags: string[];
   publishedAt: string;

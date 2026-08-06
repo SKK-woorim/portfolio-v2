@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createClient } from "@/lib/supabase/server";
 import { portfolioInputSchema, postInputSchema, siteProfileInputSchema, type FormState } from "@/lib/validation/content";
+import { markdownToPlainText, toMarkdownDocument } from "@/lib/content/markdown";
 
 function asBoolean(value: FormDataEntryValue | null) {
   return value === "true" || value === "on";
@@ -40,7 +41,7 @@ export async function savePortfolio(_previousState: FormState, formData: FormDat
   const raw = {
     id: formData.get("id") || undefined,
     title: formData.get("title"), slug: formData.get("slug"), type: formData.get("type"), summary: formData.get("summary"),
-    contentJson: formData.get("contentJson"), startDate: formData.get("startDate"), endDate: formData.get("endDate"),
+    contentMarkdown: formData.get("contentMarkdown"), startDate: formData.get("startDate"), endDate: formData.get("endDate"),
     status: formData.get("status"), sortOrder: formData.get("sortOrder"), isFeatured: asBoolean(formData.get("isFeatured")), tagNames: formData.get("tagNames") || undefined,
   };
   const parsed = portfolioInputSchema.safeParse(raw);
@@ -49,7 +50,7 @@ export async function savePortfolio(_previousState: FormState, formData: FormDat
   const supabase = await createClient();
   const input = parsed.data;
   const payload = {
-    title: input.title, slug: input.slug, type: input.type, summary: input.summary, content_json: JSON.parse(input.contentJson),
+    title: input.title, slug: input.slug, type: input.type, summary: input.summary, content_json: toMarkdownDocument(input.contentMarkdown),
     start_date: input.startDate, end_date: input.endDate, status: input.status, sort_order: input.sortOrder, is_featured: input.isFeatured, created_by: user.id,
   };
   const result = input.id ? await supabase.from("portfolio_items").update(payload).eq("id", input.id).select("id").single() : await supabase.from("portfolio_items").insert(payload).select("id").single();
@@ -63,7 +64,7 @@ export async function savePortfolio(_previousState: FormState, formData: FormDat
 export async function savePost(_previousState: FormState, formData: FormData): Promise<FormState> {
   const raw = {
     id: formData.get("id") || undefined, title: formData.get("title"), slug: formData.get("slug"), excerpt: formData.get("excerpt"),
-    contentJson: formData.get("contentJson"), categoryId: formData.get("categoryId") || null, status: formData.get("status"), seoTitle: formData.get("seoTitle") || undefined, seoDescription: formData.get("seoDescription") || undefined, tagNames: formData.get("tagNames") || undefined,
+    contentMarkdown: formData.get("contentMarkdown"), categoryId: formData.get("categoryId") || null, status: formData.get("status"), seoTitle: formData.get("seoTitle") || undefined, seoDescription: formData.get("seoDescription") || undefined, tagNames: formData.get("tagNames") || undefined,
   };
   const parsed = postInputSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "입력값을 확인해 주세요." };
@@ -71,7 +72,7 @@ export async function savePost(_previousState: FormState, formData: FormData): P
   const supabase = await createClient();
   const input = parsed.data;
   const payload = {
-    title: input.title, slug: input.slug, excerpt: input.excerpt, content_json: JSON.parse(input.contentJson), content_text: "",
+    title: input.title, slug: input.slug, excerpt: input.excerpt, content_json: toMarkdownDocument(input.contentMarkdown), content_text: markdownToPlainText(input.contentMarkdown),
     category_id: input.categoryId ?? null, status: input.status, seo_title: input.seoTitle || input.title, seo_description: input.seoDescription || input.excerpt,
     published_at: input.status === "published" ? new Date().toISOString() : null, created_by: user.id,
   };

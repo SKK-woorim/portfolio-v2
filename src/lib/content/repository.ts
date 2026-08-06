@@ -2,6 +2,7 @@ import { demoPortfolioItems, demoPosts, demoProfile } from "@/lib/content/demo-d
 import type { BlogPost, PortfolioItem, SiteProfile } from "@/lib/content/types";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { contentToMarkdown } from "@/lib/content/markdown";
 
 type TaggedRelation = { tags?: { name?: string } | null };
 type PortfolioLinkRow = { label: string; url: string };
@@ -39,6 +40,7 @@ function toPortfolioItem(row: PortfolioRow, index: number): PortfolioItem {
     period: toPeriod(row.start_date, row.end_date),
     summary: row.summary,
     body: extractText(row.content_json),
+    contentMarkdown: contentToMarkdown(row.content_json),
     tags: (row.portfolio_tags ?? []).flatMap((relation) => relation.tags?.name ? [relation.tags.name] : []),
     links: (row.portfolio_links ?? []).map((link) => ({ label: link.label, href: link.url })),
     featured: row.is_featured,
@@ -53,6 +55,7 @@ function toBlogPost(row: PostRow): BlogPost {
     title: row.title,
     excerpt: row.excerpt,
     body: extractText(row.content_json),
+    contentMarkdown: contentToMarkdown(row.content_json),
     category: row.categories?.name ?? "Uncategorized",
     tags: (row.post_tags ?? []).flatMap((relation) => relation.tags?.name ? [relation.tags.name] : []),
     publishedAt: row.published_at,

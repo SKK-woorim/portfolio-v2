@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { loginSchema, portfolioInputSchema, postInputSchema } from "./content";
 
-const documentJson = JSON.stringify({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "본문" }] }] });
+const markdown = "## 본문\n\n**강조**";
 
 describe("content validation", () => {
   it("accepts a valid administrator login", () => {
@@ -9,10 +9,11 @@ describe("content validation", () => {
   });
 
   it("rejects an unsafe public slug", () => {
-    expect(portfolioInputSchema.safeParse({ title: "Test", slug: "Unsafe slug", type: "Project", summary: "Summary", contentJson: documentJson, status: "draft", sortOrder: 0, isFeatured: false }).success).toBe(false);
+    expect(portfolioInputSchema.safeParse({ title: "Test", slug: "Unsafe slug", type: "Project", summary: "Summary", contentMarkdown: markdown, status: "draft", sortOrder: 0, isFeatured: false }).success).toBe(false);
   });
 
-  it("requires Tiptap JSON instead of arbitrary HTML", () => {
-    expect(postInputSchema.safeParse({ title: "Test", slug: "test-post", excerpt: "Summary", contentJson: "<script>alert(1)</script>", status: "draft" }).success).toBe(false);
+  it("accepts Markdown content without accepting an empty body", () => {
+    expect(postInputSchema.safeParse({ title: "Test", slug: "test-post", excerpt: "Summary", contentMarkdown: markdown, status: "draft" }).success).toBe(true);
+    expect(postInputSchema.safeParse({ title: "Test", slug: "test-post", excerpt: "Summary", contentMarkdown: "   ", status: "draft" }).success).toBe(false);
   });
 });
