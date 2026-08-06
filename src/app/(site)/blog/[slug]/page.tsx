@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Clock3 } from "lucide-react";
 import { Tag } from "@/components/tag";
 import { MarkdownContent } from "@/components/markdown-content";
-import { getPublishedPost, getPublishedPosts } from "@/lib/content/repository";
+import { getPublishedPost } from "@/lib/content/repository";
 import { formatDate } from "@/lib/utils";
 import { notFound } from "next/navigation";
 

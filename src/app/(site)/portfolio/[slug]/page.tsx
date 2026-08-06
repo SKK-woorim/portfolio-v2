@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { ProjectVisual } from "@/components/project-visual";
 import { Tag } from "@/components/tag";
 import { MarkdownContent } from "@/components/markdown-content";
-import { getPublishedPortfolioItem, getPublishedPortfolioItems } from "@/lib/content/repository";
+import { getPublishedPortfolioItem } from "@/lib/content/repository";
 import { notFound } from "next/navigation";
 
 type PageProps = { params: Promise<{ slug: string }> };

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Markdown allows external user-provided image URLs. */
 import { Fragment, type ReactNode } from "react";
 
 type ListEntry = { text: string; children: ListGroup[] };

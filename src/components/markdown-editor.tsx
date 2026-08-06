@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Eye, FileCode2 } from "lucide-react";
 import { MarkdownContent } from "@/components/markdown-content";
 import { contentToMarkdown } from "@/lib/content/markdown";
@@ -9,8 +9,6 @@ import { cn } from "@/lib/utils";
 export function MarkdownEditor({ name, initialValue, label = "본문" }: { name: string; initialValue?: unknown; label?: string }) {
   const [markdown, setMarkdown] = useState(() => contentToMarkdown(initialValue));
   const [mode, setMode] = useState<"write" | "preview">("write");
-
-  useEffect(() => setMarkdown(contentToMarkdown(initialValue)), [initialValue]);
 
   return <div>
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
