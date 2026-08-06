@@ -32,10 +32,10 @@ export function PortfolioForm({ item }: { item?: PortfolioFormItem }) {
     <MarkdownEditor name="contentMarkdown" initialValue={item?.content_json} />
     <div className="flex flex-wrap items-center gap-5">
       <label className="inline-flex items-center gap-2 text-sm font-semibold"><input name="isFeatured" type="checkbox" value="true" defaultChecked={item?.is_featured} /> 홈 대표 이력</label>
-      <label className="inline-flex items-center gap-2 text-sm font-semibold">상태<select name="status" defaultValue={item?.status ?? "draft"} className="min-h-10 rounded-xl border border-[var(--border)] bg-white px-3 font-normal"><option value="draft">초안</option><option value="published">발행</option><option value="hidden">숨김</option><option value="trashed">휴지통</option></select></label>
+      <label className="inline-flex items-center gap-2 text-sm font-semibold">저장 상태<select name="status" defaultValue={item?.status === "trashed" ? "draft" : item?.status ?? "draft"} className="min-h-10 rounded-xl border border-[var(--border)] bg-white px-3 font-normal"><option value="draft">초안</option><option value="published">발행</option><option value="hidden">숨김</option></select></label>
     </div>
     {state.error ? <p role="alert" className="rounded-xl bg-[#fff0f1] px-4 py-3 text-sm text-[#a22b38]">{state.error}</p> : null}
     {state.success ? <p className="rounded-xl bg-[#eaf8f4] px-4 py-3 text-sm text-[#146b58]">{state.success}</p> : null}
-    <div><Button type="submit" size="large" disabled={pending}>{pending ? "저장 중…" : "저장하기"}</Button></div>
+    <div className="flex flex-wrap gap-3"><Button type="submit" name="intent" value="save" size="large" disabled={pending}>{pending ? "저장 중…" : "변경 사항 저장"}</Button><Button type="submit" name="intent" value="publish" variant="secondary" size="large" disabled={pending}>{pending ? "저장 중…" : "즉시 발행"}</Button></div>
   </form>;
 }
