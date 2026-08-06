@@ -1,7 +1,7 @@
 -- Portfolio V2: application tables, Row Level Security, Storage, and rate limiting.
 -- Apply this file to both staging and production Supabase projects in order.
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 create type public.app_role as enum ('admin', 'editor');
 create type public.portfolio_status as enum ('draft', 'published', 'hidden', 'trashed');
@@ -175,7 +175,7 @@ $$;
 create or replace function public.consume_login_attempt(p_identifier text)
 returns boolean language plpgsql security definer set search_path = public as $$
 declare
-  v_hash text := encode(digest(lower(trim(p_identifier)), 'sha256'), 'hex');
+  v_hash text := encode(extensions.digest(lower(trim(p_identifier)), 'sha256'), 'hex');
   v_row public.login_rate_limits%rowtype;
 begin
   select * into v_row from public.login_rate_limits where identifier_hash = v_hash for update;
