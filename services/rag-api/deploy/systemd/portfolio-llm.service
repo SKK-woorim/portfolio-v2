@@ -1,0 +1,30 @@
+[Unit]
+Description=Portfolio llama.cpp inference server
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=4
+
+[Service]
+Type=simple
+User=portfolio-rag
+Group=portfolio-rag
+EnvironmentFile=/etc/portfolio-rag.env
+Environment=LD_LIBRARY_PATH=/opt/llama.cpp/c0c7e147e7efa6c5858754b47259ba4880f8a906/bin
+WorkingDirectory=/opt/portfolio-rag/current/services/rag-api
+ExecStartPre=/opt/portfolio-rag/venv/bin/python deploy/verify_model.py
+ExecStart=/opt/llama.cpp/c0c7e147e7efa6c5858754b47259ba4880f8a906/bin/llama-server --model ${LLAMA_MODEL_FILE} --host 127.0.0.1 --port 8080 --ctx-size 8192 --n-predict 320 --threads 2 --parallel 1 --reasoning off
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+KillSignal=SIGINT
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/portfolio-rag/models
+MemoryMax=9G
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

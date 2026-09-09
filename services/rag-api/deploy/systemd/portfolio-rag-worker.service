@@ -1,0 +1,30 @@
+[Unit]
+Description=Portfolio RAG knowledge synchronization worker
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=4
+
+[Service]
+Type=simple
+User=portfolio-rag
+Group=portfolio-rag
+EnvironmentFile=/etc/portfolio-rag.env
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/opt/portfolio-rag/current/services/rag-api
+ExecStart=/opt/portfolio-rag/venv/bin/python -m worker.main
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=180
+TimeoutStopSec=20
+KillSignal=SIGINT
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/portfolio-rag/models
+MemoryMax=3G
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

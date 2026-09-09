@@ -1,0 +1,32 @@
+[Unit]
+Description=Portfolio RAG FastAPI service
+After=network-online.target portfolio-llm.service
+Wants=network-online.target
+Requires=portfolio-llm.service
+StartLimitIntervalSec=300
+StartLimitBurst=4
+
+[Service]
+Type=simple
+User=portfolio-rag
+Group=portfolio-rag
+EnvironmentFile=/etc/portfolio-rag.env
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/opt/portfolio-rag/current/services/rag-api
+ExecStartPre=/usr/bin/curl --fail --silent --max-time 3 http://127.0.0.1:8080/health
+ExecStart=/opt/portfolio-rag/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8090 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=180
+TimeoutStopSec=20
+KillSignal=SIGINT
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/portfolio-rag/models
+MemoryMax=3G
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

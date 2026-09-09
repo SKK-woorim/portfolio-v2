@@ -24,5 +24,5 @@ pnpm build
 
 - 제품 요구사항: `PORTFOLIO_V2_PLAN.md`
 - 디자인 기준: `docs/design/portfolio-design.md`
-- Supabase 마이그레이션: `supabase/migrations/202608050001_initial_schema.sql`
+- Supabase 마이그레이션: `supabase/migrations/`의 모든 SQL을 파일명 사전순으로 적용
 - 초기 설정·배포 운영: `docs/operations/initial-setup.md`

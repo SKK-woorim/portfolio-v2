@@ -1,0 +1,37 @@
+ai.<CHAT-DOMAIN> {
+	@chat {
+		method POST
+		path /v1/chat
+	}
+	handle @chat {
+		request_body {
+			max_size 16KB
+		}
+		reverse_proxy 127.0.0.1:8090 {
+			flush_interval -1
+			transport http {
+				read_timeout 300s
+				write_timeout 20s
+			}
+		}
+	}
+
+	@health {
+		method GET
+		path /health
+	}
+	handle @health {
+		reverse_proxy 127.0.0.1:8090
+	}
+
+	handle {
+		respond 404
+	}
+	log {
+		output file /var/log/caddy/portfolio-rag-access.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+		format json
+	}
+}

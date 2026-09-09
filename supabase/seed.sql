@@ -1,18 +1,20 @@
 -- Development-only content. Do not add production accounts, passwords, or private media here.
-insert into public.site_profile (id, display_name, role_title, headline, bio, contact, social_links)
+insert into public.site_profile (id, display_name, role_title, headline, bio, skills, contact, social_links)
 values (
   true,
-  'Woorim Kim',
-  'Product-minded Developer',
-  '복잡한 문제를 이해하기 쉬운 디지털 경험으로 바꿉니다.',
-  '사용자 맥락과 구현의 균형을 바탕으로, 오래 사용할 수 있는 웹 제품을 설계하고 만듭니다.',
-  '{"email":"hello@example.com"}'::jsonb,
-  '[{"label":"GitHub","href":"https://github.com"}]'::jsonb
+  '송경근',
+  'AI Agent & RAG Engineer',
+  'AI Agent와 RAG, 데이터를 연결해 실제로 작동하는 워크플로우를 만듭니다.',
+  '비정형 문서의 OCR·전처리·청킹부터 지식베이스 구축, NL2SQL, Python·SQL 기반 ETL까지 설계하고 구현하는 AI 엔지니어 송경근입니다.',
+  '["Python","AI Agent","RAG","Dify","LLM","NL2SQL","SQL","ETL","ClickHouse","OCR"]'::jsonb,
+  '{"email":"swoorim31@gmail.com"}'::jsonb,
+  '[{"label":"GitHub","href":"https://github.com/SKK-woorim"}]'::jsonb
 )
 on conflict (id) do update set
   display_name = excluded.display_name,
   role_title = excluded.role_title,
   headline = excluded.headline,
   bio = excluded.bio,
+  skills = excluded.skills,
   contact = excluded.contact,
   social_links = excluded.social_links;

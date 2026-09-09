@@ -1,5 +1,11 @@
 export type ContentStatus = "draft" | "published" | "private" | "hidden" | "trashed";
 
+export const CONTENT_CACHE_TAGS = {
+  portfolio: "public-portfolio",
+  posts: "public-posts",
+  profile: "public-site-profile",
+} as const;
+
 export type SiteProfile = {
   displayName: string;
   roleTitle: string;
@@ -15,6 +21,11 @@ export type PortfolioLink = {
   href: string;
 };
 
+export type ContentImage = {
+  src: string;
+  alt: string;
+};
+
 export type PortfolioItem = {
   id: string;
   slug: string;
@@ -28,6 +39,8 @@ export type PortfolioItem = {
   links: PortfolioLink[];
   featured: boolean;
   accent: "blue" | "sky" | "navy";
+  updatedAt: string;
+  coverImage?: ContentImage;
 };
 
 export type BlogPost = {
@@ -40,5 +53,9 @@ export type BlogPost = {
   category: string;
   tags: string[];
   publishedAt: string;
+  updatedAt: string;
   readingMinutes: number;
+  seoTitle?: string;
+  seoDescription?: string;
+  coverImage?: ContentImage;
 };

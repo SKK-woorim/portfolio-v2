@@ -6,8 +6,8 @@ import type { PortfolioItem } from "@/lib/content/types";
 
 export function ProjectCard({ item, priority = false }: { item: PortfolioItem; priority?: boolean }) {
   return (
-    <article className="group overflow-hidden rounded-3xl border border-[var(--border)] bg-white p-3 transition-shadow hover:shadow-[0_4px_12px_rgba(10,25,48,.08)]">
-      <ProjectVisual item={item} compact={priority} />
+    <article className="group overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-3 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-[#367fc9] hover:shadow-[0_20px_55px_rgba(0,8,22,.34)]">
+      <ProjectVisual item={item} compact priority={priority} />
       <div className="px-3 pb-4 pt-6 sm:px-5 sm:pb-5">
         <div className="flex items-center justify-between gap-4 text-sm text-[var(--body)]">
           <span>{item.period}</span>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, FolderKanban, Image, LayoutDashboard, LogOut, Settings, UserRound } from "lucide-react";
+import { Bot, FileText, FolderKanban, Image, LayoutDashboard, LogOut, Settings, UserRound } from "lucide-react";
 import { logout } from "@/app/admin/login/actions";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/posts", label: "게시글", icon: FileText },
   { href: "/admin/profile", label: "사이트 프로필", icon: UserRound },
   { href: "/admin/media", label: "미디어", icon: Image },
+  { href: "/admin/chatbot", label: "챗봇 인덱스", icon: Bot },
   { href: "/admin/settings", label: "설정", icon: Settings },
 ];
 

@@ -4,10 +4,10 @@ import type { SiteProfile } from "@/lib/content/types";
 
 export function SiteFooter({ profile }: { profile: SiteProfile }) {
   return (
-    <footer className="border-t border-[var(--border)] bg-white">
+    <footer className="theme-footer border-t border-[var(--border)]">
       <div className="container grid gap-10 py-14 md:grid-cols-[1.3fr_1fr_1fr]">
         <div>
-          <p className="text-lg font-bold tracking-[-.04em] text-[var(--primary)]">{profile.displayName}</p>
+          <p className="inline-flex items-center gap-3 text-lg font-bold tracking-[-.04em] text-[var(--ink)]"><span className="signal-dot size-2 rounded-full bg-[var(--primary)]" aria-hidden="true" />{profile.displayName}</p>
           <p className="mt-3 max-w-sm text-sm leading-6 text-[var(--body)]">{profile.headline}</p>
         </div>
         <div>

@@ -20,8 +20,15 @@
 *.tsbuildinfo
 *.log
 .DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
 
 # temporary local tooling
 /tmp
 /.netlify
 /.pnpm-store
+/supabase/.temp/
+.vercel
+.env*
+!.env.example
