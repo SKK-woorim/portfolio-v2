@@ -1,0 +1,26 @@
+import { createElement } from 'react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, expect, test, vi } from 'vitest';
+const actions = vi.hoisted(()=>({savePost:vi.fn(),savePortfolio:vi.fn(),uploadMedia:vi.fn()}));
+vi.mock('@/app/admin/actions',()=>actions);
+import { PostForm } from '@/components/admin/post-form';
+afterEach(()=>{cleanup();vi.resetAllMocks();localStorage.clear();});
+const post={id:'audit-id',title:'기존 제목',slug:'old-slug',excerpt:'기존 요약',content_json:{type:'markdown',markdown:'기존 본문'},status:'draft',updated_at:'2026-09-01T00:00:00Z'};
+test('audit: business error response resets modified uncontrolled fields',async()=>{
+ actions.savePost.mockResolvedValue({error:'slug 중복 오류'});
+ const {container}=render(createElement(PostForm,{post,categories:[],media:[]}));
+ fireEvent.change(screen.getByLabelText('제목'),{target:{value:'새로운 제목'}});
+ fireEvent.change(screen.getByLabelText('요약'),{target:{value:'수정된 요약'}});
+ fireEvent.submit(container.querySelector('form')!);
+ await screen.findByRole('alert');
+ await waitFor(()=>expect((screen.getByLabelText('제목') as HTMLInputElement).value).toBe('기존 제목'));
+ console.log(JSON.stringify({case:'error-reset',title:(screen.getByLabelText('제목') as HTMLInputElement).value,excerpt:(screen.getByLabelText('요약') as HTMLTextAreaElement).value}));
+});
+test('audit: publish success leaves status selection on draft',async()=>{
+ actions.savePost.mockResolvedValue({success:'게시글을 발행했습니다.',contentId:'audit-id',updatedAt:'2026-09-11T00:00:00Z',slug:'old-slug'});
+ const {container}=render(createElement(PostForm,{post,categories:[],media:[]}));
+ fireEvent.submit(container.querySelector('form')!);
+ await screen.findByText('게시글을 발행했습니다.');
+ expect((screen.getByLabelText('저장 상태') as HTMLSelectElement).value).toBe('draft');
+ console.log(JSON.stringify({case:'published-status',uiStatus:(screen.getByLabelText('저장 상태') as HTMLSelectElement).value}));
+});

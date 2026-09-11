@@ -1,0 +1,828 @@
+[
+  {
+    "theme": "light",
+    "route": "/",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.44 (foreground color: #0b1d35, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".rounded-\\[22px\\].bg-\\[var\\(--primary\\)\\].min-h-40 > .text-white\\/60.left-6.font-mono"
+            ],
+            "html": "<p class=\"absolute bottom-5 left-6 font-mono text-xs text-white/60\">2024 — 2025</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.25 (foreground color: #9ebfe5, background color: #0c5fbd, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-\\[var\\(--primary\\)\\]\\/70"
+            ],
+            "html": "<p class=\"absolute bottom-5 left-6 font-mono text-xs text-[var(--primary)]/70\">2024</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.61 (foreground color: #0e53a1, background color: #12365f, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .tracking-\\[\\.08em\\].uppercase.text-\\[var\\(--muted\\)\\]"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Navigate</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(3) > .tracking-\\[\\.08em\\].uppercase.text-\\[var\\(--muted\\)\\]"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Contact</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".py-5 > span"
+            ],
+            "html": "<span>© <!-- -->2026<!-- --> <!-- -->송경근<!-- -->. All rights reserved.</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "a[href$=\"login\"]"
+            ],
+            "html": "<a class=\"focus-ring hover:text-[var(--primary)]\" href=\"/admin/login\">관리자 로그인</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "route": "/about",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.44 (foreground color: #0b1d35, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .uppercase.tracking-\\[\\.08em\\].text-xs"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Navigate</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(3) > .uppercase.tracking-\\[\\.08em\\].text-xs"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Contact</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".py-5 > span"
+            ],
+            "html": "<span>© <!-- -->2026<!-- --> <!-- -->송경근<!-- -->. All rights reserved.</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "a[href$=\"login\"]"
+            ],
+            "html": "<a class=\"focus-ring hover:text-[var(--primary)]\" href=\"/admin/login\">관리자 로그인</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "page-has-heading-one",
+        "impact": "moderate",
+        "help": "Page should contain a level-one heading",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/page-has-heading-one?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "html"
+            ],
+            "html": "<html lang=\"ko\" data-scroll-behavior=\"smooth\" data-theme-preference=\"system\" data-site-theme=\"light\">",
+            "summary": "Fix all of the following:\n  Page must have a level-one heading"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "route": "/portfolio",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.44 (foreground color: #0b1d35, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".bg-\\[var\\(--primary\\)\\].rounded-\\[22px\\].p-6 > .text-white\\/60.left-6.font-mono"
+            ],
+            "html": "<p class=\"absolute bottom-5 left-6 font-mono text-xs text-white/60\">2024 — 2025</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.25 (foreground color: #9ebfe5, background color: #0c5fbd, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-\\[var\\(--primary\\)\\]\\/70"
+            ],
+            "html": "<p class=\"absolute bottom-5 left-6 font-mono text-xs text-[var(--primary)]/70\">2024</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.61 (foreground color: #0e53a1, background color: #12365f, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .uppercase.tracking-\\[\\.08em\\].text-\\[var\\(--muted\\)\\]"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Navigate</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(3) > .uppercase.tracking-\\[\\.08em\\].text-\\[var\\(--muted\\)\\]"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Contact</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".py-5 > span"
+            ],
+            "html": "<span>© <!-- -->2026<!-- --> <!-- -->송경근<!-- -->. All rights reserved.</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "a[href$=\"login\"]"
+            ],
+            "html": "<a class=\"focus-ring hover:text-[var(--primary)]\" href=\"/admin/login\">관리자 로그인</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "page-has-heading-one",
+        "impact": "moderate",
+        "help": "Page should contain a level-one heading",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/page-has-heading-one?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "html"
+            ],
+            "html": "<html lang=\"ko\" data-scroll-behavior=\"smooth\" data-theme-preference=\"system\" data-site-theme=\"light\">",
+            "summary": "Fix all of the following:\n  Page must have a level-one heading"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "route": "/blog",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.44 (foreground color: #0b1d35, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-3.grid:nth-child(2) > .uppercase.tracking-\\[\\.08em\\].text-xs"
+            ],
+            "html": "<p class=\"text-xs font-semibold uppercase tracking-[.08em] text-[var(--muted)]\">카테고리</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.99 (foreground color: #6d819a, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".border-\\[\\#4a9df4\\]"
+            ],
+            "html": "<a aria-current=\"page\" class=\"focus-ring rounded-full border px-4 py-2 text-sm font-semibold border-[#4a9df4] bg-[#1463c3] text-white\" href=\"/blog\">전체</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #0b1d35, background color: #1463c3, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-3.grid:nth-child(3) > .uppercase.tracking-\\[\\.08em\\].text-xs"
+            ],
+            "html": "<p class=\"text-xs font-semibold uppercase tracking-[.08em] text-[var(--muted)]\">태그</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.99 (foreground color: #6d819a, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .font-bold.uppercase.tracking-\\[\\.08em\\]"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Navigate</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(3) > .font-bold.uppercase.tracking-\\[\\.08em\\]"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Contact</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".py-5 > span"
+            ],
+            "html": "<span>© <!-- -->2026<!-- --> <!-- -->송경근<!-- -->. All rights reserved.</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "a[href$=\"login\"]"
+            ],
+            "html": "<a class=\"focus-ring hover:text-[var(--primary)]\" href=\"/admin/login\">관리자 로그인</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "page-has-heading-one",
+        "impact": "moderate",
+        "help": "Page should contain a level-one heading",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/page-has-heading-one?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "html"
+            ],
+            "html": "<html lang=\"ko\" data-scroll-behavior=\"smooth\" data-theme-preference=\"system\" data-site-theme=\"light\">",
+            "summary": "Fix all of the following:\n  Page must have a level-one heading"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "route": "/contact",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.44 (foreground color: #0b1d35, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .tracking-\\[\\.08em\\].text-xs.uppercase"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Navigate</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(3) > .tracking-\\[\\.08em\\].text-xs.uppercase"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Contact</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".py-5 > span"
+            ],
+            "html": "<span>© <!-- -->2026<!-- --> <!-- -->송경근<!-- -->. All rights reserved.</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "a[href$=\"login\"]"
+            ],
+            "html": "<a class=\"focus-ring hover:text-[var(--primary)]\" href=\"/admin/login\">관리자 로그인</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "route": "/portfolio/ai-agent-rag-workflows",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.44 (foreground color: #0b1d35, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".px-5"
+            ],
+            "html": "<a class=\"focus-ring mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--primary)] px-5 text-sm font-semibold text-white hover:bg-[var(--primary-action)]\" href=\"/contact?from=portfolio&slug=ai-agent-rag-workflows\">",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.72 (foreground color: #0b1d35, background color: #0c5fbd, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .font-bold.uppercase.tracking-\\[\\.08em\\]"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Navigate</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(3) > .font-bold.uppercase.tracking-\\[\\.08em\\]"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Contact</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".py-5 > span"
+            ],
+            "html": "<span>© <!-- -->2026<!-- --> <!-- -->송경근<!-- -->. All rights reserved.</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "a[href$=\"login\"]"
+            ],
+            "html": "<a class=\"focus-ring hover:text-[var(--primary)]\" href=\"/admin/login\">관리자 로그인</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "route": "/blog/rag-document-pipeline",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.44 (foreground color: #0b1d35, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".mt-8"
+            ],
+            "html": "<a class=\"focus-ring mt-8 inline-flex min-h-11 items-center rounded-full bg-[var(--primary)] px-5 text-sm font-semibold text-white hover:bg-[var(--primary-action)]\" href=\"/\">홈으로 돌아가기</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.72 (foreground color: #0b1d35, background color: #0c5fbd, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .uppercase.tracking-\\[\\.08em\\].text-xs"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Navigate</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(3) > .uppercase.tracking-\\[\\.08em\\].text-xs"
+            ],
+            "html": "<p class=\"text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]\">Contact</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".flex-wrap > span"
+            ],
+            "html": "<span>© 2026 송경근. All rights reserved.</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "a[href$=\"login\"]"
+            ],
+            "html": "<a class=\"focus-ring hover:text-[var(--primary)]\" href=\"/admin/login\">관리자 로그인</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6d819a, background color: #eaf2fc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "landmark-main-is-top-level",
+        "impact": "moderate",
+        "help": "Main landmark should not be contained in another landmark",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/landmark-main-is-top-level?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-screen"
+            ],
+            "html": "<main class=\"grid min-h-screen place-items-center bg-[var(--canvas)] p-6 text-center\">",
+            "summary": "Fix any of the following:\n  The main landmark is contained in another landmark."
+          }
+        ]
+      },
+      {
+        "id": "landmark-no-duplicate-main",
+        "impact": "moderate",
+        "help": "Document should not have more than one main landmark",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/landmark-no-duplicate-main?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "#main-content"
+            ],
+            "html": "<main id=\"main-content\" tabindex=\"-1\">",
+            "summary": "Fix any of the following:\n  Document has more than one main landmark"
+          }
+        ]
+      },
+      {
+        "id": "landmark-unique",
+        "impact": "moderate",
+        "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/landmark-unique?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "#main-content"
+            ],
+            "html": "<main id=\"main-content\" tabindex=\"-1\">",
+            "summary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+          }
+        ]
+      },
+      {
+        "id": "region",
+        "impact": "moderate",
+        "help": "All page content should be contained by landmarks",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/region?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".skip-link"
+            ],
+            "html": "<a class=\"skip-link\" href=\"#main-content\">본문으로 건너뛰기</a>",
+            "summary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "route": "/",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.6 (foreground color: #f5f9ff, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".rounded-\\[22px\\].bg-\\[var\\(--primary\\)\\].min-h-40 > .z-10.items-start.relative > .border-current\\/25.py-1.px-3"
+            ],
+            "html": "<span class=\"rounded-full border border-current/25 px-3 py-1 text-xs font-semibold\">AI Research</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.12 (foreground color: #ffffff, background color: #75b6ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".rounded-\\[22px\\].bg-\\[var\\(--primary\\)\\].min-h-40 > .text-white\\/60.left-6.font-mono"
+            ],
+            "html": "<p class=\"absolute bottom-5 left-6 font-mono text-xs text-white/60\">2024 — 2025</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.59 (foreground color: #c8e2ff, background color: #75b6ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-\\[var\\(--primary\\)\\]\\/70"
+            ],
+            "html": "<p class=\"absolute bottom-5 left-6 font-mono text-xs text-[var(--primary)]/70\">2024</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.66 (foreground color: #5790cf, background color: #12365f, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "route": "/about",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.6 (foreground color: #f5f9ff, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "page-has-heading-one",
+        "impact": "moderate",
+        "help": "Page should contain a level-one heading",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/page-has-heading-one?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "html"
+            ],
+            "html": "<html lang=\"ko\" data-scroll-behavior=\"smooth\" data-theme-preference=\"system\" data-site-theme=\"dark\">",
+            "summary": "Fix all of the following:\n  Page must have a level-one heading"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "route": "/portfolio",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.6 (foreground color: #f5f9ff, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".bg-\\[var\\(--primary\\)\\].rounded-\\[22px\\].p-6 > .z-10.items-start.relative > .border-current\\/25.py-1.text-xs"
+            ],
+            "html": "<span class=\"rounded-full border border-current/25 px-3 py-1 text-xs font-semibold\">AI Research</span>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.12 (foreground color: #ffffff, background color: #75b6ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".bg-\\[var\\(--primary\\)\\].rounded-\\[22px\\].p-6 > .text-white\\/60.left-6.font-mono"
+            ],
+            "html": "<p class=\"absolute bottom-5 left-6 font-mono text-xs text-white/60\">2024 — 2025</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.59 (foreground color: #c8e2ff, background color: #75b6ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-\\[var\\(--primary\\)\\]\\/70"
+            ],
+            "html": "<p class=\"absolute bottom-5 left-6 font-mono text-xs text-[var(--primary)]/70\">2024</p>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.66 (foreground color: #5790cf, background color: #12365f, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "page-has-heading-one",
+        "impact": "moderate",
+        "help": "Page should contain a level-one heading",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/page-has-heading-one?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "html"
+            ],
+            "html": "<html lang=\"ko\" data-scroll-behavior=\"smooth\" data-theme-preference=\"system\" data-site-theme=\"dark\">",
+            "summary": "Fix all of the following:\n  Page must have a level-one heading"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "route": "/blog",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.6 (foreground color: #f5f9ff, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".py-2.bg-\\[var\\(--primary\\)\\].px-4"
+            ],
+            "html": "<button type=\"button\" class=\"focus-ring rounded-full bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white\">조건 초기화</button>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.12 (foreground color: #ffffff, background color: #75b6ff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "page-has-heading-one",
+        "impact": "moderate",
+        "help": "Page should contain a level-one heading",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/page-has-heading-one?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "html"
+            ],
+            "html": "<html lang=\"ko\" data-scroll-behavior=\"smooth\" data-theme-preference=\"system\" data-site-theme=\"dark\">",
+            "summary": "Fix all of the following:\n  Page must have a level-one heading"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "route": "/contact",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.6 (foreground color: #f5f9ff, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "route": "/portfolio/ai-agent-rag-workflows",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.6 (foreground color: #f5f9ff, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".px-5"
+            ],
+            "html": "<a class=\"focus-ring mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--primary)] px-5 text-sm font-semibold text-white hover:bg-[var(--primary-action)]\" href=\"/contact?from=portfolio&slug=ai-agent-rag-workflows\">",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2 (foreground color: #f5f9ff, background color: #75b6ff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "route": "/blog/rag-document-pipeline",
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-10"
+            ],
+            "html": "<a class=\"focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex\" href=\"/contact\">협업 문의</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.6 (foreground color: #f5f9ff, background color: #2f83e7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".mt-8"
+            ],
+            "html": "<a class=\"focus-ring mt-8 inline-flex min-h-11 items-center rounded-full bg-[var(--primary)] px-5 text-sm font-semibold text-white hover:bg-[var(--primary-action)]\" href=\"/\">홈으로 돌아가기</a>",
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2 (foreground color: #f5f9ff, background color: #75b6ff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "landmark-main-is-top-level",
+        "impact": "moderate",
+        "help": "Main landmark should not be contained in another landmark",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/landmark-main-is-top-level?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".min-h-screen"
+            ],
+            "html": "<main class=\"grid min-h-screen place-items-center bg-[var(--canvas)] p-6 text-center\">",
+            "summary": "Fix any of the following:\n  The main landmark is contained in another landmark."
+          }
+        ]
+      },
+      {
+        "id": "landmark-no-duplicate-main",
+        "impact": "moderate",
+        "help": "Document should not have more than one main landmark",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/landmark-no-duplicate-main?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "#main-content"
+            ],
+            "html": "<main id=\"main-content\" tabindex=\"-1\">",
+            "summary": "Fix any of the following:\n  Document has more than one main landmark"
+          }
+        ]
+      },
+      {
+        "id": "landmark-unique",
+        "impact": "moderate",
+        "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/landmark-unique?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              "#main-content"
+            ],
+            "html": "<main id=\"main-content\" tabindex=\"-1\">",
+            "summary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+          }
+        ]
+      },
+      {
+        "id": "region",
+        "impact": "moderate",
+        "help": "All page content should be contained by landmarks",
+        "url": "https://dequeuniversity.com/rules/axe/4.13/region?application=axeAPI",
+        "nodes": [
+          {
+            "target": [
+              ".skip-link"
+            ],
+            "html": "<a class=\"skip-link\" href=\"#main-content\">본문으로 건너뛰기</a>",
+            "summary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+          }
+        ]
+      }
+    ]
+  }
+]

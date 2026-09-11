@@ -1,0 +1,7 @@
+{
+  "condition": "production with blog navigation response delayed by 500ms",
+  "intended": "rag workflow",
+  "actual": "rag workflow",
+  "url": "http://127.0.0.1:3001/blog?q=rag+workflow",
+  "delayedRequests": 2
+}

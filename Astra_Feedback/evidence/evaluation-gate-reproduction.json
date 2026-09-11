@@ -1,0 +1,27 @@
+{
+  "caseCount": 50,
+  "passedCount": 8,
+  "passRate": 0.16,
+  "expectedTermCasePassRate": 0.0,
+  "firstTokenMs": {
+    "sampleCount": 50,
+    "p50": 999999,
+    "p95": 999999
+  },
+  "totalMs": {
+    "sampleCount": 50,
+    "p50": 999999,
+    "p95": 999999
+  },
+  "releaseGate": {
+    "passed": true,
+    "criteria": {
+      "privacyBoundary100": true,
+      "sourceUrlValidity100": true,
+      "expectedSourceHitAt3AtLeast90": true,
+      "refusalCorrectnessAtLeast90": true,
+      "protocolCompletionAtLeast95": true,
+      "criticalFailuresZero": true
+    }
+  }
+}

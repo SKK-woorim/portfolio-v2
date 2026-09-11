@@ -1,0 +1,74 @@
+{
+  "currentJoin": {
+    "status": 300,
+    "error": {
+      "code": "PGRST201",
+      "message": "Could not embed because more than one relationship was found for 'posts' and 'media'"
+    }
+  },
+  "explicitJoin": {
+    "status": 200,
+    "count": 3,
+    "posts": [
+      {
+        "slug": "rag-document-pipeline",
+        "title": "RAG 품질은 문서 전처리에서 시작됩니다",
+        "characters": 140,
+        "hasCover": false,
+        "excerpt": "RAG는 임베딩 모델만으로 완성되지 않습니다. OCR 결과를 정리하고 문서 구조에 맞게 청킹하며 검색에 필요한 메타데이터를 함께 설계해야 합니다. 질문의 맥락과 원문 근거를 안정적으로 연결하려면 수집부터 평가까지 하나의 파이프라인으로 바라봐야 합니다."
+      },
+      {
+        "slug": "nl2sql-workflow",
+        "title": "자연어 질문을 데이터 분석으로 연결하는 NL2SQL",
+        "characters": 134,
+        "hasCover": false,
+        "excerpt": "NL2SQL은 SQL 생성 자체보다 스키마와 질문의 의도를 정확히 연결하고 실행 결과를 검증하는 과정이 중요합니다. 데이터 정제와 ETL, 오류 처리, 결과 설명까지 하나의 흐름으로 묶을 때 실제 업무에 사용할 수 있는 분석 경험이 됩니다."
+      },
+      {
+        "slug": "leading-ai-projects",
+        "title": "AI 프로젝트를 이끌며 배운 협업의 기준",
+        "characters": 120,
+        "hasCover": false,
+        "excerpt": "좋은 협업은 모든 사람이 같은 일을 하는 것이 아니라 목표와 책임을 명확히 공유하는 데서 시작합니다. 프로젝트 문서와 일정, 반복적인 피드백을 팀의 공통 언어로 만들면 기술적인 문제도 더 빠르게 해결할 수 있습니다."
+      }
+    ]
+  },
+  "projects": [
+    {
+      "slug": "text-to-3d-platform",
+      "title": "T2G — Text to 3D",
+      "content_text": "팀장으로 서비스 기획, 프론트엔드 개발, 역할 분배를 총괄하고 사용자 입력 기반 자동화 흐름을 시연했습니다. 강원SW페스티벌 SW프로젝트 성과발표회에서 우수팀으로 선정됐습니다.",
+      "start_date": "2024-01-01",
+      "end_date": "2024-12-31",
+      "portfolio_links": [],
+      "portfolio_item_media": []
+    },
+    {
+      "slug": "groundwater-level-prediction",
+      "title": "지하수 수위 예측 AI 모델",
+      "content_text": "팀장으로 프로젝트 설계와 데이터 처리를 총괄했으며, 홍천 지역 테스트셋에서 RMSE 0.054를 기록했습니다. 교내외 창업 경진대회에서 우수상·장려상·대상을 수상했고, 모델 비교와 분석 결과를 한국컴퓨터정보학회 학술발표논문으로 발표했습니다.",
+      "start_date": "2024-01-01",
+      "end_date": "2025-12-31",
+      "portfolio_links": [],
+      "portfolio_item_media": []
+    },
+    {
+      "slug": "ai-agent-rag-workflows",
+      "title": "AI Agent & RAG 워크플로우",
+      "content_text": "Dify 등 오픈소스 AI 오케스트레이션 플랫폼을 활용해 AI Agent와 LLM 워크플로우를 설계하고 개발했습니다. PDF·HWP·HWPX 문서의 OCR, 전처리, 청킹, 메타데이터 구성을 거쳐 RAG 지식베이스를 구축하고, 자연어 질의를 SQL과 분석 결과로 연결하는 NL2SQL 흐름을 구현했습니다. Python 기반 데이터 정제·변환과 ClickHouse 데이터베이스 이관을 위한 ETL 프로세스도 함께 설계했습니다.",
+      "start_date": "2025-01-01",
+      "end_date": null,
+      "portfolio_links": [],
+      "portfolio_item_media": []
+    },
+    {
+      "slug": "bee-guardian",
+      "title": "꿀벌지키미",
+      "content_text": "팀장으로 기획을 맡고 프론트엔드 개발과 데이터 전처리를 수행했습니다. 2024 Global Capstone Design Project에서 Bronze Award를 수상하며 팀의 문제 정의와 구현 결과를 검증받았습니다.",
+      "start_date": "2024-01-01",
+      "end_date": "2024-12-31",
+      "portfolio_links": [],
+      "portfolio_item_media": []
+    }
+  ]
+}

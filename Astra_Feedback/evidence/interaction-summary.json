@@ -1,0 +1,36 @@
+{
+  "home": "AI AGENT 엔지니어\n\n안녕하세요.\n\n송경근입니다.\n\n포트폴리오 보기\n연락하기\nPython\nAI Agent\nRAG\nDify\nLLM\nNL2SQL\nSQL\nETL\nClickHouse\nOCR\nLIVE WORKFLOW\n\nArchitecture\n\nAgent → RAG → Data\n\nAI\nDB\nETL\n\nHOW I WORK\n\n문서를 지식으로, 질문을 실행 가능한 흐름으로 바꿉니다.\n\n요구사항을 분석하고 AI와 데이터가 실제 업무에서 안정적으로 이어지는 구조를 설계합니다.\n\n01\n문제를 정의합니다\n\n고객의 요구사항과 데이터 환경을 먼저 이해합니다.\n\n02\n흐름을 설계합니다\n\nAgent, RAG, SQL과 ETL을 목적에 맞게 연결합니다.\n\n03\n결과를 검증합니다\n\n근거와 오류 경로를 확인해 운영 가능한 품질을 만듭니다.\n\nSELECTED PORTFOLIO\n\nAI와 데이터로 해결한 문제들\n\n업무에서 구축한 워크플로우와 팀을 이끌며 완성한 AI 프로젝트를 기록합니다.\n\n전체 포트폴리오\nAI Engineering\n\n2025\n\n2025\nAI Engineering\nAI Agent & RAG 워크플로우\n\n비정형 문서를 지식으로 바꾸고 자연어 질문을 분석 결과로 연결하는 AI 워크플로우를 설계·개발합니다.\n\nAI Agent\nRAG\nDify\n자세히 보기\nAI Research\n\n2024 — 2025\n\n2024 — 2025\nAI Research\n지하수 수위 예측 AI 모델\n\n기상 변화와 지하수 수위의 상관관계를 분석하고 LSTM으로 수위 변동을 예측한 연구 프로젝트입니다.\n\nPython\nLSTM\nTime Series\n자세히 보기\nComputer Vision\n\n2024\n\n2024\nComputer Vision\n꿀벌지키미\n\nYOLOv5 객체 인식으로 말벌을 감지해 양봉 환경의 위험을 빠르게 알리는 AI 시스템입니다.\n\nYOLOv5\nObject Detection\nFrontend\n자세히 보기\n\nLATEST WRITING\n\nAI를 만들며 배운 것들\n\nRAG, 데이터 파이프라인, 협업 과정에서 얻은 실무적인 관점을 정리합니다.\n\n모든 글 보기\n\nLET'S WORK TOGETHER\n\n좋은 문제를 함께 풀어볼까요?\n\nAI Agent, RAG, 데이터 워크플로우 또는 새로운 프로젝트에 관한 대화를 환영합니다.\n\n이야기 시작하기\nPython\nAI Agent\nRAG",
+  "homeLinks": [],
+  "offlineFocus": {
+    "tag": "BUTTON",
+    "label": "포트폴리오 챗봇 열기",
+    "inside": false
+  },
+  "tabFocus": {
+    "text": "",
+    "label": "포트폴리오 챗봇 닫기",
+    "inside": true
+  },
+  "afterChatNav": {
+    "url": "http://127.0.0.1:3000/about",
+    "dialogVisible": true,
+    "locked": true
+  },
+  "blog": "WRITING\n\nAI를 만들고, 검증하고, 기록합니다.\n\n문서 처리부터 데이터 분석, 팀 협업까지 실무와 프로젝트에서 배운 내용을 남깁니다.\n\n글 검색\n제목, 요약, 카테고리, 태그를 검색합니다\n\n카테고리\n\n전체\n\n태그\n\n0개의 글을 찾았습니다.\n\n조건에 맞는 글이 없습니다.\n\n조건 초기화",
+  "rapidInput": {
+    "input": "",
+    "url": "http://127.0.0.1:3000/blog"
+  },
+  "ctaColor": {
+    "color": "rgb(245, 249, 255)",
+    "background": "rgb(117, 182, 255)"
+  },
+  "contactContext": {
+    "body": "CONTACT\n\nAI와 데이터로\n함께 해결해볼까요?\n\nAI Agent, RAG, 데이터 워크플로우와 프로젝트 협업에 관한 대화를 환영합니다. 아래 이메일로 편하게 연락해 주세요.\n\n방금 읽은 포트폴리오 프로젝트 ai-agent-rag-workflows에서 이어진 문의라면, 관련 맥락을 함께 적어 주세요.\n\nswoorim31@gmail.com\nOPEN TO COLLABORATION",
+    "mail": "mailto:swoorim31@gmail.com"
+  },
+  "login": {
+    "body": "← 공개 사이트\n\nPORTFOLIO CMS\n\n관리자 로그인\n이메일\n비밀번호\n로그인\n초대 링크로 비밀번호 설정하기 →",
+    "h1": 1
+  }
+}

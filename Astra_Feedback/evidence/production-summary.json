@@ -1,0 +1,284 @@
+[
+  {
+    "route": "/",
+    "status": 200,
+    "text": "본문으로 건너뛰기\n송경근\n소개\n포트폴리오\n블로그\n연락처\n협업 문의\n\nAI AGENT 엔지니어\n\n안녕하세요.\n\n송경근입니다.\n\n포트폴리오 보기\n연락하기\nPython\nAI Agent\nRAG\nDify\nLLM\nNL2SQL\nSQL\nETL\nClickHouse\nOCR\nLIVE WORKFLOW\n\nArchitecture\n\nAgent → RAG → Data\n\nAI\nDB\nETL\n\nOperating principle\n\nGrounded. Useful. Reliable.\n\nHOW I WORK\n\n문서를 지식으로, 질문을 실행 가능한 흐름으로 바꿉니다.\n\n요구사항을 분석하고 AI와 데이터가 실제 업무에서 안정적으로 이어지는 구조를 설계합니다.\n\n01\n문제를 정의합니다\n\n고객의 요구사항과 데이터 환경을 먼저 이해합니다.\n\n02\n흐름을 설계합니다\n\nAgent, RAG, SQL과 ETL을 목적에 맞게 연결합니다.\n\n03\n결과를 검증합니다\n\n근거와 오류 경로를 확인해 운영 가능한 품질을 만듭니다.\n\nSELECTED PORTFOLIO\n\nAI와 데이터로 해결한 문제들\n\n업무에서 구축한 워크플로우와 팀을 이끌며 완성한 AI 프로젝트를 기록합니다.\n\n전체 포트폴리오\nAI Engineering\n\n2025\n\n2025\nAI Engineering\nAI Agent & RAG 워크플로우\n\n비정형 문서를 지식으로 바꾸고 자연어 질문을 분석 결과로 연결하는 AI 워크플로우를 설계·개발합니다.\n\nAI Agent\nRAG\nDify\n자세히 보기\nAI Research\n\n2024 — 2025\n\n2024 — 2025\nAI Research\n지하수 수위 예측 AI 모델\n\n기상 변화와 지하수 수위의 상관관계를 분석하고 LSTM으로 수위 변동을 예측한 연구 프로젝트입니다.\n\nPython\nLSTM\nTime Series\n자세히 보기\nComputer Vision\n\n2024\n\n2024\nComputer Vision\n꿀벌지키미\n\nYOLOv5 객체 인식으로 말벌을 감지해 양봉 환경의 위험을 빠르게 알리는 AI 시스템입니다.\n\nYOLOv5\nObject Detection\nFrontend\n자세히 보기\n\nLATEST WRITING\n\nAI를 만들며 배운 것들\n\nRAG, 데이터 파이프라인, 협업 과정에서 얻은 실무적인 관점을 정리합니다.\n\n모든 글 보기\n\nLET'S WORK TOGETHER\n\n좋은 문제를 함께 풀어볼까요?\n\nAI Agent, RAG, 데이터 워크플로우 또는 새로운 프로젝트에 관한 대화를 환영합니다.\n\n이야기 시작하기\nPython\nAI Agent\nRAG\n\n송경근\n\n안녕하세요.\n\nNAVIGATE\n\n포트폴리오\n블로그\n소개\n\nCONTACT\n\nswoorim31@gmail.com\n© 2026 송경근. All rights reserved.\n관리자 로그인",
+    "h1": [
+      "안녕하세요."
+    ],
+    "resources": [
+      {
+        "name": "/_next/image",
+        "type": "link",
+        "bytes": 18690,
+        "duration": 372.0999994277954
+      },
+      {
+        "name": "/_next/static/css/e1e18617c41f5a05.css",
+        "type": "link",
+        "bytes": 12406,
+        "duration": 52.69999980926514
+      },
+      {
+        "name": "/_next/static/chunks/webpack-559d4439d5597e40.js",
+        "type": "link",
+        "bytes": 1976,
+        "duration": 214.80000019073486
+      },
+      {
+        "name": "/_next/static/chunks/c1a87517-34b0e9bcc581e873.js",
+        "type": "script",
+        "bytes": 572,
+        "duration": 214.30000019073486
+      },
+      {
+        "name": "/_next/static/chunks/4f4fdb63-ba287c3e970d2b77.js",
+        "type": "script",
+        "bytes": 63600,
+        "duration": 219.79999923706055
+      },
+      {
+        "name": "/_next/static/chunks/3881-d603243066133e26.js",
+        "type": "script",
+        "bytes": 148302,
+        "duration": 299.5999994277954
+      },
+      {
+        "name": "/_next/static/chunks/main-app-6643da956dd8c3c4.js",
+        "type": "script",
+        "bytes": 1090,
+        "duration": 216.60000038146973
+      },
+      {
+        "name": "/_next/static/chunks/app/error-2cdb76c6067e629c.js",
+        "type": "script",
+        "bytes": 1026,
+        "duration": 283.19999980926514
+      },
+      {
+        "name": "/_next/static/chunks/6653-4ac16cdfcae1f343.js",
+        "type": "script",
+        "bytes": 2156,
+        "duration": 293.69999980926514
+      },
+      {
+        "name": "/_next/static/chunks/app/(site)/page-ecb6705a14f54d1a.js",
+        "type": "script",
+        "bytes": 985,
+        "duration": 245.70000076293945
+      },
+      {
+        "name": "/_next/static/chunks/1747-9185b8aa5cc054a2.js",
+        "type": "script",
+        "bytes": 6191,
+        "duration": 299.1000003814697
+      },
+      {
+        "name": "/_next/static/chunks/app/global-error-252310f611194a36.js",
+        "type": "script",
+        "bytes": 2009,
+        "duration": 296.69999980926514
+      },
+      {
+        "name": "/_next/static/chunks/4073-59b54d230f185fe4.js",
+        "type": "script",
+        "bytes": 8902,
+        "duration": 408.80000019073486
+      },
+      {
+        "name": "/_next/static/chunks/app/(site)/layout-f6a0826d5e83209b.js",
+        "type": "script",
+        "bytes": 10579,
+        "duration": 418.19999980926514
+      },
+      {
+        "name": "/assets/fonts/pretendard/pretendardvariable-dynamic-subset.css",
+        "type": "link",
+        "bytes": 13946,
+        "duration": 55.80000019073486
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.89.woff2",
+        "type": "css",
+        "bytes": 22164,
+        "duration": 237.10000038146973
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.90.woff2",
+        "type": "css",
+        "bytes": 21152,
+        "duration": 268.80000019073486
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.91.woff2",
+        "type": "css",
+        "bytes": 38296,
+        "duration": 268.9000005722046
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.88.woff2",
+        "type": "css",
+        "bytes": 25940,
+        "duration": 260.9000005722046
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.85.woff2",
+        "type": "css",
+        "bytes": 25404,
+        "duration": 242.0999994277954
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.87.woff2",
+        "type": "css",
+        "bytes": 24964,
+        "duration": 249.29999923706055
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.86.woff2",
+        "type": "css",
+        "bytes": 26016,
+        "duration": 259.6000003814697
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.82.woff2",
+        "type": "css",
+        "bytes": 26800,
+        "duration": 247.5
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.84.woff2",
+        "type": "css",
+        "bytes": 24792,
+        "duration": 243.69999980926514
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.73.woff2",
+        "type": "css",
+        "bytes": 18636,
+        "duration": 245.0999994277954
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.81.woff2",
+        "type": "css",
+        "bytes": 26600,
+        "duration": 230.10000038146973
+      },
+      {
+        "name": "/assets/fonts/pretendard/PretendardVariable.subset.83.woff2",
+        "type": "css",
+        "bytes": 27264,
+        "duration": 228.30000019073486
+      },
+      {
+        "name": "/",
+        "type": "fetch",
+        "bytes": 553,
+        "duration": 37.40000057220459
+      },
+      {
+        "name": "/about",
+        "type": "fetch",
+        "bytes": 560,
+        "duration": 54.80000019073486
+      },
+      {
+        "name": "/portfolio",
+        "type": "fetch",
+        "bytes": 563,
+        "duration": 162.19999980926514
+      },
+      {
+        "name": "/blog",
+        "type": "fetch",
+        "bytes": 560,
+        "duration": 163.79999923706055
+      },
+      {
+        "name": "/contact",
+        "type": "fetch",
+        "bytes": 474,
+        "duration": 127.90000057220459
+      },
+      {
+        "name": "/",
+        "type": "fetch",
+        "bytes": 7151,
+        "duration": 112.09999942779541
+      },
+      {
+        "name": "/about",
+        "type": "fetch",
+        "bytes": 4159,
+        "duration": 49.39999961853027
+      },
+      {
+        "name": "/portfolio",
+        "type": "fetch",
+        "bytes": 5267,
+        "duration": 47.80000019073486
+      },
+      {
+        "name": "/blog",
+        "type": "fetch",
+        "bytes": 3472,
+        "duration": 46.5
+      },
+      {
+        "name": "/contact",
+        "type": "fetch",
+        "bytes": 1417,
+        "duration": 41.10000038146973
+      },
+      {
+        "name": "/_next/static/chunks/app/(site)/about/page-c3901b65c48754ca.js",
+        "type": "script",
+        "bytes": 1029,
+        "duration": 14.5
+      },
+      {
+        "name": "/_next/static/chunks/app/(site)/portfolio/page-72730ffd8a58319a.js",
+        "type": "script",
+        "bytes": 590,
+        "duration": 13.100000381469727
+      },
+      {
+        "name": "/_next/static/chunks/app/(site)/blog/page-0399bb4637bd4202.js",
+        "type": "script",
+        "bytes": 3645,
+        "duration": 11.699999809265137
+      }
+    ]
+  },
+  {
+    "route": "/blog",
+    "status": 200,
+    "text": "본문으로 건너뛰기\n송경근\n소개\n포트폴리오\n블로그\n연락처\n협업 문의\n\nWRITING\n\nAI를 만들고, 검증하고, 기록합니다.\n\n문서 처리부터 데이터 분석, 팀 협업까지 실무와 프로젝트에서 배운 내용을 남깁니다.\n\n글 검색\n제목, 요약, 카테고리, 태그를 검색합니다\n\n카테고리\n\n전체\n\n태그\n\n0개의 글을 찾았습니다.\n\n조건에 맞는 글이 없습니다.\n\n조건 초기화\n\n송경근\n\n안녕하세요.\n\nNAVIGATE\n\n포트폴리오\n블로그\n소개\n\nCONTACT\n\nswoorim31@gmail.com\n© 2026 송경근. All rights reserved.\n관리자 로그인",
+    "h1": []
+  },
+  {
+    "route": "/blog/rag-document-pipeline",
+    "status": 404,
+    "text": "404\n\n페이지를 찾을 수 없습니다.\n\n주소를 다시 확인하거나 홈으로 돌아가 주세요.\n\n홈으로 돌아가기",
+    "h1": [
+      "페이지를 찾을 수 없습니다."
+    ]
+  },
+  {
+    "route": "/api/readiness",
+    "status": 200,
+    "text": "{\"status\":\"ready\",\"components\":{\"supabaseConfig\":\"ready\",\"publishedContent\":\"ready\",\"chatbotRelay\":\"disabled\",\"chatbotBackend\":\"disabled\"}}",
+    "h1": []
+  },
+  {
+    "route": "/rss.xml",
+    "status": 200,
+    "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"><channel><title>송경근의 AI 엔지니어링 노트</title><link>https://portfolio-three-chi-dgdi7wj28c.vercel.app/</link><description>AI Agent, RAG, 데이터 엔지니어링과 협업에 관한 글</description></channel></rss>",
+    "h1": []
+  },
+  {
+    "route": "/sitemap.xml",
+    "status": 200,
+    "text": "This XML file does not appear to have any style information associated with it. The document tree is shown below.\n\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/</loc>\n</url>\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/portfolio</loc>\n</url>\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/blog</loc>\n</url>\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/about</loc>\n</url>\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/contact</loc>\n</url>\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/portfolio/ai-agent-rag-workflows</loc>\n<lastmod>2026-08-24T01:41:40.371Z</lastmod>\n</url>\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/portfolio/groundwater-level-prediction</loc>\n<lastmod>2026-08-24T01:41:40.275Z</lastmod>\n</url>\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/portfolio/bee-guardian</loc>\n<lastmod>2026-08-24T01:41:40.482Z</lastmod>\n</url>\n<url>\n<loc>https://portfolio-three-chi-dgdi7wj28c.vercel.app/portfolio/text-to-3d-platform</loc>\n<lastmod>2026-08-24T01:41:40.432Z</lastmod>\n</url>\n</urlset>",
+    "h1": []
+  }
+]
