@@ -79,6 +79,18 @@ export async function readPublishedContent(signal: AbortSignal) {
     .abortSignal(signal);
 
   if (error) throw new Error("Published content readiness query failed");
+
+  // The public portfolio query can succeed while the posts query fails to
+  // resolve an ambiguous posts -> media relationship. Probe the exact
+  // relation used by the product so readiness does not report a false green.
+  const { error: postsError } = await supabase
+    .from("posts")
+    .select("id, cover_media:media!posts_cover_media_id_fkey(id), inline_media:post_media!post_media_post_id_fkey(role, media:media!post_media_media_id_fkey(id))")
+    .eq("status", "published")
+    .limit(1)
+    .abortSignal(signal);
+
+  if (postsError) throw new Error("Published posts relationship readiness query failed");
 }
 
 export async function readChatbotBackendHealth(url: string, signal: AbortSignal) {
