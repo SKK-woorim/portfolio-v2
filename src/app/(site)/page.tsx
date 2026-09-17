@@ -46,9 +46,9 @@ export default async function HomePage() {
           </div>
           <div className="relative mx-auto w-full max-w-2xl pb-10 lg:pb-0">
             <div className="tech-panel relative aspect-[4/3] overflow-hidden rounded-[30px]">
-              <Image src="/og.png" alt="" fill priority sizes="(max-width: 1024px) 100vw, 56vw" className="origin-right scale-[1.14] object-cover object-right" />
+              <Image src="/og.png" alt="" fill priority sizes="(max-width: 1024px) 100vw, 56vw" className="object-contain object-center" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#031022] via-transparent to-[#031022]/15" />
-              <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-[#67aef8]/30 bg-[#06182c]/80 px-3 py-2 text-[11px] font-semibold uppercase tracking-[.08em] text-[#a8d1ff] backdrop-blur-md"><span className="signal-dot size-1.5 rounded-full bg-[#58a8ff]" /> Live workflow</div>
+              <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-[#67aef8]/30 bg-[#06182c]/80 px-3 py-2 text-[11px] font-semibold tracking-[.08em] text-[#a8d1ff] backdrop-blur-md"><span className="signal-dot size-1.5 rounded-full bg-[#58a8ff]" /> 업무 흐름 예시</div>
               <div className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#071a31]/85 p-4 text-white backdrop-blur-md">
                 <div><p className="text-xs text-[#84a8cf]">Architecture</p><p className="mt-1 text-sm font-semibold">Agent → RAG → Data</p></div>
                 <div className="flex -space-x-1.5" aria-label="핵심 기술 3개"><span className="grid size-8 place-items-center rounded-full border border-[#65adfa]/35 bg-[#123f70] text-[10px]">AI</span><span className="grid size-8 place-items-center rounded-full border border-[#65adfa]/35 bg-[#123f70] text-[10px]">DB</span><span className="grid size-8 place-items-center rounded-full border border-[#65adfa]/35 bg-[#123f70] text-[10px]">ETL</span></div>
@@ -58,6 +58,18 @@ export default async function HomePage() {
               <p className="text-xs text-[var(--muted)]">Operating principle</p>
               <p className="mt-2 text-lg font-medium tracking-[-.03em]">Grounded. Useful. Reliable.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <SectionHeading eyebrow="Selected portfolio" title="AI와 데이터로 해결한 문제들" description="업무에서 구축한 워크플로우와 팀을 이끌며 완성한 AI 프로젝트를 기록합니다." />
+            <Link href="/portfolio" className="focus-ring inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary)]">전체 포트폴리오 <ArrowRight size={16} /></Link>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {featuredItems.map((item, index) => <ProjectCard item={item} key={item.id} priority={index === 0} />)}
           </div>
         </div>
       </section>
@@ -77,18 +89,6 @@ export default async function HomePage() {
                 <p className="mt-3 text-sm leading-6 text-[var(--body)]">{copy}</p>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
-            <SectionHeading eyebrow="Selected portfolio" title="AI와 데이터로 해결한 문제들" description="업무에서 구축한 워크플로우와 팀을 이끌며 완성한 AI 프로젝트를 기록합니다." />
-            <Link href="/portfolio" className="focus-ring inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary)]">전체 포트폴리오 <ArrowRight size={16} /></Link>
-          </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {featuredItems.map((item, index) => <ProjectCard item={item} key={item.id} priority={index === 0} />)}
           </div>
         </div>
       </section>

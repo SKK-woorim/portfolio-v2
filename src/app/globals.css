@@ -16,6 +16,11 @@
 
 * { box-sizing: border-box; }
 
+@layer base {
+  a { color: inherit; text-decoration: none; }
+  button, input, textarea, select { font: inherit; }
+}
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -26,10 +31,6 @@ body {
   font-size: 16px;
   line-height: 1.5;
 }
-
-a { color: inherit; text-decoration: none; }
-
-button, input, textarea, select { font: inherit; }
 
 ::selection { background: #cfe4ff; color: var(--ink); }
 
@@ -79,6 +80,8 @@ button, input, textarea, select { font: inherit; }
   --cta-bg: #ffffff;
   --cta-text: #0b3a78;
   --cta-hover: #e8f2ff;
+  --cta-solid: #0b579f;
+  --cta-solid-hover: #08447f;
   --outline-border: rgba(255, 255, 255, .6);
   --outline-hover: rgba(255, 255, 255, .1);
   min-height: 100vh;
@@ -112,6 +115,8 @@ html[data-site-theme="light"] .site-theme {
   --cta-bg: #1463c3;
   --cta-text: #ffffff;
   --cta-hover: #0f54a7;
+  --cta-solid: #145fae;
+  --cta-solid-hover: #0d4b8f;
   --outline-border: rgba(20, 99, 195, .42);
   --outline-hover: rgba(20, 99, 195, .08);
   color-scheme: light;
@@ -142,6 +147,8 @@ html[data-site-theme="light"] .site-theme {
 .theme-chip { border-color: var(--border); color: var(--body); }
 .theme-primary-cta { background: var(--cta-bg); color: var(--cta-text) !important; }
 .theme-primary-cta:hover { background: var(--cta-hover); }
+.solid-primary-cta { background: var(--cta-solid); color: #fff; }
+.solid-primary-cta:hover { background: var(--cta-solid-hover); }
 .theme-outline-cta { border-color: var(--outline-border); color: var(--ink); }
 .theme-outline-cta:hover { background: var(--outline-hover); }
 .theme-control { border-color: var(--border); background: var(--surface); color: var(--ink); }
@@ -323,7 +330,14 @@ body.chatbot-scroll-locked { overflow: hidden; }
   box-shadow: 0 0 0 3px rgba(213, 138, 20, .14);
 }
 
+.chatbot-panel-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .chatbot-close-button,
+.chatbot-clear-button,
 .chatbot-send-button {
   display: inline-flex;
   width: 44px;
@@ -338,6 +352,9 @@ body.chatbot-scroll-locked { overflow: hidden; }
 
 .chatbot-close-button { background: transparent; color: var(--body); }
 .chatbot-close-button:hover { background: var(--primary-soft); color: var(--primary); }
+.chatbot-clear-button { width: 38px; height: 38px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.chatbot-clear-button:hover:not(:disabled) { background: var(--primary-soft); color: var(--primary); }
+.chatbot-clear-button:disabled { cursor: not-allowed; opacity: .35; }
 
 .chatbot-message-list {
   display: flex;
@@ -602,7 +619,32 @@ body.chatbot-scroll-locked { overflow: hidden; }
 .chatbot-send-button { background: var(--primary-action); color: #fff; }
 .chatbot-send-button:hover:not(:disabled) { background: var(--primary); }
 .chatbot-send-button:disabled { cursor: not-allowed; opacity: .38; }
-.chatbot-composer > p { margin: 7px 2px 0; color: var(--muted); font-size: 10px; text-align: center; }
+.chatbot-composer > p { display: flex; justify-content: space-between; gap: 8px; margin: 7px 2px 0; color: var(--muted); font-size: 10px; }
+
+.chatbot-new-reply-button {
+  position: sticky;
+  bottom: 6px;
+  align-self: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  background: var(--surface-elevated);
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.display,
+.site-theme h1,
+.site-theme h2,
+.site-theme h3 {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.project-card:hover { transform: translateY(-4px); }
 
 @keyframes chatbot-panel-in {
   from { opacity: 0; transform: translateY(12px) scale(.98); }
@@ -645,6 +687,17 @@ body.chatbot-scroll-locked { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .site-theme,
+  .site-theme * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .project-card:hover,
+  .project-card:hover img,
+  .post-card:hover,
+  .post-card:hover img { transform: none !important; }
   .chatbot-trigger,
   .chatbot-panel,
   .chatbot-backdrop,

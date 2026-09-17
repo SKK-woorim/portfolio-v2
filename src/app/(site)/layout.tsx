@@ -1,6 +1,7 @@
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ChatbotWidget } from "@/components/chatbot/chatbot-widget";
+import { RouteFocusManager } from "@/components/route-focus-manager";
 import { getSiteProfile } from "@/lib/content/repository";
 
 function isChatbotEnabled() {
@@ -18,6 +19,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
         본문으로 건너뛰기
       </a>
       <SiteHeader name={profile.displayName} />
+      <RouteFocusManager />
       <main id="main-content" tabIndex={-1}>
         {children}
       </main>
