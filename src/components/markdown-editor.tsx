@@ -16,7 +16,8 @@ export type EditorMedia = {
 
 type Selection = { start: number; end: number };
 type MediaUploadAction = (previousState: MediaUploadState, formData: FormData) => Promise<MediaUploadState>;
-type LocalDraft = { markdown: string; savedAt: number; baseUpdatedAt: string | null };
+export type LocalDraftFields = Record<string, string | boolean>;
+type LocalDraft = { markdown: string; fields?: LocalDraftFields; savedAt: number; baseUpdatedAt: string | null };
 
 type MarkdownEditorProps = {
   name: string;
@@ -28,6 +29,8 @@ type MarkdownEditorProps = {
   baseUpdatedAt?: string;
   saveState?: ContentSaveState;
   disabled?: boolean;
+  draftFields?: LocalDraftFields;
+  onDraftRestore?: (fields: LocalDraftFields) => void;
 };
 
 function isLocalDraft(value: unknown): value is LocalDraft {
@@ -35,7 +38,23 @@ function isLocalDraft(value: unknown): value is LocalDraft {
   const draft = value as Partial<LocalDraft>;
   return typeof draft.markdown === "string"
     && typeof draft.savedAt === "number"
-    && (draft.baseUpdatedAt === null || typeof draft.baseUpdatedAt === "string");
+    && (draft.baseUpdatedAt === null || typeof draft.baseUpdatedAt === "string")
+    && (draft.fields === undefined || (typeof draft.fields === "object" && draft.fields !== null && !Array.isArray(draft.fields)
+      && Object.values(draft.fields).every((field) => typeof field === "string" || typeof field === "boolean")));
+}
+
+export function getDraftStorageIdentity(storageKey: string, baseline: string) {
+  return `${storageKey}\u0000${baseline}`;
+}
+
+export function shouldHydrateDraftStorage(previousIdentity: string | null, nextIdentity: string) {
+  return previousIdentity !== nextIdentity;
+}
+
+export function hasRecoverableLocalDraft(value: unknown, baseline: string, serializedFields: string) {
+  if (!isLocalDraft(value)) return false;
+  const storedFields = JSON.stringify(value.fields ?? {});
+  return value.markdown !== baseline || storedFields !== serializedFields;
 }
 
 function escapeMarkdownAlt(alt: string) {
@@ -57,10 +76,11 @@ export function findInlineMediaIds(markdown: string, media: EditorMedia[]) {
   return [...ids];
 }
 
-export function MarkdownEditor({ name, initialValue, label = "본문", media = [], uploadAction, draftKey, baseUpdatedAt, saveState, disabled = false }: MarkdownEditorProps) {
+export function MarkdownEditor({ name, initialValue, label = "본문", media = [], uploadAction, draftKey, baseUpdatedAt, saveState, disabled = false, draftFields, onDraftRestore }: MarkdownEditorProps) {
   const initialMarkdown = contentToMarkdown(initialValue);
   const [markdown, setMarkdown] = useState(initialMarkdown);
   const [baseline, setBaseline] = useState(initialMarkdown);
+  const [baselineDraftFields, setBaselineDraftFields] = useState(() => JSON.stringify(draftFields ?? {}));
   const [availableMedia, setAvailableMedia] = useState(media);
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
@@ -84,10 +104,12 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
   const dialogTitleRef = useRef<HTMLHeadingElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const previousStorageKeyRef = useRef<string | null>(null);
+  const hydratedStorageIdentityRef = useRef<string | null>(null);
   const handledSaveStateRef = useRef<ContentSaveState | undefined>(undefined);
 
   const storageKey = draftKey ? `portfolio-cms-draft:${draftKey}` : null;
-  const dirty = markdown !== baseline;
+  const serializedDraftFields = JSON.stringify(draftFields ?? {});
+  const dirty = markdown !== baseline || serializedDraftFields !== baselineDraftFields;
 
   const selectedMedia = availableMedia.find((item) => item.id === selectedMediaId) ?? null;
   const inlineMediaIds = useMemo(() => findInlineMediaIds(markdown, availableMedia), [markdown, availableMedia]);
@@ -101,15 +123,21 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
   }, [isMediaDialogOpen]);
 
   useEffect(() => {
-    if (!storageKey) return;
+    if (!storageKey) {
+      hydratedStorageIdentityRef.current = null;
+      return;
+    }
+    const storageIdentity = getDraftStorageIdentity(storageKey, baseline);
+    if (!shouldHydrateDraftStorage(hydratedStorageIdentityRef.current, storageIdentity)) return;
     const timeout = window.setTimeout(() => {
+      hydratedStorageIdentityRef.current = storageIdentity;
       setDraftReady(false);
       setRecoveryDraft(null);
       setLocalSavedAt(null);
       try {
         const raw = localStorage.getItem(storageKey);
         const stored = raw ? JSON.parse(raw) : null;
-        if (isLocalDraft(stored) && stored.markdown !== baseline) setRecoveryDraft(stored);
+        if (hasRecoverableLocalDraft(stored, baseline, serializedDraftFields)) setRecoveryDraft(stored);
         setDraftStorageError(false);
       } catch {
         setDraftStorageError(true);
@@ -118,6 +146,8 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
       }
     }, 0);
     return () => window.clearTimeout(timeout);
+    // Hydration is intentionally keyed only by the storage identity; metadata changes belong to autosave.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseline, storageKey]);
 
   useEffect(() => {
@@ -125,7 +155,8 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
     const timeout = window.setTimeout(() => {
       try {
         const savedAt = Date.now();
-        const draft: LocalDraft = { markdown, savedAt, baseUpdatedAt: baseUpdatedAt ?? null };
+        const fields = JSON.parse(serializedDraftFields) as LocalDraftFields;
+        const draft: LocalDraft = { markdown, fields, savedAt, baseUpdatedAt: baseUpdatedAt ?? null };
         localStorage.setItem(storageKey, JSON.stringify(draft));
         setLocalSavedAt(savedAt);
         setDraftStorageError(false);
@@ -134,13 +165,14 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
       }
     }, 750);
     return () => window.clearTimeout(timeout);
-  }, [baseUpdatedAt, dirty, draftReady, markdown, recoveryDraft, storageKey]);
+  }, [baseUpdatedAt, dirty, draftReady, markdown, recoveryDraft, serializedDraftFields, storageKey]);
 
   useEffect(() => {
     if (!saveState?.success || handledSaveStateRef.current === saveState) return;
     handledSaveStateRef.current = saveState;
     const timeout = window.setTimeout(() => {
       setBaseline(markdown);
+      setBaselineDraftFields(serializedDraftFields);
       setRecoveryDraft(null);
       setLocalSavedAt(null);
       try {
@@ -151,7 +183,7 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
       }
     }, 0);
     return () => window.clearTimeout(timeout);
-  }, [markdown, saveState, storageKey]);
+  }, [markdown, saveState, serializedDraftFields, storageKey]);
 
   useEffect(() => {
     if (!storageKey) return;
@@ -287,6 +319,7 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
   function restoreLocalDraft() {
     if (!recoveryDraft) return;
     setMarkdown(recoveryDraft.markdown);
+    onDraftRestore?.(recoveryDraft.fields ?? {});
     setRecoveryDraft(null);
     setLocalSavedAt(recoveryDraft.savedAt);
     setAnnouncement("브라우저에 임시 저장된 본문을 복원했습니다.");

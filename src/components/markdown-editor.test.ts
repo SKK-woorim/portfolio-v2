@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 
-import { createElement } from "react";
+import { createElement, StrictMode, useState, type ChangeEvent } from "react";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MarkdownEditor } from "./markdown-editor";
+import { getDraftStorageIdentity, hasRecoverableLocalDraft, MarkdownEditor, shouldHydrateDraftStorage } from "./markdown-editor";
 
 const legacyDocument = {
   type: "doc",
@@ -12,6 +12,22 @@ const legacyDocument = {
     { type: "paragraph", content: [{ type: "text", text: "본문" }] },
   ],
 };
+
+function MetadataDraftHarness() {
+  const [title, setTitle] = useState("서버 제목");
+  function onTitleChange(event: ChangeEvent<HTMLInputElement>) {
+    setTitle(event.target.value);
+  }
+  return createElement("div", null,
+    createElement("input", { "aria-label": "메타데이터 제목", value: title, onChange: onTitleChange }),
+    createElement(MarkdownEditor, {
+      name: "contentMarkdown",
+      initialValue: { type: "markdown", markdown: "서버 본문" },
+      draftKey: "post:metadata-regression",
+      draftFields: { title },
+    }),
+  );
+}
 
 afterEach(() => {
   cleanup();
@@ -160,5 +176,42 @@ describe("MarkdownEditor", () => {
       const stored = JSON.parse(localStorage.getItem("portfolio-cms-draft:portfolio:item-1") ?? "null");
       expect(stored?.markdown).toBe("## 수정한 본문");
     }, { timeout: 2_000 });
+  });
+
+  it("autosaves successive metadata edits without resurrecting the previous draft recovery UI", async () => {
+    const view = render(createElement(StrictMode, null, createElement(MetadataDraftHarness)));
+    const input = view.getByRole("textbox", { name: "메타데이터 제목" });
+    await waitFor(() => expect(view.getByText("서버에 저장된 본문과 동일")).toBeTruthy());
+
+    fireEvent.change(input, { target: { value: "첫 번째 제목" } });
+    await waitFor(() => {
+      const stored = JSON.parse(localStorage.getItem("portfolio-cms-draft:post:metadata-regression") ?? "null");
+      expect(stored?.fields).toEqual({ title: "첫 번째 제목" });
+    }, { timeout: 2_000 });
+
+    fireEvent.change(input, { target: { value: "두 번째 제목" } });
+    await waitFor(() => expect(view.queryByText("브라우저에 임시 저장된 본문이 있습니다.")).toBeNull());
+    await waitFor(() => {
+      const stored = JSON.parse(localStorage.getItem("portfolio-cms-draft:post:metadata-regression") ?? "null");
+      expect(stored?.fields).toEqual({ title: "두 번째 제목" });
+    }, { timeout: 2_000 });
+  });
+
+  it("does not rehydrate a prior autosave while metadata continues changing", () => {
+    const storageKey = "portfolio-cms-draft:post:post-1";
+    const baseline = "본문";
+    const identity = getDraftStorageIdentity(storageKey, baseline);
+    const autosaved = { markdown: baseline, fields: { title: "첫 번째 제목" }, savedAt: 1, baseUpdatedAt: null };
+
+    expect(shouldHydrateDraftStorage(null, identity)).toBe(true);
+    expect(hasRecoverableLocalDraft(autosaved, baseline, JSON.stringify(autosaved.fields))).toBe(false);
+    expect(hasRecoverableLocalDraft(autosaved, baseline, JSON.stringify({ title: "두 번째 제목" }))).toBe(true);
+    expect(shouldHydrateDraftStorage(identity, getDraftStorageIdentity(storageKey, baseline))).toBe(false);
+  });
+
+  it("rehydrates when the draft key or saved baseline changes", () => {
+    const identity = getDraftStorageIdentity("portfolio-cms-draft:post:post-1", "본문");
+    expect(shouldHydrateDraftStorage(identity, getDraftStorageIdentity("portfolio-cms-draft:post:post-2", "본문"))).toBe(true);
+    expect(shouldHydrateDraftStorage(identity, getDraftStorageIdentity("portfolio-cms-draft:post:post-1", "저장된 새 본문"))).toBe(true);
   });
 });

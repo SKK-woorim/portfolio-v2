@@ -7,16 +7,19 @@ import type { EditorMedia } from "@/components/markdown-editor";
 type MediaCoverSelectProps = {
   media: EditorMedia[];
   defaultValue?: string | null;
+  value?: string | null;
+  onChange?: (value: string) => void;
   helpText: string;
 };
 
-export function MediaCoverSelect({ media, defaultValue = "", helpText }: MediaCoverSelectProps) {
-  const [selectedId, setSelectedId] = useState(defaultValue ?? "");
+export function MediaCoverSelect({ media, defaultValue = "", value, onChange, helpText }: MediaCoverSelectProps) {
+  const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? "");
+  const selectedId = value === undefined ? uncontrolledValue : value ?? "";
   const selectedMedia = media.find((item) => item.id === selectedId);
 
   return <div className="grid gap-3">
     <label className="grid gap-2 text-sm font-semibold">대표 이미지
-      <select name="coverMediaId" value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="min-h-12 rounded-xl border border-[var(--border)] bg-white px-4 font-normal outline-none focus:border-2 focus:border-[var(--primary-action)]">
+      <select name="coverMediaId" value={selectedId} onChange={(event) => { const nextValue = event.target.value; if (value === undefined) setUncontrolledValue(nextValue); onChange?.(nextValue); }} className="min-h-12 rounded-xl border border-[var(--border)] bg-white px-4 font-normal outline-none focus:border-2 focus:border-[var(--primary-action)]">
         <option value="">대표 이미지 없음</option>
         {media.map((item) => <option key={item.id} value={item.id}>{item.alt || item.storage_key}</option>)}
       </select>
