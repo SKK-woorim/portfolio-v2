@@ -180,6 +180,69 @@ def test_release_gate_rejects_a_critical_failure() -> None:
     assert metrics["releaseGate"]["passed"] is False
 
 
+def passing_result(case: EvaluationCase) -> dict[str, object]:
+    return {
+        "id": case.id,
+        "passed": True,
+        "critical": case.critical,
+        "checks": {
+            "protocolCompletion": True,
+            "expectedSources": True,
+            "expectedTerms": True,
+            "mustNotContain": True,
+            "sourceUrlValidity": True,
+            "expectedOutcome": True,
+        },
+        "observations": {
+            "errorCode": None,
+            "noRelevantContextCorrect": True,
+            "refusalCorrect": True,
+        },
+        "latencyMs": {"firstToken": 10.0, "total": 20.0},
+    }
+
+
+def test_release_gate_rejects_a_partial_evaluation_even_when_the_sample_passes() -> None:
+    dataset, _ = load_dataset(evaluation_dataset_path())
+    results = [passing_result(case) for case in dataset.cases[:8]]
+
+    metrics = aggregate_metrics(dataset, results)
+
+    assert metrics["caseSetComplete"] is False
+    assert metrics["expectedCaseCount"] == 50
+    assert metrics["passRate"] == 0.16
+    assert metrics["releaseGate"]["criteria"]["caseSetComplete"] is False
+    assert metrics["releaseGate"]["passed"] is False
+
+
+def test_release_gate_reports_unknown_and_duplicate_results_without_raising() -> None:
+    case = EvaluationCase(id="known-case", group="profile", question="프로필을 알려주세요.")
+    dataset = type("Dataset", (), {"cases": [case]})()
+    result = passing_result(case)
+    duplicate = {**result}
+    unknown = {**result, "id": "unknown-case"}
+
+    metrics = aggregate_metrics(dataset, [result, duplicate, unknown])  # type: ignore[arg-type]
+
+    assert metrics["duplicateResultIds"] == ["known-case"]
+    assert metrics["unknownResultIds"] == ["unknown-case"]
+    assert metrics["missingCaseIds"] == []
+    assert metrics["releaseGate"]["passed"] is False
+
+
+def test_release_gate_rejects_latency_budget_breaches() -> None:
+    case = EvaluationCase(id="latency-case", group="profile", question="프로필을 알려주세요.")
+    defaults = type("Defaults", (), {"max_first_token_ms": 5, "max_total_ms": 10})()
+    dataset = type("Dataset", (), {"cases": [case], "defaults": defaults})()
+
+    metrics = aggregate_metrics(dataset, [passing_result(case)])  # type: ignore[arg-type]
+
+    assert metrics["firstTokenMs"]["p95"] == 10.0
+    assert metrics["totalMs"]["p95"] == 20.0
+    assert metrics["releaseGate"]["criteria"]["firstTokenP95WithinBudget"] is False
+    assert metrics["releaseGate"]["criteria"]["totalP95WithinBudget"] is False
+
+
 @pytest.mark.asyncio
 async def test_http_transport_serializes_uuid_and_uses_hmac_headers() -> None:
     seen: dict[str, object] = {}
