@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
 
+export const SITE_AUTHOR_NAME = "송경근";
+export const DEFAULT_OG_IMAGE_PATH = "/og.png";
+export const DEFAULT_OG_IMAGE = {
+  url: DEFAULT_OG_IMAGE_PATH,
+  width: 1200,
+  height: 630,
+  alt: `${SITE_AUTHOR_NAME} AI Engineer Portfolio`,
+} as const;
+
 function withProtocol(value: string) {
   return value.includes("://") ? value : `https://${value}`;
 }
@@ -39,6 +48,16 @@ export function absoluteUrl(path: string) {
   return new URL(path, getSiteUrl()).toString();
 }
 
+export function createSocialImage(image: { src: string; alt: string; width?: number; height?: number } | undefined) {
+  if (!image) return { ...DEFAULT_OG_IMAGE };
+  return {
+    url: image.src,
+    alt: image.alt,
+    ...(image.width ? { width: image.width } : {}),
+    ...(image.height ? { height: image.height } : {}),
+  };
+}
+
 export function createPageMetadata({ title, description, path }: { title: string; description: string; path: string }): Metadata {
   return {
     title,
@@ -50,13 +69,13 @@ export function createPageMetadata({ title, description, path }: { title: string
       url: path,
       title,
       description,
-      images: [{ url: "/og.png", width: 1200, height: 630, alt: "송경근 AI Engineer Portfolio" }],
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: ["/og.png"],
+      images: [DEFAULT_OG_IMAGE_PATH],
     },
   };
 }

@@ -38,7 +38,7 @@ export function ProjectVisual({ item, compact = false, priority = false }: { ite
         </div>
       </div>
       <div className={cn("absolute rounded-[18px] border border-white/10 bg-[#ffffff12]", compact ? "bottom-7 left-5 h-20 w-28" : "bottom-10 left-7 h-32 w-40")} />
-      <p className={cn("absolute bottom-5 left-6 font-mono text-xs", item.accent === "sky" ? "text-[var(--primary)]/70" : "text-white/60")}>{item.period}</p>
+      <p className="absolute bottom-5 left-6 font-mono text-xs text-[#d4e8ff]">{item.period}</p>
       <ArrowUpRight className={cn("absolute right-5 top-14 opacity-25", item.accent === "sky" ? "text-[var(--primary)]" : "text-white")} size={56} strokeWidth={1} />
     </div>
   );

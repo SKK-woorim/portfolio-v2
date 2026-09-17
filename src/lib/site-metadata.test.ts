@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveSiteUrl } from "./site-metadata";
+import { createSocialImage, DEFAULT_OG_IMAGE_PATH, resolveSiteUrl } from "./site-metadata";
 
 describe("site URL validation", () => {
   it("requires an origin in production", () => {
@@ -18,5 +18,9 @@ describe("site URL validation", () => {
 
   it("falls back to local development only outside production", () => {
     expect(resolveSiteUrl({ NODE_ENV: "development" }).toString()).toBe("http://localhost:3000/");
+  });
+
+  it("provides a share image when published content has no cover media", () => {
+    expect(createSocialImage(undefined)).toMatchObject({ url: DEFAULT_OG_IMAGE_PATH, width: 1200, height: 630 });
   });
 });

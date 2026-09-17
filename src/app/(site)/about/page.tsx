@@ -23,7 +23,7 @@ export default async function AboutPage() {
     <>
       <section className="theme-section tech-grid border-b border-[var(--border)] py-20 sm:py-28">
         <div className="container grid gap-10 lg:grid-cols-[1fr_.9fr] lg:items-end">
-          <SectionHeading eyebrow="About" title="협업을 즐기며, AI와 데이터를 실제 문제에 연결합니다." description={profile.bio} />
+          <SectionHeading level={1} eyebrow="About" title="협업을 즐기며, AI와 데이터를 실제 문제에 연결합니다." description={profile.bio} />
           <div className="tech-panel rounded-3xl p-8">
             <p className="text-sm leading-7 text-[var(--body)]">&ldquo;기술을 보여주는 데서 멈추지 않고, 팀이 함께 이해하고 운영할 수 있는 흐름을 만드는 개발자가 되고자 합니다.&rdquo;</p>
           </div>

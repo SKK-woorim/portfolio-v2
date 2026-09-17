@@ -1,32 +1,32 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
-import { getSiteUrl } from "@/lib/site-metadata";
+import { DEFAULT_OG_IMAGE, DEFAULT_OG_IMAGE_PATH, SITE_AUTHOR_NAME, getSiteUrl } from "@/lib/site-metadata";
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
   title: {
-    default: "송경근 — AI Engineer Portfolio",
-    template: "%s | 송경근",
+    default: `${SITE_AUTHOR_NAME} — AI Engineer Portfolio`,
+    template: `%s | ${SITE_AUTHOR_NAME}`,
   },
   description: "AI Agent, RAG, NL2SQL과 ETL 워크플로우를 설계하고 구현하는 AI 엔지니어 송경근의 포트폴리오입니다.",
-  applicationName: "송경근 포트폴리오",
-  authors: [{ name: "송경근" }],
-  creator: "송경근",
+  applicationName: `${SITE_AUTHOR_NAME} 포트폴리오`,
+  authors: [{ name: SITE_AUTHOR_NAME }],
+  creator: SITE_AUTHOR_NAME,
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "ko_KR",
     url: "/",
-    siteName: "송경근 포트폴리오",
-    title: "송경근 — AI Engineer Portfolio",
+    siteName: `${SITE_AUTHOR_NAME} 포트폴리오`,
+    title: `${SITE_AUTHOR_NAME} — AI Engineer Portfolio`,
     description: "AI Agent, RAG, NL2SQL과 ETL 워크플로우를 설계하고 구현하는 AI 엔지니어 송경근의 포트폴리오입니다.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "송경근 AI Engineer Portfolio" }],
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "송경근 — AI Engineer Portfolio",
+    title: `${SITE_AUTHOR_NAME} — AI Engineer Portfolio`,
     description: "AI Agent, RAG, NL2SQL과 ETL 워크플로우를 설계하고 구현하는 AI 엔지니어 송경근의 포트폴리오입니다.",
-    images: ["/og.png"],
+    images: [DEFAULT_OG_IMAGE_PATH],
   },
   robots: { index: true, follow: true },
 };

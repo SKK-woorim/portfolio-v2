@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ArrowUpRight, Mail } from "lucide-react";
+import Link from "next/link";
+import { ContactCopyButton } from "@/components/contact-copy-button";
 import { createPageMetadata } from "@/lib/site-metadata";
-import { getSiteProfile } from "@/lib/content/repository";
+import { getPublishedPost, getPublishedPortfolioItem, getSiteProfile } from "@/lib/content/repository";
 import { parseContactContext } from "./contact-context";
 
 type ContactSearchParams = Promise<{ from?: string | string[]; slug?: string | string[] }>;
@@ -15,8 +17,17 @@ export const metadata: Metadata = createPageMetadata({
 
 export default async function ContactPage({ searchParams }: { searchParams: ContactSearchParams }) {
   const profile = await getSiteProfile();
-  const context = parseContactContext(await searchParams);
+  const parsedContext = parseContactContext(await searchParams);
+  const contextItem = parsedContext
+    ? await (parsedContext.kind === "blog" ? getPublishedPost(parsedContext.slug) : getPublishedPortfolioItem(parsedContext.slug)).catch(() => undefined)
+    : undefined;
+  const context = parsedContext && contextItem ? { ...parsedContext, title: contextItem.title } : null;
   const contextLabel = context?.kind === "blog" ? "블로그 글" : "포트폴리오 프로젝트";
+  const contextUrl = context ? `/${context.kind === "blog" ? "blog" : "portfolio"}/${context.slug}` : null;
+  const mailSubject = context ? `${context.title} 관련 협업 문의` : "협업 문의";
+  const mailBody = context && contextUrl
+    ? `안녕하세요.\n\n${context.title}(${contextUrl})을 읽고 문의드립니다.\n\n문의 내용:\n`
+    : "안녕하세요.\n\n문의 내용:\n";
 
   return (
     <section className="tech-grid section">
@@ -34,14 +45,17 @@ export default async function ContactPage({ searchParams }: { searchParams: Cont
                 AI Agent, RAG, 데이터 워크플로우와 프로젝트 협업에 관한 대화를 환영합니다.
                 아래 이메일로 편하게 연락해 주세요.
               </p>
-              {context ? <p className="mt-4 max-w-xl text-sm leading-6 text-[var(--body)]">방금 읽은 {contextLabel} <code className="rounded bg-[var(--primary-soft)] px-1.5 py-0.5 text-[var(--ink)]">{context.slug}</code>에서 이어진 문의라면, 관련 맥락을 함께 적어 주세요.</p> : null}
-              <a
-                className="theme-primary-cta focus-ring mt-10 inline-flex min-h-14 items-center gap-3 rounded-full px-7 text-base font-semibold"
-                href={`mailto:${profile.email}`}
-              >
-                <Mail size={19} />
-                {profile.email}
-              </a>
+              {context ? <p className="mt-4 max-w-xl text-sm leading-6 text-[var(--body)]">방금 읽은 {contextLabel} <Link className="font-semibold text-[var(--primary)] underline underline-offset-4" href={contextUrl!}>{context.title}</Link>에서 이어진 문의입니다. 메일에 원문 링크와 제목을 미리 넣었습니다.</p> : null}
+              <div className="mt-10 flex flex-wrap items-center gap-3">
+                <a
+                  className="theme-primary-cta focus-ring inline-flex min-h-14 items-center gap-3 rounded-full px-7 text-base font-semibold"
+                  href={`mailto:${profile.email}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`}
+                >
+                  <Mail size={19} />
+                  {profile.email}
+                </a>
+                <ContactCopyButton value={profile.email} />
+              </div>
               <div className="mt-12 flex flex-wrap gap-5 text-sm text-[var(--body)]">
                 {profile.socialLinks.map((link) => (
                   <a

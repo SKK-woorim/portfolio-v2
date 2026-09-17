@@ -54,7 +54,7 @@ export function SiteHeader({ name }: { name: string }) {
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="focus-ring inline-flex items-center gap-3 text-base font-bold tracking-[-.04em] text-[var(--ink)]"><span className="signal-dot size-2 rounded-full bg-[var(--primary)]" aria-hidden="true" />{name}</Link>
         <nav className="hidden items-center gap-7 md:flex" aria-label="주요 메뉴">
-          {navigation.map((item) => <Link aria-current={isCurrentPath(item.href) ? "page" : undefined} className="focus-ring text-sm font-medium text-[var(--body)] transition-colors hover:text-[var(--ink)]" href={item.href} key={item.href}>{item.label}</Link>)}
+          {navigation.map((item) => { const active = isCurrentPath(item.href); return <Link aria-current={active ? "page" : undefined} className={cn("focus-ring rounded-sm text-sm font-medium transition-colors hover:text-[var(--ink)]", active ? "font-bold text-[var(--primary)] underline decoration-2 underline-offset-8" : "text-[var(--body)]")} href={item.href} key={item.href}>{item.label}</Link>; })}
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -66,7 +66,7 @@ export function SiteHeader({ name }: { name: string }) {
       </div>
       <div id="mobile-menu" aria-hidden={!open} className={cn("overflow-hidden border-t border-[var(--border)] bg-[var(--surface)] transition-[max-height] duration-200 md:hidden", open ? "max-h-80" : "max-h-0 border-t-0")}>
         <nav className="container flex flex-col py-3" aria-label="모바일 주요 메뉴">
-          {navigation.map((item, index) => <Link ref={index === 0 ? firstMobileLinkRef : undefined} aria-current={isCurrentPath(item.href) ? "page" : undefined} tabIndex={open ? 0 : -1} onClick={closeMenu} className="focus-ring rounded-xl px-3 py-3 text-sm font-medium text-[var(--body)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]" href={item.href} key={item.href}>{item.label}</Link>)}
+          {navigation.map((item, index) => { const active = isCurrentPath(item.href); return <Link ref={index === 0 ? firstMobileLinkRef : undefined} aria-current={active ? "page" : undefined} tabIndex={open ? 0 : -1} onClick={closeMenu} className={cn("focus-ring rounded-xl px-3 py-3 text-sm font-medium hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]", active ? "bg-[var(--primary-soft)] font-bold text-[var(--primary)]" : "text-[var(--body)]")} href={item.href} key={item.href}>{item.label}</Link>; })}
         </nav>
       </div>
     </header>
