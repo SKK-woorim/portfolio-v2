@@ -68,4 +68,16 @@ test.describe("public accessibility and theme controls", () => {
     await expect(page.locator("html")).toHaveAttribute("data-site-theme", "light");
     await expect(page.getByRole("button", { name: "다크 모드로 전환" })).toBeVisible();
   });
+
+  test("disables motion when the visitor prefers reduced motion", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+
+    const reducedMotion = await page.evaluate(() => ({
+      scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+      transitionDuration: getComputedStyle(document.querySelector(".site-theme")!).transitionDuration,
+    }));
+    expect(reducedMotion.scrollBehavior).toBe("auto");
+    expect(["0.001ms", "1e-06s"]).toContain(reducedMotion.transitionDuration);
+  });
 });
