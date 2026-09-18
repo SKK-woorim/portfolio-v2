@@ -32,6 +32,28 @@ describe("MarkdownContent", () => {
     expect(html).toContain('loading="lazy"');
   });
 
+  it("passes managed inline media dimensions while preserving explicit alt text", () => {
+    const html = renderToStaticMarkup(createElement(MarkdownContent, {
+      markdown: "![프로젝트 화면](https://cdn.example.com/project.png)",
+      inlineImages: [{ src: "https://cdn.example.com/project.png", alt: "관리형 설명", width: 1200, height: 800 }],
+    }));
+    expect(html).toContain('width="1200"');
+    expect(html).toContain('height="800"');
+    expect(html).toContain('alt="프로젝트 화면"');
+  });
+
+  it("keeps explicit decorative alt empty and leaves unknown external images un-sized", () => {
+    const managed = renderToStaticMarkup(createElement(MarkdownContent, {
+      markdown: "![](https://cdn.example.com/decorative.png)",
+      inlineImages: [{ src: "https://cdn.example.com/decorative.png", alt: "서버 설명", width: 640, height: 360 }],
+    }));
+    const external = renderToStaticMarkup(createElement(MarkdownContent, { markdown: "![외부 이미지](https://images.example.com/external.png)" }));
+    expect(managed).toContain('alt=""');
+    expect(managed).toContain('width="640"');
+    expect(external).not.toContain('width="');
+    expect(external).not.toContain('height="');
+  });
+
   it("assigns stable, unique IDs to duplicate headings", () => {
     const markdown = "## 같은 제목\n\n내용\n\n## 같은 제목\n\n## 세 번째 제목";
     expect(getMarkdownHeadings(markdown)).toEqual([
@@ -53,5 +75,24 @@ describe("MarkdownContent", () => {
     const html = renderToStaticMarkup(createElement(MarkdownContent, { markdown }));
     expect(html).toContain('id="실제-제목"');
     expect(html).not.toContain('id="코드-예시"');
+  });
+
+  it("keeps balanced parentheses in a link destination", () => {
+    const html = renderToStaticMarkup(createElement(MarkdownContent, { markdown: "[문서](https://example.com/guide_(v2))" }));
+    expect(html).toContain('href="https://example.com/guide_(v2)"');
+  });
+
+  it("keeps escaped pipes inside Markdown table cells", () => {
+    const html = renderToStaticMarkup(createElement(MarkdownContent, { markdown: "| 항목 | 설명 |\n| --- | --- |\n| RAG | 검색\\|생성 |" }));
+    expect(html).toContain("검색|생성");
+    expect(html).not.toContain("검색\\");
+  });
+
+  it("preserves ordinary backslashes in Markdown table cells", () => {
+    const markdown = String.raw`| 항목 | 경로 |
+| --- | --- |
+| 파일 | C:\temp |`;
+    const html = renderToStaticMarkup(createElement(MarkdownContent, { markdown }));
+    expect(html).toContain("C:\\temp");
   });
 });

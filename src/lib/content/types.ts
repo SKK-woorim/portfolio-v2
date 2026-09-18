@@ -24,6 +24,8 @@ export type PortfolioLink = {
 export type ContentImage = {
   src: string;
   alt: string;
+  width?: number;
+  height?: number;
 };
 
 export type PortfolioItem = {
@@ -41,6 +43,7 @@ export type PortfolioItem = {
   accent: "blue" | "sky" | "navy";
   updatedAt: string;
   coverImage?: ContentImage;
+  inlineImages?: ContentImage[];
 };
 
 export type BlogPost = {
@@ -58,4 +61,5 @@ export type BlogPost = {
   seoTitle?: string;
   seoDescription?: string;
   coverImage?: ContentImage;
+  inlineImages?: ContentImage[];
 };

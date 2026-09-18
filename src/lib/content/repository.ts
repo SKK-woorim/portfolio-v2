@@ -24,8 +24,8 @@ function createPublicClient() {
 
 type TaggedRelation = { tags?: { name?: string } | null };
 type PortfolioLinkRow = { label: string; url: string };
-type MediaRow = { public_url?: string | null; alt?: string | null };
-type PortfolioMediaRow = { role?: string; sort_order?: number; media?: MediaRow | MediaRow[] | null };
+type MediaRow = { public_url?: string | null; alt?: string | null; width?: number | null; height?: number | null };
+type MediaRelationRow = { role?: string; sort_order?: number; media?: MediaRow | MediaRow[] | null };
 type PortfolioRow = {
   id: string;
   slug: string;
@@ -41,7 +41,7 @@ type PortfolioRow = {
   updated_at: string;
   portfolio_tags?: TaggedRelation[] | null;
   portfolio_links?: PortfolioLinkRow[] | null;
-  portfolio_item_media?: PortfolioMediaRow[] | null;
+  portfolio_item_media?: MediaRelationRow[] | null;
 };
 type PostRow = {
   id: string;
@@ -56,8 +56,33 @@ type PostRow = {
   updated_at: string;
   seo_title?: string | null;
   seo_description?: string | null;
-  media?: MediaRow | MediaRow[] | null;
+  cover_media?: MediaRow | MediaRow[] | null;
+  inline_media?: MediaRelationRow[] | null;
 };
+
+export class ContentRepositoryError extends Error {
+  readonly area: string;
+
+  constructor(area: string, cause?: unknown) {
+    super(`공개 콘텐츠를 불러오지 못했습니다: ${area}`, { cause });
+    this.name = "ContentRepositoryError";
+    this.area = area;
+  }
+}
+
+function isLocalContentDemoMode() {
+  return process.env.NEXT_PUBLIC_CONTENT_DEMO_MODE === "true" && process.env.NODE_ENV !== "production";
+}
+
+function throwMissingPublicContentConfig(area: string): never {
+  throw new ContentRepositoryError(area, new Error("Supabase public content configuration is missing"));
+}
+
+function rethrowContentError(area: string, error: unknown): never {
+  reportContentError(area, error);
+  if (error instanceof ContentRepositoryError) throw error;
+  throw new ContentRepositoryError(area, error);
+}
 
 function reportContentError(area: string, error: unknown) {
   Sentry.captureException(error, { tags: { area: `public-content:${area}` } });
@@ -84,7 +109,27 @@ function firstMedia(value: MediaRow | MediaRow[] | null | undefined) {
 
 function toContentImage(value: MediaRow | MediaRow[] | null | undefined, fallbackAlt: string): ContentImage | undefined {
   const media = firstMedia(value);
-  return media?.public_url ? { src: media.public_url, alt: media.alt?.trim() || fallbackAlt } : undefined;
+  if (!media?.public_url) return undefined;
+  const width = typeof media.width === "number" && media.width > 0 ? media.width : undefined;
+  const height = typeof media.height === "number" && media.height > 0 ? media.height : undefined;
+  return {
+    src: media.public_url,
+    // A deliberately empty alt is meaningful for decorative media and must not
+    // be replaced with a title-derived description.
+    alt: media.alt === null || media.alt === undefined ? fallbackAlt : media.alt.trim(),
+    ...(width === undefined ? {} : { width }),
+    ...(height === undefined ? {} : { height }),
+  };
+}
+
+function toInlineContentImages(value: MediaRelationRow[] | null | undefined) {
+  return (value ?? [])
+    .filter((relation) => relation.role === "inline")
+    .sort((left, right) => (left.sort_order ?? 0) - (right.sort_order ?? 0))
+    .flatMap((relation) => {
+      const image = toContentImage(relation.media, "");
+      return image ? [image] : [];
+    });
 }
 
 function toPortfolioItem(row: PortfolioRow, includeContent: boolean): PortfolioItem {
@@ -106,6 +151,7 @@ function toPortfolioItem(row: PortfolioRow, includeContent: boolean): PortfolioI
     accent: (["navy", "blue", "sky"] as const)[row.sort_order % 3],
     updatedAt: row.updated_at,
     coverImage: toContentImage(cover?.media, `${row.title} 대표 이미지`),
+    inlineImages: includeContent ? toInlineContentImages(row.portfolio_item_media) : undefined,
   };
 }
 
@@ -124,7 +170,8 @@ function toBlogPost(row: PostRow, includeContent: boolean): BlogPost {
     readingMinutes: Math.max(1, Math.ceil((row.content_text?.length ?? 0) / 450)),
     seoTitle: row.seo_title || undefined,
     seoDescription: row.seo_description || undefined,
-    coverImage: toContentImage(row.media, `${row.title} 대표 이미지`),
+    coverImage: toContentImage(row.cover_media, `${row.title} 대표 이미지`),
+    inlineImages: includeContent ? toInlineContentImages(row.inline_media) : undefined,
   };
 }
 
@@ -139,7 +186,10 @@ function normalizeContactEmail(value: string | null | undefined) {
 }
 
 const getCachedSiteProfile = unstable_cache(async (): Promise<SiteProfile> => {
-  if (!hasSupabaseConfig()) return demoProfile;
+  if (!hasSupabaseConfig()) {
+    if (isLocalContentDemoMode()) return demoProfile;
+    return throwMissingPublicContentConfig("profile");
+  }
   try {
     const supabase = createPublicClient();
     const { data, error } = await supabase
@@ -148,7 +198,7 @@ const getCachedSiteProfile = unstable_cache(async (): Promise<SiteProfile> => {
       .eq("id", true)
       .maybeSingle();
     if (error) throw error;
-    if (!data) return demoProfile;
+    if (!data) throw new Error("Published site profile is missing");
     const contact = (data.contact ?? {}) as { email?: string };
     const socialLinks: unknown[] = Array.isArray(data.social_links) ? data.social_links : [];
     return {
@@ -165,10 +215,9 @@ const getCachedSiteProfile = unstable_cache(async (): Promise<SiteProfile> => {
       skills: Array.isArray(data.skills) ? data.skills.filter((skill): skill is string => typeof skill === "string" && Boolean(skill.trim())).map((skill) => skill.trim()) : [],
     } satisfies SiteProfile;
   } catch (error) {
-    reportContentError("profile", error);
-    return demoProfile;
+    return rethrowContentError("profile", error);
   }
-}, ["site-profile-v5"], {
+}, ["site-profile-v6"], {
   tags: [CONTENT_CACHE_TAGS.profile],
   revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
 });
@@ -178,12 +227,15 @@ export async function getSiteProfile() {
 }
 
 const getCachedPortfolioItems = unstable_cache(async () => {
-  if (!hasSupabaseConfig()) return [];
+  if (!hasSupabaseConfig()) {
+    if (isLocalContentDemoMode()) return [];
+    return throwMissingPublicContentConfig("portfolio-list");
+  }
   try {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("portfolio_items")
-      .select("id, slug, title, type, summary, start_date, end_date, is_featured, sort_order, updated_at, portfolio_tags(tags(name)), portfolio_item_media(role, sort_order, media(public_url, alt))")
+      .select("id, slug, title, type, summary, start_date, end_date, is_featured, sort_order, updated_at, portfolio_tags(tags(name)), portfolio_item_media(role, sort_order, media(public_url, alt, width, height))")
       .eq("status", "published")
       .order("sort_order", { ascending: true })
       .order("start_date", { ascending: false });
@@ -191,10 +243,9 @@ const getCachedPortfolioItems = unstable_cache(async () => {
     const items = ((data ?? []) as PortfolioRow[]).map((row) => toPortfolioItem(row, false));
     return items;
   } catch (error) {
-    reportContentError("portfolio-list", error);
-    return [];
+    return rethrowContentError("portfolio-list", error);
   }
-}, ["published-portfolio-v4"], {
+}, ["published-portfolio-v6"], {
   tags: [CONTENT_CACHE_TAGS.portfolio],
   revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
 });
@@ -204,43 +255,47 @@ export async function getPublishedPortfolioItems() {
 }
 
 export const getPublishedPortfolioItem = cache(async (slug: string) => unstable_cache(async () => {
-  if (!hasSupabaseConfig()) return undefined;
+  if (!hasSupabaseConfig()) {
+    if (isLocalContentDemoMode()) return undefined;
+    return throwMissingPublicContentConfig("portfolio-detail");
+  }
   try {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("portfolio_items")
-      .select("id, slug, title, type, summary, content_json, content_text, start_date, end_date, is_featured, sort_order, updated_at, portfolio_tags(tags(name)), portfolio_links(label, url, sort_order), portfolio_item_media(role, sort_order, media(public_url, alt))")
+      .select("id, slug, title, type, summary, content_json, content_text, start_date, end_date, is_featured, sort_order, updated_at, portfolio_tags(tags(name)), portfolio_links(label, url, sort_order), portfolio_item_media(role, sort_order, media(public_url, alt, width, height))")
       .eq("status", "published")
       .eq("slug", slug)
       .maybeSingle();
     if (error) throw error;
     return data ? toPortfolioItem(data as PortfolioRow, true) : undefined;
   } catch (error) {
-    reportContentError("portfolio-detail", error);
-    return undefined;
+    return rethrowContentError("portfolio-detail", error);
   }
-}, ["published-portfolio-item-v5", slug], {
+}, ["published-portfolio-item-v6", slug], {
   tags: [CONTENT_CACHE_TAGS.portfolio],
   revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
 })());
 
 const getCachedPosts = unstable_cache(async () => {
-  if (!hasSupabaseConfig()) return [];
+  if (!hasSupabaseConfig()) {
+    if (isLocalContentDemoMode()) return [];
+    return throwMissingPublicContentConfig("post-list");
+  }
   try {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("posts")
-      .select("id, slug, title, excerpt, content_text, published_at, updated_at, seo_title, seo_description, categories(name), post_tags(tags(name)), media(public_url, alt)")
+      .select("id, slug, title, excerpt, content_text, published_at, updated_at, seo_title, seo_description, categories(name), post_tags(tags(name)), cover_media:media!posts_cover_media_id_fkey(public_url, alt, width, height), inline_media:post_media!post_media_post_id_fkey(role, sort_order, media:media!post_media_media_id_fkey(public_url, alt, width, height))")
       .eq("status", "published")
       .order("published_at", { ascending: false });
     if (error) throw error;
     const posts = ((data ?? []) as PostRow[]).map((row) => toBlogPost(row, false));
     return posts;
   } catch (error) {
-    reportContentError("post-list", error);
-    return [];
+    return rethrowContentError("post-list", error);
   }
-}, ["published-posts-v4"], {
+}, ["published-posts-v6"], {
   tags: [CONTENT_CACHE_TAGS.posts],
   revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
 });
@@ -250,22 +305,24 @@ export async function getPublishedPosts() {
 }
 
 export const getPublishedPost = cache(async (slug: string) => unstable_cache(async () => {
-  if (!hasSupabaseConfig()) return undefined;
+  if (!hasSupabaseConfig()) {
+    if (isLocalContentDemoMode()) return undefined;
+    return throwMissingPublicContentConfig("post-detail");
+  }
   try {
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("posts")
-      .select("id, slug, title, excerpt, content_json, content_text, published_at, updated_at, seo_title, seo_description, categories(name), post_tags(tags(name)), media(public_url, alt)")
+      .select("id, slug, title, excerpt, content_json, content_text, published_at, updated_at, seo_title, seo_description, categories(name), post_tags(tags(name)), cover_media:media!posts_cover_media_id_fkey(public_url, alt, width, height), inline_media:post_media!post_media_post_id_fkey(role, sort_order, media:media!post_media_media_id_fkey(public_url, alt, width, height))")
       .eq("status", "published")
       .eq("slug", slug)
       .maybeSingle();
     if (error) throw error;
     return data ? toBlogPost(data as PostRow, true) : undefined;
   } catch (error) {
-    reportContentError("post-detail", error);
-    return undefined;
+    return rethrowContentError("post-detail", error);
   }
-}, ["published-post-item-v4", slug], {
+}, ["published-post-item-v6", slug], {
   tags: [CONTENT_CACHE_TAGS.posts],
   revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
 })());

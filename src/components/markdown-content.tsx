@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- Markdown allows external user-provided image URLs. */
 import { Fragment, type ReactNode } from "react";
+import type { ContentImage } from "@/lib/content/types";
 
 type ListEntry = { text: string; children: ListGroup[] };
 type ListGroup = { ordered: boolean; entries: ListEntry[] };
@@ -34,7 +35,10 @@ export function getMarkdownHeadings(markdown: string): MarkdownHeading[] {
 
 function safeUrl(value: string, image = false) {
   try {
-    const destination = value.trim().replace(/^<([^>]+)>$/, "$1");
+    const trimmed = value.trim();
+    const destination = trimmed.startsWith("<")
+      ? trimmed.slice(1, trimmed.indexOf(">") > 0 ? trimmed.indexOf(">") : undefined)
+      : trimmed.split(/\s+/)[0];
     const url = new URL(destination, "https://portfolio.local");
     if (image) return url.protocol === "http:" || url.protocol === "https:" ? destination : null;
     return ["http:", "https:", "mailto:"].includes(url.protocol) || destination.startsWith("/") ? destination : null;
@@ -45,8 +49,48 @@ function unescapeMarkdownLabel(value: string) {
   return value.replace(/\\([\\[\]])/g, "$1");
 }
 
-function renderInline(value: string): ReactNode[] {
-  const pattern = /(!?\[(?:\\.|[^\]])*\]\([^)]*\)|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|`[^`]+`|\*[^*]+\*|_[^_]+_)/g;
+function parseInlineLinkToken(token: string) {
+  const image = token.startsWith("!");
+  const labelStart = image ? 2 : 1;
+  let labelEnd = -1;
+  let labelEscaped = false;
+  for (let index = labelStart; index < token.length; index += 1) {
+    if (labelEscaped) {
+      labelEscaped = false;
+    } else if (token[index] === "\\") {
+      labelEscaped = true;
+    } else if (token[index] === "]") {
+      labelEnd = index;
+      break;
+    }
+  }
+  if (labelEnd < 0 || token[labelEnd + 1] !== "(") return null;
+  let depth = 0;
+  let escaped = false;
+  for (let index = labelEnd + 1; index < token.length; index += 1) {
+    const character = token[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (character === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (character === "(") depth += 1;
+    if (character === ")") {
+      depth -= 1;
+      if (depth === 0 && index === token.length - 1) {
+        return { image, label: token.slice(labelStart, labelEnd), destination: token.slice(labelEnd + 2, index) };
+      }
+    }
+  }
+  return null;
+}
+
+function renderInline(value: string, inlineImages: ReadonlyMap<string, ContentImage>): ReactNode[] {
+  const destination = "(?:<[^>]+>|(?:\\\\.|[^()\\\\]|\\([^()]*\\))*)";
+  const pattern = new RegExp("(!?\\[(?:\\\\.|[^\\]])*\\]\\(\\s*" + destination + "(?:\\s+[\\\"'][^)]*[\\\"'])?\\s*\\)|\\*\\*[^*]+\\*\\*|__[^_]+__|~~[^~]+~~|`[^`]+`|\\*[^*]+\\*|_[^_]+_)", "g");
   const result: ReactNode[] = [];
   let cursor = 0;
   let match: RegExpExecArray | null;
@@ -55,14 +99,15 @@ function renderInline(value: string): ReactNode[] {
     if (match.index > cursor) result.push(value.slice(cursor, match.index));
     const token = match[0];
     const key = `${match.index}-${index++}`;
-    const image = token.match(/^!\[((?:\\.|[^\]])*)\]\(([^)]*)\)$/);
-    const link = token.match(/^\[((?:\\.|[^\]])*)\]\(([^)]*)\)$/);
-    if (image) {
-      const src = safeUrl(image[2], true);
-      result.push(src ? <img key={key} src={src} alt={unescapeMarkdownLabel(image[1])} className="my-5 max-h-[32rem] rounded-xl border border-[var(--border)] object-contain" loading="lazy" decoding="async" /> : unescapeMarkdownLabel(image[1]));
-    } else if (link) {
-      const href = safeUrl(link[2]);
-      result.push(href ? <a key={key} href={href} className="font-medium text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4 hover:decoration-[var(--primary)]" {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}>{unescapeMarkdownLabel(link[1])}</a> : unescapeMarkdownLabel(link[1]));
+    const inlineLink = parseInlineLinkToken(token);
+    if (inlineLink?.image) {
+      const src = safeUrl(inlineLink.destination, true);
+      const metadata = src ? inlineImages.get(src) : undefined;
+      const intrinsicSize = metadata?.width && metadata.height ? { width: metadata.width, height: metadata.height } : {};
+      result.push(src ? <img key={key} src={src} alt={unescapeMarkdownLabel(inlineLink.label)} {...intrinsicSize} className="my-5 max-h-[32rem] rounded-xl border border-[var(--border)] object-contain" loading="lazy" decoding="async" /> : unescapeMarkdownLabel(inlineLink.label));
+    } else if (inlineLink) {
+      const href = safeUrl(inlineLink.destination);
+      result.push(href ? <a key={key} href={href} className="font-medium text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4 hover:decoration-[var(--primary)]" {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}>{unescapeMarkdownLabel(inlineLink.label)}</a> : unescapeMarkdownLabel(inlineLink.label));
     } else if (token.startsWith("**") || token.startsWith("__")) result.push(<strong key={key} className="font-semibold text-[var(--ink)]">{token.slice(2, -2)}</strong>);
     else if (token.startsWith("~~")) result.push(<del key={key}>{token.slice(2, -2)}</del>);
     else if (token.startsWith("`")) result.push(<code key={key} className="rounded bg-[var(--primary-soft)] px-1.5 py-0.5 font-mono text-[.9em] text-[var(--ink)]">{token.slice(1, -1)}</code>);
@@ -100,23 +145,39 @@ function parseList(lines: string[]): ListGroup[] {
   return roots;
 }
 
-function RenderList({ group }: { group: ListGroup }) {
+function RenderList({ group, inlineImages }: { group: ListGroup; inlineImages: ReadonlyMap<string, ContentImage> }) {
   const ListTag = group.ordered ? "ol" : "ul";
   return <ListTag className={group.ordered ? "my-4 list-decimal space-y-1 pl-6" : "my-4 list-disc space-y-1 pl-6"}>{group.entries.map((entry, index) => {
     const task = entry.text.match(/^\[([ xX])\]\s+(.*)$/);
-    return <li key={`${entry.text}-${index}`} className="pl-1">{task ? <><input aria-label="완료 상태" type="checkbox" disabled checked={task[1].toLowerCase() === "x"} className="mr-2 accent-[var(--primary)]" />{renderInline(task[2])}</> : renderInline(entry.text)}{entry.children.map((child, childIndex) => <RenderList key={childIndex} group={child} />)}</li>;
+    return <li key={`${entry.text}-${index}`} className="pl-1">{task ? <><input aria-label="완료 상태" type="checkbox" disabled checked={task[1].toLowerCase() === "x"} className="mr-2 accent-[var(--primary)]" />{renderInline(task[2], inlineImages)}</> : renderInline(entry.text, inlineImages)}{entry.children.map((child, childIndex) => <RenderList key={childIndex} group={child} inlineImages={inlineImages} />)}</li>;
   })}</ListTag>;
 }
 
 function tableCells(line: string) {
-  return line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
+  const cells: string[] = [];
+  let current = "";
+  const normalized = line.trim().replace(/^\||\|$/g, "");
+  for (let index = 0; index < normalized.length; index += 1) {
+    const character = normalized[index];
+    if (character === "\\" && (normalized[index + 1] === "|" || normalized[index + 1] === "\\")) {
+      current += normalized[index + 1];
+      index += 1;
+    } else if (character === "|") {
+      cells.push(current.trim());
+      current = "";
+    } else {
+      current += character;
+    }
+  }
+  cells.push(current.trim());
+  return cells;
 }
 
 function isBlockStart(line: string, next?: string) {
   return /^#{1,6}\s+|^>|^```|^---\s*$|^\s*(?:[-+*]|\d+[.)])\s+/.test(line) || (line.includes("|") && Boolean(next?.match(/^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/)));
 }
 
-function renderBlocks(lines: string[], headings: MarkdownHeading[] = []): ReactNode[] {
+function renderBlocks(lines: string[], headings: MarkdownHeading[] = [], inlineImages: ReadonlyMap<string, ContentImage> = new Map()): ReactNode[] {
   const blocks: ReactNode[] = [];
   for (let index = 0; index < lines.length;) {
     const line = lines[index];
@@ -127,7 +188,7 @@ function renderBlocks(lines: string[], headings: MarkdownHeading[] = []): ReactN
       const Tag = `h${heading[1].length}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
       const styles = ["text-4xl", "text-3xl", "text-2xl", "text-xl", "text-lg", "text-base"];
       const headingId = headings.shift()?.id;
-      blocks.push(<Tag key={key} id={headingId} className={`display scroll-mt-28 mt-9 first:mt-0 ${styles[heading[1].length - 1]} leading-tight text-[var(--ink)]`}>{renderInline(heading[2])}</Tag>);
+      blocks.push(<Tag key={key} id={headingId} className={`display scroll-mt-28 mt-9 first:mt-0 ${styles[heading[1].length - 1]} leading-tight text-[var(--ink)]`}>{renderInline(heading[2], inlineImages)}</Tag>);
       index++; continue;
     }
     if (/^```/.test(line)) {
@@ -142,7 +203,7 @@ function renderBlocks(lines: string[], headings: MarkdownHeading[] = []): ReactN
     if (/^>/.test(line)) {
       const quote: string[] = [];
       while (index < lines.length && /^>/.test(lines[index])) quote.push(lines[index++].replace(/^>\s?/, ""));
-      blocks.push(<blockquote key={key} className="my-6 border-l-4 border-[var(--primary)] bg-[var(--primary-soft)] px-5 py-1 text-[var(--ink)]">{renderBlocks(quote)}</blockquote>);
+      blocks.push(<blockquote key={key} className="my-6 border-l-4 border-[var(--primary)] bg-[var(--primary-soft)] px-5 py-1 text-[var(--ink)]">{renderBlocks(quote, [], inlineImages)}</blockquote>);
       continue;
     }
     if (/^---\s*$/.test(line)) { blocks.push(<hr key={key} className="my-8 border-[var(--border)]" />); index++; continue; }
@@ -152,7 +213,7 @@ function renderBlocks(lines: string[], headings: MarkdownHeading[] = []): ReactN
         if (listToken(lines[index])) listLines.push(lines[index]);
         index++;
       }
-      blocks.push(<Fragment key={key}>{parseList(listLines).map((group, groupIndex) => <RenderList key={groupIndex} group={group} />)}</Fragment>);
+      blocks.push(<Fragment key={key}>{parseList(listLines).map((group, groupIndex) => <RenderList key={groupIndex} group={group} inlineImages={inlineImages} />)}</Fragment>);
       continue;
     }
     if (line.includes("|") && index + 1 < lines.length && lines[index + 1].match(/^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/)) {
@@ -160,18 +221,19 @@ function renderBlocks(lines: string[], headings: MarkdownHeading[] = []): ReactN
       index += 2;
       const rows: string[][] = [];
       while (index < lines.length && lines[index].includes("|") && lines[index].trim()) rows.push(tableCells(lines[index++]));
-      blocks.push(<div key={key} className="my-6 overflow-x-auto"><table className="w-full border-collapse text-left text-sm"><thead className="bg-[var(--primary-soft)] text-[var(--ink)]"><tr>{header.map((cell, cellIndex) => <th key={cellIndex} className="border border-[var(--border)] px-3 py-2 font-semibold">{renderInline(cell)}</th>)}</tr></thead><tbody>{rows.map((row, rowIndex) => <tr key={rowIndex}>{header.map((_, cellIndex) => <td key={cellIndex} className="border border-[var(--border)] px-3 py-2 align-top">{renderInline(row[cellIndex] ?? "")}</td>)}</tr>)}</tbody></table></div>);
+      blocks.push(<div key={key} className="my-6 overflow-x-auto"><table className="w-full border-collapse text-left text-sm"><thead className="bg-[var(--primary-soft)] text-[var(--ink)]"><tr>{header.map((cell, cellIndex) => <th key={cellIndex} className="border border-[var(--border)] px-3 py-2 font-semibold">{renderInline(cell, inlineImages)}</th>)}</tr></thead><tbody>{rows.map((row, rowIndex) => <tr key={rowIndex}>{header.map((_, cellIndex) => <td key={cellIndex} className="border border-[var(--border)] px-3 py-2 align-top">{renderInline(row[cellIndex] ?? "", inlineImages)}</td>)}</tr>)}</tbody></table></div>);
       continue;
     }
     const paragraph: string[] = [];
     while (index < lines.length && lines[index].trim() && !isBlockStart(lines[index], lines[index + 1])) paragraph.push(lines[index++]);
-    blocks.push(<p key={key} className="my-5">{renderInline(paragraph.join(" "))}</p>);
+    blocks.push(<p key={key} className="my-5">{renderInline(paragraph.join(" "), inlineImages)}</p>);
   }
   return blocks;
 }
 
-export function MarkdownContent({ markdown, className = "" }: { markdown: string; className?: string }) {
+export function MarkdownContent({ markdown, className = "", inlineImages = [] }: { markdown: string; className?: string; inlineImages?: ContentImage[] }) {
   if (!markdown.trim()) return null;
   const headings = getMarkdownHeadings(markdown);
-  return <div className={`markdown-content ${className}`.trim()}>{renderBlocks(markdown.replace(/\r\n?/g, "\n").split("\n"), headings)}</div>;
+  const imageMetadata = new Map(inlineImages.map((image) => [image.src, image]));
+  return <div className={`markdown-content ${className}`.trim()}>{renderBlocks(markdown.replace(/\r\n?/g, "\n").split("\n"), headings, imageMetadata)}</div>;
 }

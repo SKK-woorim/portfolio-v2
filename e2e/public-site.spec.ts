@@ -12,14 +12,35 @@ test("visitor can navigate the main public journeys", async ({ page }) => {
 test("contact page shows the configured email and collaboration visual", async ({ page }) => {
   await page.goto("/contact");
 
-  await expect(page.locator("#main-content").getByRole("link", { name: "swoorim31@gmail.com" })).toHaveAttribute(
-    "href",
-    "mailto:swoorim31@gmail.com",
-  );
+  const mailto = await page.locator("#main-content").getByRole("link", { name: "swoorim31@gmail.com" }).getAttribute("href");
+  expect(mailto).toContain("mailto:swoorim31@gmail.com?subject=");
+  expect(mailto).toContain("&body=");
 
   const collaborationVisual = page.locator('img[src*="contact-ai-collaboration"]');
   await expect(collaborationVisual).toBeVisible();
   await expect.poll(() => collaborationVisual.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+});
+
+test("keeps the blog search field inside a 320px viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/blog");
+
+  const search = page.getByRole("textbox", { name: "글 검색" });
+  await expect(search).toBeVisible();
+  const box = await search.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+});
+
+test("direct and site 404 views each expose one main landmark", async ({ page }) => {
+  await page.goto("/route-that-does-not-exist");
+  await expect(page.getByRole("heading", { level: 1, name: "페이지를 찾을 수 없습니다." })).toBeVisible();
+  await expect(page.locator("main")).toHaveCount(1);
+
+  await page.goto("/blog/route-that-does-not-exist");
+  await expect(page.getByRole("heading", { level: 1, name: "페이지를 찾을 수 없습니다." })).toBeVisible();
+  await expect(page.locator("main")).toHaveCount(1);
 });
 
 test("visitor can ask the chatbot and inspect a verified source", async ({ page }) => {
