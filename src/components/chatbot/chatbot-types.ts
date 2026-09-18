@@ -8,7 +8,9 @@ export type ChatPhase =
   | "cancelled"
   | "error";
 
-export type ChatbotRuntimeAvailability = "checking" | "enabled" | "disabled";
+export type ChatbotRuntimeAvailability = "checking" | "enabled" | "disabled" | "unavailable";
+
+export type ChatFinishReason = "stop" | "length" | "cancelled";
 
 export type ChatSourceType = "profile" | "portfolio" | "post" | "blog";
 
@@ -23,7 +25,7 @@ export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
-  delivery: "complete" | "streaming" | "cancelled" | "error";
+  delivery: "complete" | "partial" | "streaming" | "cancelled" | "error";
   sources?: ChatSource[];
   errorCode?: string;
   retryMessage?: string;

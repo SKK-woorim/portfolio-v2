@@ -52,7 +52,7 @@ function sourceTypeLabel(type: ChatSourceType) {
   return "블로그";
 }
 
-export function ChatbotSources({ sources }: { sources: ChatSource[] }) {
+export function ChatbotSources({ sources, onNavigate }: { sources: ChatSource[]; onNavigate?: () => void }) {
   const verifiedSources = sanitizeChatSources(sources);
   if (verifiedSources.length === 0) return null;
 
@@ -62,7 +62,7 @@ export function ChatbotSources({ sources }: { sources: ChatSource[] }) {
       <ul>
         {verifiedSources.map((source) => (
           <li key={`${source.id}-${source.url}`}>
-            <Link className="chatbot-source-link focus-ring" href={source.url}>
+            <Link className="chatbot-source-link focus-ring" href={source.url} onClick={onNavigate}>
               <span className="chatbot-source-id">{source.id}</span>
               <span className="chatbot-source-copy">
                 <span>{source.title}</span>

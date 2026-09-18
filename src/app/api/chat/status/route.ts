@@ -5,15 +5,17 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  let enabled = false;
   try {
-    enabled = (await getChatbotRuntimeStatus()).enabled;
+    const enabled = (await getChatbotRuntimeStatus()).enabled;
+    return Response.json(
+      { status: enabled ? "enabled" : "disabled", enabled },
+      { headers: { "Cache-Control": "no-store, max-age=0" } },
+    );
   } catch (error) {
     Sentry.captureException(error, { tags: { area: "chat-runtime-status" } });
+    return Response.json(
+      { status: "unavailable", enabled: false },
+      { status: 503, headers: { "Cache-Control": "no-store, max-age=0" } },
+    );
   }
-
-  return Response.json(
-    { enabled },
-    { headers: { "Cache-Control": "no-store, max-age=0" } },
-  );
 }

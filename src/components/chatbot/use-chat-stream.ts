@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatSseParser, type ParsedServerSentEvent } from "./chat-sse-parser";
 import { sanitizeChatSources } from "./chatbot-sources";
-import type { ChatHistoryMessage, ChatPhase, ChatSource, ChatStreamError } from "./chatbot-types";
+import type { ChatFinishReason, ChatHistoryMessage, ChatPhase, ChatSource, ChatStreamError } from "./chatbot-types";
 
 const LONG_GENERATION_DELAY_MS = 15_000;
 const CANCEL_REVEAL_DELAY_MS = 30_000;
@@ -37,7 +37,7 @@ const PHASE_RANK: Record<ChatPhase, number> = {
 type ChatStreamHandlers = {
   onSources?: (requestId: string, sources: ChatSource[]) => void;
   onToken?: (requestId: string, delta: string) => void;
-  onComplete?: (requestId: string) => void;
+  onComplete?: (requestId: string, finishReason: ChatFinishReason) => void;
   onError?: (requestId: string, error: ChatStreamError) => void;
   onCancel?: (requestId: string) => void;
 };
@@ -93,6 +93,10 @@ function parseEventData(event: ParsedServerSentEvent): Record<string, unknown> |
   } catch {
     return null;
   }
+}
+
+export function parseChatFinishReason(value: unknown): ChatFinishReason | null {
+  return value === "stop" || value === "length" || value === "cancelled" ? value : null;
 }
 
 export function useChatStream(handlers: ChatStreamHandlers = {}) {
@@ -212,6 +216,12 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
       }
 
       if (event.event === "done") {
+        const finishReason = parseChatFinishReason(data?.finishReason);
+        if (!finishReason) {
+          reachedTerminalEvent = true;
+          finishWithError(requestId, { code: "INTERNAL_ERROR", message: ERROR_MESSAGES.INTERNAL_ERROR });
+          return;
+        }
         if (!receivedToken) {
           reachedTerminalEvent = true;
           finishWithError(requestId, { code: "INTERNAL_ERROR", message: ERROR_MESSAGES.INTERNAL_ERROR });
@@ -223,10 +233,10 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
         controllerRef.current = null;
         clearTimers();
         setCanCancel(false);
-        phaseRef.current = "complete";
-        setPhase("complete");
+        phaseRef.current = finishReason === "cancelled" ? "cancelled" : "complete";
+        setPhase(phaseRef.current);
         setStatusMessage(null);
-        handlersRef.current.onComplete?.(requestId);
+        handlersRef.current.onComplete?.(requestId, finishReason);
         return;
       }
 

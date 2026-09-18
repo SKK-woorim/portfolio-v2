@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { advanceChatPhase, readChatHttpError } from "./use-chat-stream";
+import { advanceChatPhase, parseChatFinishReason, readChatHttpError } from "./use-chat-stream";
 
 describe("chat stream state", () => {
   it("allows forward progress and ignores late backward events", () => {
@@ -40,5 +40,12 @@ describe("chat stream state", () => {
       code: "INTERNAL_ERROR",
       message: "답변을 만들지 못했어요. 잠시 후 다시 시도해 주세요.",
     });
+  });
+
+  it("keeps the model finish reason explicit so length-limited answers are not marked complete", () => {
+    expect(parseChatFinishReason("stop")).toBe("stop");
+    expect(parseChatFinishReason("length")).toBe("length");
+    expect(parseChatFinishReason("cancelled")).toBe("cancelled");
+    expect(parseChatFinishReason("unknown")).toBeNull();
   });
 });

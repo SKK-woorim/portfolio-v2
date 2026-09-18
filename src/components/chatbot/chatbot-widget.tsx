@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatbotButton } from "./chatbot-button";
 import { ChatbotPanel } from "./chatbot-panel";
 import { sanitizeChatSources } from "./chatbot-sources";
-import type { ChatbotRuntimeAvailability, ChatHistoryMessage, ChatMessage, ChatStreamError } from "./chatbot-types";
+import type { ChatbotRuntimeAvailability, ChatFinishReason, ChatHistoryMessage, ChatMessage, ChatStreamError } from "./chatbot-types";
+import { runtimeAvailabilityAfterAbort, type RuntimeStatusAbortReason } from "./runtime-availability";
 import { useChatStream } from "./use-chat-stream";
 
 const STORAGE_KEY = "portfolio-chatbot-session-v2";
@@ -48,7 +49,7 @@ function restoreMessages(value: unknown): ChatMessage[] {
     if (item.content.length === 0 && !interruptedWithoutContent) continue;
 
     const storedDelivery = item.delivery;
-    const delivery = storedDelivery === "complete" || storedDelivery === "cancelled" || storedDelivery === "error"
+    const delivery = storedDelivery === "complete" || storedDelivery === "partial" || storedDelivery === "cancelled" || storedDelivery === "error"
       ? storedDelivery
       : "cancelled";
     const retryMessage = typeof item.retryMessage === "string" && item.retryMessage.length <= 500
@@ -95,6 +96,7 @@ export function ChatbotWidget() {
   const announcementSequenceRef = useRef(0);
   const submitLockRef = useRef(false);
   const isOpenRef = useRef(false);
+  const statusRequestRef = useRef<{ controller: AbortController; reason: RuntimeStatusAbortReason } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [sessionId, setSessionId] = useState("");
@@ -105,15 +107,41 @@ export function ChatbotWidget() {
   const [runtimeAvailability, setRuntimeAvailability] = useState<ChatbotRuntimeAvailability>("checking");
 
   const refreshRuntimeAvailability = useCallback(async () => {
+    const previousRequest = statusRequestRef.current;
+    if (previousRequest) {
+      previousRequest.reason = "superseded";
+      previousRequest.controller.abort();
+    }
+    const controller = new AbortController();
+    const request = { controller, reason: null as RuntimeStatusAbortReason };
+    statusRequestRef.current = request;
+    const timeout = window.setTimeout(() => {
+      if (statusRequestRef.current !== request) return;
+      request.reason = "timeout";
+      controller.abort();
+    }, 5_000);
     try {
-      const response = await fetch("/api/chat/status", { cache: "no-store", headers: { Accept: "application/json" } });
+      const response = await fetch("/api/chat/status", { cache: "no-store", headers: { Accept: "application/json" }, signal: controller.signal });
       if (!response.ok) throw new Error("Chatbot status request failed");
       const payload: unknown = await response.json();
+      const status = typeof payload === "object" && payload !== null && !Array.isArray(payload)
+        ? (payload as { status?: unknown }).status
+        : undefined;
       const enabled = typeof payload === "object" && payload !== null && !Array.isArray(payload)
         && (payload as { enabled?: unknown }).enabled === true;
-      setRuntimeAvailability(enabled ? "enabled" : "disabled");
-    } catch {
-      setRuntimeAvailability("disabled");
+      if (status === "enabled" || enabled) setRuntimeAvailability("enabled");
+      else if (status === "disabled") setRuntimeAvailability("disabled");
+      else setRuntimeAvailability("unavailable");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        const nextAvailability = runtimeAvailabilityAfterAbort(request.reason);
+        if (nextAvailability) setRuntimeAvailability(nextAvailability);
+        return;
+      }
+      setRuntimeAvailability("unavailable");
+    } finally {
+      window.clearTimeout(timeout);
+      if (statusRequestRef.current === request) statusRequestRef.current = null;
     }
   }, []);
 
@@ -131,10 +159,13 @@ export function ChatbotWidget() {
         ? { ...message, content: `${message.content}${delta}`, delivery: "streaming" }
         : message));
     },
-    onComplete(requestId) {
+    onComplete(requestId, finishReason: ChatFinishReason) {
       submitLockRef.current = false;
-      setMessages((current) => current.map((message) => message.id === requestId ? { ...message, delivery: "complete" } : message));
-      announce("챗봇 답변이 완료되었습니다.");
+      const delivery = finishReason === "length" ? "partial" : finishReason === "cancelled" ? "cancelled" : "complete";
+      setMessages((current) => current.map((message) => message.id === requestId
+        ? { ...message, content: message.content || "답변 생성을 취소했어요.", delivery }
+        : message));
+      announce(finishReason === "length" ? "답변이 길이 제한으로 일부 완료되었습니다." : finishReason === "cancelled" ? "답변 생성을 취소했습니다." : "챗봇 답변이 완료되었습니다.");
     },
     onError(requestId, error: ChatStreamError) {
       submitLockRef.current = false;
@@ -174,6 +205,15 @@ export function ChatbotWidget() {
     };
   }, [isOpen, refreshRuntimeAvailability]);
 
+  useEffect(() => () => {
+    const request = statusRequestRef.current;
+    if (request) {
+      request.reason = "unmount";
+      request.controller.abort();
+    }
+    statusRequestRef.current = null;
+  }, []);
+
   useEffect(() => {
     if (runtimeAvailability === "disabled" && stream.isBusy) stream.cancel();
   }, [runtimeAvailability, stream]);
@@ -199,11 +239,20 @@ export function ChatbotWidget() {
     };
   }, [isOpen]);
 
-  const closePanel = useCallback(() => {
+  const closePanel = useCallback((restoreFocus = true) => {
     isOpenRef.current = false;
     setIsOpen(false);
-    window.requestAnimationFrame(() => buttonRef.current?.focus({ preventScroll: true }));
+    if (restoreFocus) window.requestAnimationFrame(() => buttonRef.current?.focus({ preventScroll: true }));
   }, []);
+
+  const clearConversation = useCallback(() => {
+    if (stream.isBusy) stream.cancel();
+    submitLockRef.current = false;
+    setMessages([]);
+    setInput("");
+    setSessionId(createUuid());
+    announce("대화 기록을 지웠습니다. 새 대화를 시작할 수 있어요.");
+  }, [announce, stream]);
 
   const sendMessage = useCallback((rawMessage: string) => {
     const message = rawMessage.trim();
@@ -264,6 +313,8 @@ export function ChatbotWidget() {
           onCancel={stream.cancel}
           onRefreshStatus={() => void refreshRuntimeAvailability()}
           onClose={closePanel}
+          onClearConversation={clearConversation}
+          onNavigate={() => closePanel(false)}
         />
       ) : null}
     </>
