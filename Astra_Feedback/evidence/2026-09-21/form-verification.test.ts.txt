@@ -1,0 +1,32 @@
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { createElement } from 'react';
+import { afterEach, expect, test, vi } from 'vitest';
+const actions=vi.hoisted(()=>({savePost:vi.fn(),savePortfolio:vi.fn(),uploadMedia:vi.fn()}));
+vi.mock('@/app/admin/actions',()=>actions);
+import {PostForm} from '@/components/admin/post-form';
+import {PortfolioForm} from '@/components/admin/portfolio-form';
+const id='26ed78d5-f82c-437c-a093-a97addf70020';
+const fixture={id,title:'기존 글',slug:'existing',excerpt:'요약',summary:'요약',type:'프로젝트',status:'draft',content_json:{type:'markdown',markdown:'본문'},updated_at:'2026-09-18T00:00:00Z'};
+afterEach(()=>{cleanup();localStorage.clear();vi.resetAllMocks();});
+for(const kind of ['post','portfolio'] as const){
+ const action=()=>kind==='post'?actions.savePost:actions.savePortfolio;
+ const component=(existing=true)=>kind==='post'?createElement(PostForm,{...(existing?{post:fixture}:{}),categories:[],media:[]}):createElement(PortfolioForm,{...(existing?{item:fixture}:{}),media:[]});
+ test(`${kind}: rejected publish preserves draft status`,async()=>{
+  action().mockResolvedValue({error:'발행 실패: 중복 slug'});
+  const view=render(component());
+  fireEvent.click(view.getByRole('button',{name:'즉시 발행'}));
+  await view.findByRole('alert');
+  await new Promise(r=>setTimeout(r,80));
+  expect((view.getByLabelText('저장 상태') as HTMLSelectElement).value).toBe('draft');
+ });
+ test(`${kind}: newly saved identity survives a subsequent save error`,async()=>{
+  action().mockResolvedValueOnce({success:'저장 성공',contentId:id,updatedAt:'2026-09-21T00:00:00Z',slug:'new-item'}).mockResolvedValueOnce({error:'두 번째 저장 실패'});
+  const view=render(component(false));const form=view.container.querySelector('form')!;
+  fireEvent.submit(form);await view.findByText('저장 성공');
+  await waitFor(()=>expect((form.querySelector('[name="id"]') as HTMLInputElement).value).toBe(id));
+  fireEvent.submit(form);await view.findByRole('alert');
+  await new Promise(r=>setTimeout(r,80));
+  expect((form.querySelector('[name="id"]') as HTMLInputElement).value).toBe(id);
+ });
+}

@@ -1,0 +1,67 @@
+{
+  "checkedAt": "2026-09-21T02:14:53.792Z",
+  "base": "https://portfolio-three-chi-dgdi7wj28c.vercel.app",
+  "posts": [
+    {
+      "slug": "rag-document-pipeline",
+      "status": 200,
+      "h1": [
+        "RAG 품질은 문서 전처리에서 시작됩니다"
+      ],
+      "og": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/og.png",
+      "canonical": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/blog/rag-document-pipeline"
+    },
+    {
+      "slug": "nl2sql-workflow",
+      "status": 200,
+      "h1": [
+        "자연어 질문을 데이터 분석으로 연결하는 NL2SQL"
+      ],
+      "og": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/og.png",
+      "canonical": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/blog/nl2sql-workflow"
+    },
+    {
+      "slug": "leading-ai-projects",
+      "status": 200,
+      "h1": [
+        "AI 프로젝트를 이끌며 배운 협업의 기준"
+      ],
+      "og": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/og.png",
+      "canonical": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/blog/leading-ai-projects"
+    }
+  ],
+  "notFound": [
+    {
+      "path": "/route-that-does-not-exist",
+      "status": 404,
+      "main": 1,
+      "h1": [
+        "페이지를 찾을 수 없습니다."
+      ]
+    },
+    {
+      "path": "/blog/route-that-does-not-exist",
+      "status": 404,
+      "main": 1,
+      "h1": [
+        "페이지를 찾을 수 없습니다."
+      ]
+    }
+  ],
+  "blogTitles": [
+    "RAG 품질은 문서 전처리에서 시작됩니다",
+    "자연어 질문을 데이터 분석으로 연결하는 NL2SQL",
+    "AI 프로젝트를 이끌며 배운 협업의 기준"
+  ],
+  "homeTitles": [
+    "RAG 품질은 문서 전처리에서 시작됩니다",
+    "자연어 질문을 데이터 분석으로 연결하는 NL2SQL",
+    "AI 프로젝트를 이끌며 배운 협업의 기준"
+  ],
+  "rssItemCount": 3,
+  "sitemapBlogURLs": [
+    "https://portfolio-three-chi-dgdi7wj28c.vercel.app/blog/rag-document-pipeline",
+    "https://portfolio-three-chi-dgdi7wj28c.vercel.app/blog/nl2sql-workflow",
+    "https://portfolio-three-chi-dgdi7wj28c.vercel.app/blog/leading-ai-projects"
+  ]
+}

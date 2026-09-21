@@ -1,0 +1,5 @@
+
+> portfolio-v2@0.1.0 verify:fonts /home/ubuntu/portfolio
+> node scripts/verify-pretendard-assets.mjs
+
+Pretendard v1.3.9 assets verified: 92 local WOFF2 files referenced by the dynamic-subset stylesheet.

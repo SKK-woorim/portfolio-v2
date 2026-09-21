@@ -1,0 +1,71 @@
+
+> portfolio-v2@0.1.0 build /home/ubuntu/portfolio
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 483ms
+- Experiments (use with caution):
+  · clientTraceMetadata
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 7.0s
+  Running next.config.js provided runAfterProductionCompile ...
+✓ Completed runAfterProductionCompile in 385ms
+  Running TypeScript ...
+  Finished TypeScript in 3.6s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/30) ...
+  Generating static pages using 1 worker (7/30) 
+  Generating static pages using 1 worker (14/30) 
+  Generating static pages using 1 worker (22/30) 
+✓ Generating static pages using 1 worker (30/30) in 965ms
+  Finalizing page optimization ...
+
+Route (app)                                    Revalidate  Expire
+┌ ○ /                                                  1h      1y
+├ ○ /_not-found
+├ ○ /about                                             1h      1y
+├ ƒ /admin
+├ ○ /admin/activate
+├ ƒ /admin/chatbot
+├ ƒ /admin/login
+├ ƒ /admin/media
+├ ƒ /admin/portfolio
+├ ƒ /admin/portfolio/[id]/edit
+├ ƒ /admin/portfolio/new
+├ ƒ /admin/posts
+├ ƒ /admin/posts/[id]/edit
+├ ƒ /admin/posts/new
+├ ƒ /admin/profile
+├ ƒ /admin/settings
+├ ƒ /api/chat
+├ ƒ /api/chat/status
+├ ƒ /api/health
+├ ƒ /api/readiness
+├ ○ /blog                                              1h      1y
+├   /blog/[slug]
+│ ├ ● /blog/rag-document-pipeline                      1h      1y
+│ ├ ● /blog/nl2sql-workflow                            1h      1y
+│ └ ● /blog/leading-ai-projects                        1h      1y
+├ ƒ /contact
+├ ○ /icon.svg
+├ ○ /manifest.webmanifest
+├ ○ /portfolio                                         1h      1y
+├   /portfolio/[slug]
+│ ├ ● /portfolio/ai-agent-rag-workflows                1h      1y
+│ ├ ● /portfolio/groundwater-level-prediction          1h      1y
+│ ├ ● /portfolio/bee-guardian                          1h      1y
+│ └ ● /portfolio/text-to-3d-platform                   1h      1y
+├ ○ /robots.txt
+├ ƒ /rss.xml
+└ ○ /sitemap.xml                                       1h      1y
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

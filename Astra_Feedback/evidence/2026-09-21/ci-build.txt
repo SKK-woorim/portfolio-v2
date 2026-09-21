@@ -1,0 +1,29 @@
+▲ Next.js 16.3.0 (webpack)
+✓ Running next.config.ts took 495ms
+- Experiments (use with caution):
+  · clientTraceMetadata
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 19.0s
+  Running TypeScript ...
+  Finished TypeScript in 3.6s ...
+  Collecting page data using 1 worker ...
+Error [ContentRepositoryError]: 공개 콘텐츠를 불러오지 못했습니다: post-list
+    at s (.next/server/app/rss.xml/route.js:4:1136)
+    at E.tags (.next/server/app/rss.xml/route.js:4:5804)
+    at <unknown> (.next/server/chunks/5974.js:1:12407)
+    at async u (.next/server/app/(site)/blog/[slug]/page.js:1:3570) {
+  area: 'post-list',
+  [cause]: Error: Supabase public content configuration is missing
+      at s (.next/server/app/rss.xml/route.js:4:1144)
+      at E.tags (.next/server/app/rss.xml/route.js:4:5804)
+      at <unknown> (.next/server/chunks/5974.js:1:12407)
+      at async u (.next/server/app/(site)/blog/[slug]/page.js:1:3570)
+}
+
+> Build error occurred
+Error: Failed to collect page data for /blog/[slug]
+    at ignore-listed frames {
+  type: 'Error'
+}

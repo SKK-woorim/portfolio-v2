@@ -1,0 +1,53 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "length": 84127,
+    "contentType": "text/html; charset=utf-8",
+    "blogOccurrences": 4
+  },
+  {
+    "path": "/blog",
+    "status": 200,
+    "length": 26631,
+    "contentType": "text/html; charset=utf-8",
+    "blogOccurrences": 1
+  },
+  {
+    "path": "/blog/rag-document-pipeline",
+    "status": 200,
+    "length": 35734,
+    "contentType": "text/html; charset=utf-8",
+    "blogOccurrences": 10
+  },
+  {
+    "path": "/api/readiness",
+    "status": 200,
+    "length": 139,
+    "contentType": "application/json",
+    "blogOccurrences": 0,
+    "body": {
+      "status": "ready",
+      "components": {
+        "supabaseConfig": "ready",
+        "publishedContent": "ready",
+        "chatbotRelay": "disabled",
+        "chatbotBackend": "disabled"
+      }
+    }
+  },
+  {
+    "path": "/rss.xml",
+    "status": 200,
+    "length": 1300,
+    "contentType": "application/rss+xml; charset=utf-8",
+    "blogOccurrences": 2
+  },
+  {
+    "path": "/sitemap.xml",
+    "status": 200,
+    "length": 1534,
+    "contentType": "application/xml",
+    "blogOccurrences": 1
+  }
+]

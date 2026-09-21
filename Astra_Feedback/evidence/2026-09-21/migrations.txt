@@ -1,0 +1,5 @@
+
+> portfolio-v2@0.1.0 verify:migrations /home/ubuntu/portfolio
+> node scripts/verify-migration-contracts.mjs
+
+Migration contracts verified across 13 forward SQL files.

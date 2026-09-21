@@ -1,0 +1,36 @@
+
+> portfolio-v2@0.1.0 test /home/ubuntu/portfolio
+> vitest run
+
+
+ RUN  v4.1.10 /home/ubuntu/portfolio
+
+ ❯ src/components/admin/content-forms.test.ts (4 tests | 1 failed) 839ms
+     × synchronizes the status select after a successful publish 83ms
+Not implemented: navigation to another Document
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/admin/content-forms.test.ts > PostForm > synchronizes the status select after a successful publish
+AssertionError: expected 'draft' to be 'published' // Object.is equality
+
+Expected: "published"
+Received: "draft"
+
+ ❯ src/components/admin/content-forms.test.ts:96:71
+     94|
+     95|     await waitFor(() => expect(view.getByText("게시글을 발행했습니다.")).toBeTru…
+     96|     expect((view.getByLabelText("저장 상태") as HTMLSelectElement).value).…
+       |                                                                       ^
+     97|   });
+     98| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 34 passed (35)
+      Tests  1 failed | 168 passed (169)
+   Start at  02:09:21
+   Duration  23.54s (transform 963ms, setup 0ms, import 4.39s, tests 7.08s, environment 6.48s)
+
+ ELIFECYCLE  Test failed. See above for more details.

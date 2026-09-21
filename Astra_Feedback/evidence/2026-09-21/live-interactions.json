@@ -1,0 +1,33 @@
+{
+  "home": {
+    "headline": "안녕하세요.",
+    "firstProjectY": 1500.6875,
+    "selectedSectionY": 1025.9375
+  },
+  "card": {
+    "before": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/portfolio",
+    "after": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/portfolio"
+  },
+  "searchBox": {
+    "x": 76,
+    "y": 613.625,
+    "width": 194,
+    "height": 24
+  },
+  "search": {
+    "value": "RAG",
+    "url": "https://portfolio-three-chi-dgdi7wj28c.vercel.app/blog?q=RAG"
+  },
+  "mailto": "mailto:swoorim31@gmail.com?subject=RAG%20%ED%92%88%EC%A7%88%EC%9D%80%20%EB%AC%B8%EC%84%9C%20%EC%A0%84%EC%B2%98%EB%A6%AC%EC%97%90%EC%84%9C%20%EC%8B%9C%EC%9E%91%EB%90%A9%EB%8B%88%EB%8B%A4%20%EA%B4%80%EB%A0%A8%20%ED%98%91%EC%97%85%20%EB%AC%B8%EC%9D%98&body=%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94.%0A%0ARAG%20%ED%92%88%EC%A7%88%EC%9D%80%20%EB%AC%B8%EC%84%9C%20%EC%A0%84%EC%B2%98%EB%A6%AC%EC%97%90%EC%84%9C%20%EC%8B%9C%EC%9E%91%EB%90%A9%EB%8B%88%EB%8B%A4(%2Fblog%2Frag-document-pipeline)%EC%9D%84%20%EC%9D%BD%EA%B3%A0%20%EB%AC%B8%EC%9D%98%EB%93%9C%EB%A6%BD%EB%8B%88%EB%8B%A4.%0A%0A%EB%AC%B8%EC%9D%98%20%EB%82%B4%EC%9A%A9%3A%0A",
+  "chatBefore": {
+    "focus": "포트폴리오 챗봇 닫기",
+    "inside": true,
+    "locked": true,
+    "text": "포트폴리오 AI연결 상태를 확인하고 있어요챗봇 연결 상태를 확인하고 있어요."
+  },
+  "chatAfter": {
+    "dialogs": 0,
+    "locked": false,
+    "focus": "MAIN"
+  }
+}

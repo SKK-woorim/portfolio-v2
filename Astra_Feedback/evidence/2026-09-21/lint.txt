@@ -1,0 +1,4 @@
+
+> portfolio-v2@0.1.0 lint /home/ubuntu/portfolio
+> eslint .
+

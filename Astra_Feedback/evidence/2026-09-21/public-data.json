@@ -1,0 +1,72 @@
+{
+  "checkedAt": "2026-09-21T02:14:14.316Z",
+  "posts": {
+    "status": 200,
+    "error": null,
+    "items": [
+      {
+        "slug": "rag-document-pipeline",
+        "title": "RAG 품질은 문서 전처리에서 시작됩니다",
+        "characters": 140,
+        "cover": null,
+        "inlineMediaCount": 0
+      },
+      {
+        "slug": "nl2sql-workflow",
+        "title": "자연어 질문을 데이터 분석으로 연결하는 NL2SQL",
+        "characters": 134,
+        "cover": null,
+        "inlineMediaCount": 0
+      },
+      {
+        "slug": "leading-ai-projects",
+        "title": "AI 프로젝트를 이끌며 배운 협업의 기준",
+        "characters": 120,
+        "cover": null,
+        "inlineMediaCount": 0
+      }
+    ]
+  },
+  "projects": {
+    "status": 200,
+    "error": null,
+    "items": [
+      {
+        "slug": "text-to-3d-platform",
+        "title": "T2G — Text to 3D",
+        "characters": 98,
+        "linkCount": 0,
+        "mediaCount": 0
+      },
+      {
+        "slug": "groundwater-level-prediction",
+        "title": "지하수 수위 예측 AI 모델",
+        "characters": 134,
+        "linkCount": 0,
+        "mediaCount": 0
+      },
+      {
+        "slug": "ai-agent-rag-workflows",
+        "title": "AI Agent & RAG 워크플로우",
+        "characters": 237,
+        "linkCount": 0,
+        "mediaCount": 0
+      },
+      {
+        "slug": "bee-guardian",
+        "title": "꿀벌지키미",
+        "characters": 121,
+        "linkCount": 0,
+        "mediaCount": 0
+      }
+    ]
+  },
+  "profile": {
+    "status": 200,
+    "data": {
+      "headline": "안녕하세요.",
+      "bio": "송경근입니다.",
+      "social_links": []
+    }
+  }
+}

@@ -1,0 +1,4 @@
+
+> portfolio-v2@0.1.0 typecheck /home/ubuntu/portfolio
+> tsc --noEmit
+

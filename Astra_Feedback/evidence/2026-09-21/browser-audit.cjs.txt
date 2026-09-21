@@ -1,0 +1,51 @@
+const {chromium}=require('@playwright/test');
+const fs=require('node:fs');
+const dir='tmp/astra-recheck-2026-09-21';
+const base=process.env.AUDIT_BASE_URL||'https://portfolio-three-chi-dgdi7wj28c.vercel.app';
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const results=[];
+ for(const theme of ['light','dark']){
+  const ctx=await browser.newContext({viewport:{width:1440,height:1000},colorScheme:theme});
+  await ctx.addInitScript(t=>localStorage.setItem('portfolio-color-theme',t),theme);
+  const page=await ctx.newPage();
+  for(const route of ['/','/about','/portfolio','/portfolio/ai-agent-rag-workflows','/blog','/blog/rag-document-pipeline','/contact']){
+   const response=await page.goto(base+route,{waitUntil:'networkidle'});
+   await page.addScriptTag({path:'/tmp/astra-audit-tools/node_modules/axe-core/axe.min.js'});
+   const a=await page.evaluate(async()=>{
+    const axeResult=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','best-practice']}});
+    return {h1:[...document.querySelectorAll('h1')].map(x=>x.textContent),main:document.querySelectorAll('main').length,
+      violations:axeResult.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({html:n.html,target:n.target,summary:n.failureSummary,checks:n.any.map(a=>({id:a.id,data:a.data}))}))})),
+      projectCTAs:[...document.querySelectorAll('.project-card')].map(c=>({title:c.querySelector('h3')?.textContent,cta:c.lastElementChild?.lastElementChild?.outerHTML,links:c.querySelectorAll('a').length})),
+      postTitles:[...document.querySelectorAll('.post-card h3')].map(e=>e.textContent),
+      selectedCategory:document.querySelector('a[aria-current="page"][href="/blog"]')?.outerHTML};
+   });
+   results.push({theme,route,status:response.status(),...a});
+   if(route==='/'||route==='/portfolio/ai-agent-rag-workflows')await page.screenshot({path:`${dir}/live-${route==='/'?'home':'project'}-${theme}.png`,fullPage:true});
+   console.log(JSON.stringify({theme,route,status:response.status(),violations:a.violations.map(v=>({id:v.id,count:v.nodes.length}))}));
+  }
+  await ctx.close();
+ }
+ fs.writeFileSync(`${dir}/live-accessibility.json`,JSON.stringify(results,null,2));
+ const ctx=await browser.newContext({viewport:{width:390,height:844},colorScheme:'light'});
+ const page=await ctx.newPage();const interactions={};
+ await page.goto(base+'/',{waitUntil:'networkidle'});
+ interactions.home=await page.evaluate(()=>({headline:document.querySelector('h1')?.textContent,firstProjectY:document.querySelector('.project-card h3')?.getBoundingClientRect().top,selectedSectionY:[...document.querySelectorAll('h2')].find(e=>e.textContent.includes('AI와 데이터로'))?.getBoundingClientRect().top}));
+ await page.screenshot({path:`${dir}/live-home-mobile.png`,fullPage:true});
+ await page.goto(base+'/portfolio',{waitUntil:'networkidle'});
+ const fake=page.locator('.project-card').first().getByText('프로젝트 상세 보기',{exact:true});
+ interactions.card={before:page.url()};await fake.click();await page.waitForTimeout(500);interactions.card.after=page.url();
+ await page.setViewportSize({width:320,height:800});await page.goto(base+'/blog',{waitUntil:'networkidle'});
+ interactions.searchBox=await page.getByRole('textbox',{name:'글 검색'}).boundingBox();
+ await page.screenshot({path:`${dir}/live-blog-320.png`,fullPage:true});
+ const search=page.getByRole('textbox',{name:'글 검색'});await search.pressSequentially('RAG',{delay:20});await page.waitForTimeout(600);interactions.search={value:await search.inputValue(),url:page.url()};
+ await page.goto(base+'/contact?from=blog&slug=rag-document-pipeline',{waitUntil:'networkidle'});
+ interactions.mailto=await page.locator('main a[href^="mailto:"]').getAttribute('href');
+ await page.goto(base+'/',{waitUntil:'networkidle'});
+ await page.getByRole('button',{name:'포트폴리오 챗봇 열기'}).click();await page.waitForTimeout(500);
+ interactions.chatBefore=await page.evaluate(()=>({focus:document.activeElement?.getAttribute('aria-label'),inside:document.querySelector('[role="dialog"]')?.contains(document.activeElement),locked:document.body.classList.contains('chatbot-scroll-locked'),text:document.querySelector('[role="dialog"]')?.textContent}));
+ await page.getByRole('link',{name:'소개 보기',exact:true}).click();await page.waitForURL('**/about');await page.waitForTimeout(300);
+ interactions.chatAfter=await page.evaluate(()=>({dialogs:document.querySelectorAll('[role="dialog"]').length,locked:document.body.classList.contains('chatbot-scroll-locked'),focus:document.activeElement?.tagName}));
+ fs.writeFileSync(`${dir}/live-interactions.json`,JSON.stringify(interactions,null,2));console.log(JSON.stringify(interactions));
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

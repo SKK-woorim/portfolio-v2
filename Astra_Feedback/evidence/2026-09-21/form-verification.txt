@@ -1,0 +1,53 @@
+
+ RUN  v4.1.10 /home/ubuntu/portfolio
+
+ ❯ tmp/astra-recheck-2026-09-21/form-verification.test.ts (4 tests | 4 failed) 863ms
+   × post: rejected publish preserves draft status 385ms
+   × post: newly saved identity survives a subsequent save error 164ms
+   × portfolio: rejected publish preserves draft status 174ms
+   × portfolio: newly saved identity survives a subsequent save error 139ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tmp/astra-recheck-2026-09-21/form-verification.test.ts > post: rejected publish preserves draft status
+ FAIL  tmp/astra-recheck-2026-09-21/form-verification.test.ts > portfolio: rejected publish preserves draft status
+AssertionError: expected 'published' to be 'draft' // Object.is equality
+
+Expected: "draft"
+Received: "published"
+
+ ❯ tmp/astra-recheck-2026-09-21/form-verification.test.ts:21:69
+     19|   await view.findByRole('alert');
+     20|   await new Promise(r=>setTimeout(r,80));
+     21|   expect((view.getByLabelText('저장 상태') as HTMLSelectElement).value).to…
+       |                                                                     ^
+     22|  });
+     23|  test(`${kind}: newly saved identity survives a subsequent save error`…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tmp/astra-recheck-2026-09-21/form-verification.test.ts > post: newly saved identity survives a subsequent save error
+ FAIL  tmp/astra-recheck-2026-09-21/form-verification.test.ts > portfolio: newly saved identity survives a subsequent save error
+AssertionError: expected '' to be '26ed78d5-f82c-437c-a093-a97addf70020' // Object.is equality
+
+- Expected
++ Received
+
+- 26ed78d5-f82c-437c-a093-a97addf70020
+
+ ❯ tmp/astra-recheck-2026-09-21/form-verification.test.ts:30:73
+     28|   fireEvent.submit(form);await view.findByRole('alert');
+     29|   await new Promise(r=>setTimeout(r,80));
+     30|   expect((form.querySelector('[name="id"]') as HTMLInputElement).value…
+       |                                                                         ^
+     31|  });
+     32| }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  02:12:18
+   Duration  2.31s (transform 221ms, setup 0ms, import 462ms, tests 863ms, environment 797ms)
+

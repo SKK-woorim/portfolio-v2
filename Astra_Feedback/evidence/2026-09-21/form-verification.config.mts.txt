@@ -1,0 +1,2 @@
+import {defineConfig} from 'vitest/config';
+export default defineConfig({resolve:{alias:{'@':'/home/ubuntu/portfolio/src'}},test:{environment:'jsdom',include:['tmp/astra-recheck-2026-09-21/form-verification.test.ts']}});
