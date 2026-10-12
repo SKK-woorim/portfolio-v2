@@ -10,6 +10,10 @@ import { CONTENT_CACHE_TAGS, type BlogPost, type ContentImage, type PortfolioIte
 import { getSupabaseConfig, hasSupabaseConfig } from "@/lib/supabase/config";
 
 const PUBLIC_CONTENT_REVALIDATE_SECONDS = 3600;
+const MONTH_PRECISION_PORTFOLIO_SLUGS = new Set([
+  "yonsei-medical-data-platform",
+  "samsung-sdi-multi-agent-mlops-poc",
+]);
 
 function createPublicClient() {
   const { url, publishableKey } = getSupabaseConfig();
@@ -96,9 +100,11 @@ function extractText(value: unknown): string[] {
   return node.type === "paragraph" && children.length ? [children.join("")] : children;
 }
 
-function toPeriod(startDate: string | null, endDate: string | null) {
-  const start = startDate?.slice(0, 4);
-  const end = endDate?.slice(0, 4);
+function toPeriod(startDate: string | null, endDate: string | null, includeMonths = false) {
+  const dateLength = includeMonths ? 7 : 4;
+  const formatDate = (value: string | null) => value?.slice(0, dateLength).replace("-", ".");
+  const start = formatDate(startDate);
+  const end = formatDate(endDate);
   if (!start) return "기간 미정";
   return end && end !== start ? `${start} — ${end}` : start;
 }
@@ -141,7 +147,7 @@ function toPortfolioItem(row: PortfolioRow, includeContent: boolean): PortfolioI
     slug: row.slug,
     title: row.title,
     type: row.type,
-    period: toPeriod(row.start_date, row.end_date),
+    period: toPeriod(row.start_date, row.end_date, MONTH_PRECISION_PORTFOLIO_SLUGS.has(row.slug)),
     summary: row.summary,
     body: includeContent ? (row.content_text?.trim() ? [row.content_text.trim()] : extractText(row.content_json)) : [],
     contentMarkdown: includeContent ? contentToMarkdown(row.content_json) : undefined,

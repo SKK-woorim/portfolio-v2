@@ -1,0 +1,49 @@
+{
+  "displayName": "송경근",
+  "roleTitle": "AI Agent · 데이터 플랫폼 엔지니어",
+  "headline": "데이터를 옮기고, 지식을 연결하고, 현장에서 쓰이는 AI를 만듭니다.",
+  "bio": "미소정보기술 기술융합본부 기술사업1팀에서 전임·팀원으로 일하며 데이터 이관, AI Agent·RAG 워크플로우, MLOps 연계와 현장 교육을 직접 맡고 있습니다. 고객의 데이터 환경과 검증 범위를 먼저 확인하고, 구축부터 기술 이전·운영 준비까지 이어지는 흐름을 만듭니다.",
+  "skills": [
+    "Python",
+    "SQL",
+    "ClickHouse",
+    "데이터 이관·ETL",
+    "AI Agent",
+    "RAG",
+    "Multi-Agent",
+    "MLOps",
+    "Dify",
+    "온톨로지",
+    "SHAP·XAI",
+    "GPU·MIG·VDI"
+  ],
+  "currentCareer": {
+    "company": "미소정보기술",
+    "organization": "기술융합본부 기술사업1팀",
+    "employment": "전임·팀원",
+    "description": "실무에서 직접 맡은 데이터 플랫폼 구축, AI Agent·RAG 연계, 기술 이전과 교육 경험을 바탕으로 현장에서 검증 가능한 흐름을 만듭니다."
+  },
+  "strengths": [
+    "대용량 데이터의 이관 경로와 정합성 검증 기준을 함께 설계하기",
+    "모델·지식·업무 도구를 Agent 워크플로우로 연결하고 입력과 한계를 명확히 하기",
+    "장애 원인을 로그와 데이터 관계로 좁히고, 매뉴얼·교육·개발 협업으로 다음 사용까지 이어가기"
+  ],
+  "projects": [
+    {
+      "slug": "yonsei-medical-data-platform",
+      "title": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축",
+      "period": "2025.09 — 2026.02",
+      "customer": "연세대학교 AI혁신연구원",
+      "role": "3명 중 팀원 · 데이터 수집·구축, 기술 이전·교육 담당",
+      "summary": "약 30억 건·1.3TB의 의료데이터를 2일 만에 ClickHouse 기반 자사 DB로 이관하고, 26개 테이블 정합성 검증과 분석 솔루션·MIG 기반 GPU 분할 할당 VDI 구축 지원, 사용자·관리자 교육을 담당했습니다."
+    },
+    {
+      "slug": "samsung-sdi-multi-agent-mlops-poc",
+      "title": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC",
+      "period": "2026.07 — 2026.08",
+      "customer": "삼성SDI",
+      "role": "3명 중 팀원 · Agent 영역 단독 담당",
+      "summary": "실제 2주 안에 SHAP 기반 XAI 모델 MLOps 연계부터 공정 온톨로지·RAG·Multi-Agent 분석 파이프라인과 고객사 교육까지 Agent 영역을 완료했습니다."
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "status": "published",
+  "editorialNotes": {
+    "source": "사용자 제공 경력 원자료",
+    "publicScope": "회사·고객·기간·팀·담당 범위와 검증 한계를 공개하되, 원본 환자·공정 데이터·고객 로고·스크린샷은 포함하지 않는다.",
+    "dateStorageConvention": "DB date 필드는 월 단위 표기를 보존하기 위한 기술적 범위값이다. 본문과 UI에는 월 단위만 표시하며, 저장된 일을 사용자의 실제 일자로 표현하지 않는다.",
+    "publicationRule": "두 항목을 신규 게시하고 기존 published 항목의 내용·상태는 유지한다. 대표 이미지와 외부 링크는 사용하지 않는다.",
+    "sortOrderRule": "신규 항목을 0·1로 두고 기존 published 항목의 sort_order는 각각 2씩 이동해 기존 상대 순서를 보존한다."
+  },
+  "profileFile": "data/content/profile.json",
+  "projects": [
+    {
+      "slug": "yonsei-medical-data-platform",
+      "title": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축",
+      "type": "데이터 플랫폼 구축",
+      "summary": "약 30억 건·1.3TB의 의료데이터를 2일 만에 ClickHouse 기반 자사 DB로 이관하고, 26개 테이블 정합성 검증과 분석 솔루션·MIG 기반 GPU 분할 할당 VDI 구축 지원, 사용자·관리자 교육을 담당했습니다.",
+      "customer": "연세대학교 AI혁신연구원",
+      "company": "미소정보기술",
+      "period": "2025.09 — 2026.02",
+      "startDate": "2025-09-01",
+      "endDate": "2026-02-28",
+      "team": "3명 중 팀원",
+      "role": "데이터 수집·구축, 기술 이전·교육 담당",
+      "status": "published",
+      "sortOrder": 1,
+      "isFeatured": true,
+      "tags": ["데이터 이관", "ClickHouse", "의료데이터", "MIG", "VDI", "기술 이전"],
+      "contentFile": "data/portfolio/yonsei-medical-data-platform.md",
+      "coverMediaId": null,
+      "inlineMediaIds": [],
+      "links": []
+    },
+    {
+      "slug": "samsung-sdi-multi-agent-mlops-poc",
+      "title": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC",
+      "type": "AI Agent·MLOps PoC",
+      "summary": "실제 2주 안에 SHAP 기반 XAI 모델 MLOps 연계부터 공정 온톨로지·RAG·Multi-Agent 분석 파이프라인과 고객사 교육까지 Agent 영역을 완료했습니다.",
+      "customer": "삼성SDI",
+      "company": "미소정보기술",
+      "period": "2026.07 — 2026.08",
+      "startDate": "2026-07-01",
+      "endDate": "2026-08-31",
+      "team": "3명 중 팀원",
+      "role": "Agent 영역 단독 담당: XAI 모델 배포 연계, 온톨로지·RAG·Multi-Agent 워크플로우, 교육",
+      "status": "published",
+      "sortOrder": 0,
+      "isFeatured": true,
+      "tags": ["Multi-Agent", "MLOps", "SHAP", "RAG", "온톨로지", "Dify"],
+      "contentFile": "data/portfolio/samsung-sdi-multi-agent-mlops-poc.md",
+      "coverMediaId": null,
+      "inlineMediaIds": [],
+      "links": []
+    }
+  ]
+}
