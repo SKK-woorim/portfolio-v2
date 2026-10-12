@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { RefreshCw, Send, Sparkles, Trash2, X } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { ChatbotMessage } from "./chatbot-message";
 import { ChatbotStatus } from "./chatbot-status";
 import type { ChatbotRuntimeAvailability, ChatMessage, ChatPhase } from "./chatbot-types";
@@ -17,6 +17,8 @@ type ChatbotPanelProps = {
   runtimeAvailability: ChatbotRuntimeAvailability;
   announcement: string;
   suggestedQuestions: readonly string[];
+  /** 답변 대기가 길어질 때 헤더 아래로 내려오는 안내. */
+  slowNotice?: ReactNode;
   onInputChange: (value: string) => void;
   onSubmit: (message: string) => void;
   onRetry: (message: string) => void;
@@ -50,6 +52,7 @@ export function ChatbotPanel({
   runtimeAvailability,
   announcement,
   suggestedQuestions,
+  slowNotice,
   onInputChange,
   onSubmit,
   onRetry,
@@ -180,6 +183,7 @@ export function ChatbotPanel({
             </button>
           </div>
         </header>
+        <div className="chatbot-panel-notice">{slowNotice}</div>
 
         <div ref={messageListRef} className="chatbot-message-list" onScroll={handleMessageListScroll}>
           {isChecking ? (

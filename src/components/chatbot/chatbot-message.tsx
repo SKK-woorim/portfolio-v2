@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
 import { ChatbotSources } from "./chatbot-sources";
+import { CitedText } from "./cited-text";
 import type { ChatMessage } from "./chatbot-types";
 
 type ChatbotMessageProps = {
@@ -24,7 +25,7 @@ export function ChatbotMessage({ message, onRetry, onNavigate }: ChatbotMessageP
       aria-label={isAssistant ? "챗봇 답변" : "사용자 질문"}
     >
       <div className="chatbot-message-bubble">
-        <p>{message.content}</p>
+        <p>{isAssistant ? <CitedText text={message.content} /> : message.content}</p>
         {message.delivery === "cancelled" ? <small className="chatbot-message-note">생성이 취소된 답변입니다.</small> : null}
         {message.delivery === "partial" ? <small className="chatbot-message-note">답변이 길이 제한으로 일부만 표시되었습니다.</small> : null}
       </div>

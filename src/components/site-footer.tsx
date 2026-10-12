@@ -11,15 +11,16 @@ export function SiteFooter({ profile }: { profile: SiteProfile }) {
           <p className="mt-3 max-w-sm text-sm leading-6 text-[var(--body)]">{profile.headline}</p>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]">Navigate</p>
+          <p className="text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]">메뉴</p>
           <div className="mt-4 grid gap-3 text-sm text-[var(--body)]">
             <Link href="/portfolio" className="focus-ring hover:text-[var(--primary)]">포트폴리오</Link>
             <Link href="/blog" className="focus-ring hover:text-[var(--primary)]">블로그</Link>
             <Link href="/about" className="focus-ring hover:text-[var(--primary)]">소개</Link>
+            <Link href="/contact" className="focus-ring hover:text-[var(--primary)]">연락처</Link>
           </div>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]">Contact</p>
+          <p className="text-xs font-bold uppercase tracking-[.08em] text-[var(--muted)]">연락</p>
           <a className="focus-ring mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[var(--primary)]" href={`mailto:${profile.email}`}>{profile.email} <ArrowUpRight size={15} /></a>
           <div className="mt-4 flex gap-4 text-sm text-[var(--body)]">
             {profile.socialLinks.map((link) => <a className="focus-ring hover:text-[var(--primary)]" href={link.href} key={link.label} target="_blank" rel="noreferrer">{link.label}</a>)}

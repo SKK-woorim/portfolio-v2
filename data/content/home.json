@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "editorialNotes": {
+    "highlights": "히어로 아래 근거 줄. 공개된 프로젝트 본문에 있는 수치와 이력만 쓴다.",
+    "chatSuggestions": "히어로 콘솔과 챗봇 패널의 추천 질문."
+  },
+  "highlights": [
+    { "value": "1.3TB · 2일", "label": "약 30억 건 의료데이터 이관 · 연세대학교 AI혁신연구원" },
+    { "value": "2주", "label": "삼성SDI Multi-Agent PoC · Agent 영역 단독 담당" },
+    { "value": "Bronze Award", "label": "2024 Global Capstone Design · 꿀벌지키미" }
+  ],
+  "chatSuggestions": [
+    "데이터 이관 경험이 궁금해요",
+    "삼성SDI PoC에서 맡은 역할은?",
+    "주요 기술 스택이 궁금해요",
+    "어떤 분야의 협업이 가능한가요?"
+  ]
+}

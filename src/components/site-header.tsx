@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CommandPaletteTrigger } from "@/components/command-palette";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
@@ -57,8 +58,9 @@ export function SiteHeader({ name }: { name: string }) {
           {navigation.map((item) => { const active = isCurrentPath(item.href); return <Link aria-current={active ? "page" : undefined} className={cn("focus-ring rounded-sm text-sm font-medium transition-colors hover:text-[var(--ink)]", active ? "font-bold text-[var(--primary)] underline decoration-2 underline-offset-8" : "text-[var(--body)]")} href={item.href} key={item.href}>{item.label}</Link>; })}
         </nav>
         <div className="flex items-center gap-2">
+          <CommandPaletteTrigger />
           <ThemeToggle />
-          <Link href="/contact" className="focus-ring hidden min-h-10 items-center rounded-full bg-[#2f83e7] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4c9cf4] md:inline-flex">협업 문의</Link>
+          <Link href="/contact" className="solid-primary-cta focus-ring hidden min-h-10 items-center rounded-full px-4 text-sm font-semibold transition-colors md:inline-flex">협업 문의</Link>
           <button ref={menuButtonRef} type="button" className="theme-control focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border md:hidden" onClick={() => open ? closeMenu() : setOpen(true)} aria-label={open ? "메뉴 닫기" : "메뉴 열기"} aria-expanded={open} aria-controls="mobile-menu">
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>

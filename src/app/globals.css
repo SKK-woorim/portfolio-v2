@@ -27,6 +27,7 @@ body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
+  --font-mono: var(--font-martian, ui-monospace), "Pretendard Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -84,6 +85,17 @@ body {
   --cta-solid-hover: #08447f;
   --outline-border: rgba(255, 255, 255, .6);
   --outline-hover: rgba(255, 255, 255, .1);
+  --primary-rgb: 117 182 255;
+  --ink-rgb: 245 249 255;
+  --canvas-rgb: 6 20 38;
+  --water-rgb: 79 214 230;
+  --hive-rgb: 244 183 64;
+  --clay-rgb: 255 140 120;
+  --danger-rgb: 255 112 112;
+  --ok-rgb: 59 213 138;
+  --console-bg: rgba(8, 30, 57, .8);
+  --visual-bg: linear-gradient(160deg, #0d2747, #081a31 70%);
+  --elevated-shadow: 0 30px 80px rgba(0, 7, 18, .5);
   min-height: 100vh;
   overflow: clip;
   background: var(--canvas);
@@ -119,6 +131,17 @@ html[data-site-theme="light"] .site-theme {
   --cta-solid-hover: #0d4b8f;
   --outline-border: rgba(20, 99, 195, .42);
   --outline-hover: rgba(20, 99, 195, .08);
+  --primary-rgb: 12 95 189;
+  --ink-rgb: 11 29 53;
+  --canvas-rgb: 247 250 255;
+  --water-rgb: 6 128 148;
+  --hive-rgb: 176 112 0;
+  --clay-rgb: 205 74 50;
+  --danger-rgb: 205 45 45;
+  --ok-rgb: 22 150 90;
+  --console-bg: rgba(255, 255, 255, .86);
+  --visual-bg: linear-gradient(160deg, #f1f7ff, #e3eefb 70%);
+  --elevated-shadow: 0 30px 70px rgba(46, 87, 134, .16);
   color-scheme: light;
 }
 
@@ -263,7 +286,7 @@ body.chatbot-scroll-locked { overflow: hidden; }
   display: grid;
   width: min(420px, calc(100vw - 48px));
   height: min(650px, calc(100dvh - 128px));
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--border) 85%, white 15%);
   border-radius: 28px;

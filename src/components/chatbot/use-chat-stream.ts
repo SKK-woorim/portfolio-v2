@@ -5,9 +5,7 @@ import { ChatSseParser, type ParsedServerSentEvent } from "./chat-sse-parser";
 import { sanitizeChatSources } from "./chatbot-sources";
 import type { ChatFinishReason, ChatHistoryMessage, ChatPhase, ChatSource, ChatStreamError } from "./chatbot-types";
 
-const LONG_GENERATION_DELAY_MS = 15_000;
 const CANCEL_REVEAL_DELAY_MS = 30_000;
-const LONG_GENERATION_MESSAGE = "로컬 AI가 답변을 생성 중이에요. 조금만 기다려 주세요.";
 
 const ERROR_MESSAGES: Record<string, string> = {
   INVALID_REQUEST: "질문 내용을 확인해 주세요.",
@@ -107,7 +105,6 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
   const phaseRef = useRef<ChatPhase>("idle");
   const activeRequestIdRef = useRef<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
-  const longGenerationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cancelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -115,9 +112,7 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
   }, [handlers]);
 
   const clearTimers = useCallback(() => {
-    if (longGenerationTimerRef.current) clearTimeout(longGenerationTimerRef.current);
     if (cancelTimerRef.current) clearTimeout(cancelTimerRef.current);
-    longGenerationTimerRef.current = null;
     cancelTimerRef.current = null;
   }, []);
 
@@ -189,14 +184,8 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
             : null;
         if (!nextPhase || !moveForward(nextPhase)) return;
 
+        // 긴 대기 안내는 use-chat-progress의 6초 슬라이드 안내가 맡는다.
         if (typeof data.message === "string" && data.message.trim()) setStatusMessage(data.message.trim().slice(0, 300));
-        if (nextPhase === "generating" && !longGenerationTimerRef.current) {
-          longGenerationTimerRef.current = setTimeout(() => {
-            if (activeRequestIdRef.current === requestId && phaseRef.current === "generating") {
-              setStatusMessage(LONG_GENERATION_MESSAGE);
-            }
-          }, LONG_GENERATION_DELAY_MS);
-        }
         return;
       }
 
@@ -208,8 +197,6 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
       if (event.event === "token" && data && typeof data.delta === "string") {
         if (!data.delta || !moveForward("streaming")) return;
         receivedToken = true;
-        if (longGenerationTimerRef.current) clearTimeout(longGenerationTimerRef.current);
-        longGenerationTimerRef.current = null;
         setStatusMessage(null);
         handlersRef.current.onToken?.(requestId, data.delta);
         return;

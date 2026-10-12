@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "editorialNotes": {
+    "purpose": "포트폴리오 카드와 상세 화면의 썸네일 도식, 지표 문구, 사실 칩을 정한다. 항목이 없는 프로젝트는 slug 기반 기본 패턴을 쓴다.",
+    "factRule": "지표와 사실 칩에는 공개 본문에 있는 내용만 쓴다. 도식 속 곡선·장면은 연출용이다.",
+    "visuals": ["multi-agent", "migration", "pipeline", "timeseries", "detection", "mesh", "pattern"],
+    "roadmap": "관리자 화면에서 고르는 기능은 로드맵 N31에서 DB 필드로 옮긴다."
+  },
+  "projects": {
+    "samsung-sdi-multi-agent-mlops-poc": {
+      "visual": "multi-agent",
+      "label": "SHAP → 온톨로지·RAG → 대책",
+      "metric": { "value": "2주", "label": "실제 PoC 기간" },
+      "facts": [
+        { "kind": "role", "text": "3명 중 팀원 · Agent 영역 단독" },
+        { "kind": "result", "text": "착수 2일 만에 데이터 오류 공유" }
+      ]
+    },
+    "yonsei-medical-data-platform": {
+      "visual": "migration",
+      "label": "MSSQL → ClickHouse",
+      "metric": { "value": "1.3TB", "label": "약 30억 건 · 2일 이관" },
+      "facts": [
+        { "kind": "role", "text": "3명 중 팀원 · 데이터 구축·기술 이전" },
+        { "kind": "result", "text": "26개 테이블 정합성 검증" }
+      ]
+    },
+    "ai-agent-rag-workflows": {
+      "visual": "pipeline",
+      "label": "문서 → 지식베이스 → Agent → SQL",
+      "facts": [
+        { "kind": "role", "text": "설계·개발" },
+        { "kind": "doc", "text": "PDF·HWP·HWPX · NL2SQL · ETL" }
+      ]
+    },
+    "groundwater-level-prediction": {
+      "visual": "timeseries",
+      "label": "LSTM 시계열 예측",
+      "metric": { "value": "RMSE 0.054", "label": "홍천 지역 테스트셋" },
+      "facts": [
+        { "kind": "role", "text": "팀장 · 설계·데이터 처리" },
+        { "kind": "award", "text": "창업 경진대회 대상·우수상·장려상" },
+        { "kind": "doc", "text": "한국컴퓨터정보학회 발표" }
+      ]
+    },
+    "bee-guardian": {
+      "visual": "detection",
+      "label": "YOLOv5 객체 탐지",
+      "facts": [
+        { "kind": "role", "text": "팀장 · 기획·프론트엔드·전처리" },
+        { "kind": "award", "text": "2024 Global Capstone Bronze" }
+      ]
+    },
+    "text-to-3d-platform": {
+      "visual": "mesh",
+      "label": "text → mesh → G-code",
+      "facts": [
+        { "kind": "role", "text": "팀장 · 기획·프론트엔드·역할 분배" },
+        { "kind": "award", "text": "강원SW페스티벌 우수팀" }
+      ]
+    }
+  }
+}
