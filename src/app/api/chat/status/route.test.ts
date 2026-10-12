@@ -2,16 +2,32 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const statusMocks = vi.hoisted(() => ({
   getChatbotRuntimeStatus: vi.fn(),
+  getChatbotIndexStats: vi.fn(),
   captureException: vi.fn(),
 }));
 
 vi.mock("@/lib/chat/runtime-status", () => ({ getChatbotRuntimeStatus: statusMocks.getChatbotRuntimeStatus }));
+vi.mock("@/lib/chat/index-stats", () => ({ getChatbotIndexStats: statusMocks.getChatbotIndexStats }));
 vi.mock("@sentry/nextjs", () => ({ captureException: statusMocks.captureException }));
 
 import { GET } from "./route";
 
 describe("GET /api/chat/status", () => {
-  beforeEach(() => vi.resetAllMocks());
+  beforeEach(() => {
+    vi.resetAllMocks();
+    statusMocks.getChatbotIndexStats.mockResolvedValue(null);
+  });
+
+  it("includes indexed public document counts when the stats are available", async () => {
+    statusMocks.getChatbotRuntimeStatus.mockResolvedValue({ enabled: true, updatedAt: null });
+    statusMocks.getChatbotIndexStats.mockResolvedValue({ documents: 10, profile: 1, portfolio: 6, post: 3 });
+    const response = await GET();
+    await expect(response.json()).resolves.toEqual({
+      status: "enabled",
+      enabled: true,
+      index: { documents: 10, profile: 1, portfolio: 6, post: 3 },
+    });
+  });
 
   it("returns the current runtime connection without caching", async () => {
     statusMocks.getChatbotRuntimeStatus.mockResolvedValue({ enabled: true, updatedAt: null });
