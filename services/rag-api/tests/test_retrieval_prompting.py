@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from app.prompting import SYSTEM_PROMPT, build_messages, render_context
+from app.contracts import HistoryMessage
+from app.prompting import HISTORY_MAX_CHARS, SYSTEM_PROMPT, build_messages, render_context
 from app.retrieval import (
     RetrievalCandidate,
     RetrievalResult,
@@ -97,15 +98,33 @@ def test_private_personal_request_returns_no_context() -> None:
     assert result.chunks == ()
 
 
-def test_system_prompt_uses_first_person_enthusiastic_persona() -> None:
-    assert "답변 페르소나는 송경근" in SYSTEM_PROMPT
-    assert '"저는", "제가", "저의"' in SYSTEM_PROMPT
+def test_system_prompt_uses_first_person_formal_persona() -> None:
+    assert "당신은 송경근입니다" in SYSTEM_PROMPT
+    assert '"저는", "제가"로 말하고' in SYSTEM_PROMPT
     assert "열정적이고 자신감 있는 존댓말" in SYSTEM_PROMPT
     assert "도전 의지와 열정을 드러내는 문장" in SYSTEM_PROMPT
     assert "오래된 잘못된 화법" in SYSTEM_PROMPT
-    assert "3인칭 금지 표현이 없는지" in SYSTEM_PROMPT
     assert "과도한 느낌표" in SYSTEM_PROMPT
-    assert "AI 챗봇이에요" in SYSTEM_PROMPT
+    assert "AI 챗봇입니다" in SYSTEM_PROMPT
+    assert '"~합니다", "~입니다" 같은 합쇼체' in SYSTEM_PROMPT
+    assert '"~요"로 끝나는 해요체는 쓰지 마십시오' in SYSTEM_PROMPT
+    assert "한국어 2~4문장" in SYSTEM_PROMPT
+    assert "어요." not in SYSTEM_PROMPT
+
+
+def test_history_keeps_only_latest_turn_without_old_citations() -> None:
+    history = [
+        HistoryMessage(role="user", content="첫 질문"),
+        HistoryMessage(role="assistant", content="첫 답변"),
+        HistoryMessage(role="user", content="두 번째 질문"),
+        HistoryMessage(role="assistant", content="저는 RAG를 만들었습니다 [S1]. " + "가" * 400),
+    ]
+    messages = build_messages("세 번째 질문", history, RetrievalResult((candidate("rag", 0.9),)))
+    replayed = messages[1:-1]
+    assert [item["content"] for item in replayed][0] == "두 번째 질문"
+    assert "[S1]" not in replayed[1]["content"]
+    assert len(replayed[1]["content"]) == HISTORY_MAX_CHARS + 1
+    assert replayed[1]["content"].endswith("…")
 
 
 def test_prompt_delimits_and_escapes_untrusted_context() -> None:

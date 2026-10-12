@@ -39,10 +39,10 @@ class Settings(BaseSettings):
     embedding_dimension: int = Field(default=768, ge=1)
 
     rag_match_threshold: float = Field(ge=-1.0, le=1.0)
-    rag_max_chunks: int = Field(default=5, ge=1, le=12)
+    rag_max_chunks: int = Field(default=3, ge=1, le=12)
     rag_candidate_chunks: int = Field(default=12, ge=1, le=50)
     rag_max_chunks_per_document: int = Field(default=2, ge=1, le=5)
-    rag_max_context_tokens: int = Field(default=4000, ge=128, le=8000)
+    rag_max_context_tokens: int = Field(default=1500, ge=128, le=8000)
 
     chat_search_timeout_ms: int = Field(default=15_000, ge=100)
     chat_first_token_timeout_ms: int = Field(default=90_000, ge=100)
@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     chat_timestamp_tolerance_seconds: int = Field(default=60, ge=1, le=300)
     chat_replay_ttl_seconds: int = Field(default=300, ge=60, le=3600)
     chat_queue_waiters: int = Field(default=5, ge=0, le=100)
-    chat_max_output_tokens: int = Field(default=320, ge=1, le=2048)
+    chat_max_output_tokens: int = Field(default=200, ge=1, le=2048)
     chat_temperature: float = Field(default=0.2, ge=0.0, le=2.0)
     chat_top_p: float = Field(default=0.9, gt=0.0, le=1.0)
 
