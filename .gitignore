@@ -32,3 +32,6 @@ __pycache__/
 .vercel
 .env*
 !.env.example
+
+# completion-report originals (confidential, large) — evidence images are built from them locally
+/data/portfolio/*.pptx

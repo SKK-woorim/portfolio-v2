@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "editorialNotes": {
+    "purpose": "포트폴리오 상세 화면의 '결과를 확인할 수 있는 자료' 섹션. 완료보고서의 수치·일정·사진·화면 캡처를 출처와 함께 보여준다.",
+    "sourceRule": "수치는 완료보고서에 적힌 값 또는 그 합계만 쓴다. 각 항목에 보고서 쪽수를 남긴다. 연세대 이관 합계는 보고서 9쪽 테이블 26개의 건수·용량을 더한 값이다.",
+    "ownershipRule": "owner가 'me'면 본인 담당 업무, 'team'이면 프로젝트 팀 결과다. 팀원이 담당한 SDI 예측 모델 성능 비교(보고서 29쪽)는 modelComparison에 '팀 결과'로 표시하고 본인 역할을 함께 적는다.",
+    "redactionRule": "고객사 내부 IP·Batch·Lot·설비 ID·문서번호는 막대로 가리고, 고객 테이블 이름은 흐림 처리한다. 고객 조직도·인명·원본 환자 데이터·공정 측정값 표는 싣지 않는다. 가공 방법은 scripts/build-portfolio-evidence-assets.py에 있다.",
+    "originals": "원본 PPT는 data/portfolio/*.pptx에 로컬로만 두고 저장소에 올리지 않는다."
+  },
+  "projects": {
+    "yonsei-medical-data-platform": {
+      "source": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축 완료보고서 (2026.01.27 완료 보고회)",
+      "metrics": [
+        { "value": "31.3억 건", "label": "의료데이터 26개 테이블 이관 · 50GB 이상 9개 테이블은 월 단위 파티션", "owner": "me", "page": "9쪽" },
+        { "value": "1.34TB → 273GB", "label": "원본 대비 저장 용량 약 80% 감소 (ClickHouse 압축 저장)", "owner": "me", "page": "9쪽" },
+        { "value": "14종", "label": "매뉴얼 제작 · 사용자 6종, 관리자 8종", "owner": "me", "page": "19쪽" },
+        { "value": "4회", "label": "교육 진행 · 사용자 2회, 관리자 2회", "owner": "me", "page": "21–22쪽" }
+      ],
+      "timeline": [
+        { "date": "2025.09.25", "label": "착수 보고회" },
+        { "date": "2025.10.22", "label": "의료데이터 확보" },
+        { "date": "2025.11.03", "label": "데이터 이관 완료" },
+        { "date": "2025.12.04", "label": "중간 보고" },
+        { "date": "2026.01.07", "label": "MIG·NVLink 적용, 플랫폼 구축 완료" },
+        { "date": "2026.01.09–16", "label": "사용자·관리자 교육 4회, 매뉴얼 전달" },
+        { "date": "2026.01.27", "label": "완료 보고회" }
+      ],
+      "timelinePage": "6쪽",
+      "storageChart": {
+        "title": "분류별 원본 용량과 이관 후 저장 용량",
+        "caption": "MSSQL 원본 1,376.97GB(약 1.345TB)가 ClickHouse에서 273.45GB로 저장됐습니다. 분류는 보고서 표의 '구분' 열을 따릅니다.",
+        "page": "9쪽",
+        "unit": "GB",
+        "series": { "source": "원본 (MSSQL)", "stored": "저장 (ClickHouse)" },
+        "rows": [
+          { "label": "EKG", "tables": 3, "records": 14566243, "source": 371.26, "stored": 145.99 },
+          { "label": "기록", "tables": 4, "records": 1449855079, "source": 353.32, "stored": 49.81 },
+          { "label": "처방", "tables": 1, "records": 413197673, "source": 241.89, "stored": 38.13 },
+          { "label": "수술·시술", "tables": 4, "records": 580933920, "source": 204.08, "stored": 4.43 },
+          { "label": "검사", "tables": 5, "records": 525457069, "source": 182.74, "stored": 30.76 },
+          { "label": "투약", "tables": 1, "records": 120123403, "source": 20.21, "stored": 3.8 },
+          { "label": "상병", "tables": 1, "records": 18316079, "source": 2.54, "stored": 0.3 },
+          { "label": "내원", "tables": 6, "records": 7120869, "source": 0.85, "stored": 0.21 },
+          { "label": "공통코드", "tables": 1, "records": 856673, "source": 0.08, "stored": 0.02 }
+        ]
+      },
+      "figures": [
+        { "src": "/assets/images/portfolio/yonsei-medical-data-platform/user-training-1.webp", "width": 693, "height": 520, "kind": "photo", "alt": "세미나실 대형 화면에 '사용자 교육' 표지를 띄우고 직접 교육을 진행하는 장면", "caption": "직접 진행한 사용자 교육 · 2026.01 · AI혁신연구원 세미나실", "page": "23쪽" },
+        { "src": "/assets/images/portfolio/yonsei-medical-data-platform/user-training-2.webp", "width": 693, "height": 520, "kind": "photo", "alt": "강연대에서 플랫폼 화면을 대형 화면에 띄워 직접 설명하는 장면", "caption": "매뉴얼 설명 뒤 실제 플랫폼 화면으로 주요 기능을 직접 시연", "page": "23쪽" },
+        { "src": "/assets/images/portfolio/yonsei-medical-data-platform/server-room-training.webp", "width": 693, "height": 520, "kind": "photo", "alt": "서버실의 분석 PC 앞에서 두 사람이 VDI 화면을 함께 보는 장면", "caption": "서버실 분석 PC에서 VDI 클라이언트 접속 실습", "page": "23쪽" },
+        { "src": "/assets/images/portfolio/yonsei-medical-data-platform/admin-manual-mig.webp", "width": 1352, "height": 762, "kind": "screenshot", "alt": "관리자 매뉴얼 페이지. 터미널에서 nvidia-smi -L로 GPU별 MIG 인스턴스 구성을 확인하는 4단계 절차와 계정 정보 안내 상자", "caption": "관리자 매뉴얼 일부 — MIG 인스턴스 구성 확인. 계정 정보는 매뉴얼에 넣지 않고 별도 문서로 분리했습니다.", "note": "접속 IP 가림", "page": "13쪽", "split": true }
+      ],
+      "scope": "고객 조직도와 인명, 원본 테이블 이름, 환자 데이터는 싣지 않았습니다."
+    },
+    "samsung-sdi-multi-agent-mlops-poc": {
+      "source": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC 완료보고서",
+      "metrics": [
+        { "value": "2주", "label": "PoC 수행 2026.07.08–07.22 · 데이터 검증부터 완료 보고까지", "owner": "team", "page": "4쪽" },
+        { "value": "32 → 11", "label": "공정 테이블 32개 적재, 검증 대상 11개를 LOT 흐름 온톨로지로 연결", "owner": "me" },
+        { "value": "139,273셀", "label": "검증 시나리오 배치 분석 → 위험 617셀(0.44%) 판정과 원인·조치 응답", "owner": "me", "page": "16–17쪽" },
+        { "value": "4명", "label": "현업 엔지니어 대상 교육, 직접 검증용 계정 발급", "owner": "me" }
+      ],
+      "timeline": [
+        { "date": "2026.07.08", "label": "착수 · 요구사항·시나리오 정의, 데이터 제공" },
+        { "date": "착수 +2일", "label": "공정 단계 누락·학습/테스트 혼재 공유, 검증 범위 조정" },
+        { "date": "2026.07.22", "label": "모델·온톨로지·Agent 통합, PoC 완료" },
+        { "date": "~2026.07.31", "label": "고객사 내부 평가" }
+      ],
+      "timelinePage": "4쪽",
+      "modelComparison": {
+        "title": "dV 불량 예측 모델 비교",
+        "page": "29쪽",
+        "testSet": "테스트 776,028셀 · 실제 불량 641셀 · 같은 판정 규칙·임계값으로 채점",
+        "baselineLabel": "SDI 기존 모델 (XGBoost)",
+        "proposedLabel": "가중 Lasso (제안)",
+        "rows": [
+          { "anchor": "최신 채점 기준", "condition": "AVG 3 / STD 5", "baseline": { "fn": 42, "fp": 20 }, "proposed": { "fn": 39, "fp": 10 }, "summary": "유출 −3건 · 과검 −50% · F1 0.952 → 0.961" },
+          { "anchor": "이전 운영점", "condition": "AVG 1 / STD 4.2", "baseline": { "fn": 16, "fp": 103 }, "proposed": { "fn": 16, "fp": 82 }, "summary": "유출 동일 · 과검 −20%" }
+        ],
+        "note": "예측 모델 개선은 팀원이 담당했습니다. 저는 이 모델의 SHAP 결과를 MLOps로 서빙하고 Agent 분석 입력으로 연결했습니다."
+      },
+      "figures": [
+        { "src": "/assets/images/portfolio/samsung-sdi-multi-agent-mlops-poc/agent-workflow.webp", "width": 2400, "height": 455, "kind": "screenshot", "alt": "Dify 워크플로 캔버스. 시작, XAI 서빙 데이터 조회·파싱, 원인 분석 결과, 사람 입력, 질의 생성 LLM, 이상발생대책 검색과 온톨로지 원인 추적, 대책 제시 LLM, TEXT GAP 분석 Agent, 답변 노드가 연결되어 있다", "caption": "직접 구현한 Multi-Agent 워크플로 — SHAP 결과 수신 → 원인 설명 → 사람 승인 → 온톨로지·RAG 검색 → 대책 제시 → GAP 분석", "note": "내부 API 주소 가림", "page": "4·14쪽", "wide": true },
+        { "src": "/assets/images/portfolio/samsung-sdi-multi-agent-mlops-poc/agent-answer.webp", "width": 1126, "height": 1612, "kind": "screenshot", "alt": "Agent의 온톨로지 기반 원인 분석 응답. 이상 현황, 선행공정 추적 결과, 공정 이상 근거 표, RAG 유사사례 비교, 종합 원인 판단, 권고 조치 순서로 구성되어 있다", "caption": "검증 시나리오에 대한 Agent 최종 응답 — 선행공정 추적, 유사 조치 사례, 종합 원인 판단, 권고 조치", "note": "Batch·Lot·설비 ID와 문서번호 가림", "page": "17쪽", "tall": true },
+        { "src": "/assets/images/portfolio/samsung-sdi-multi-agent-mlops-poc/ontology-graph.webp", "width": 1200, "height": 1042, "kind": "screenshot", "alt": "그래프 DB 화면. 가운데 데이터베이스 노드에서 공정 테이블 노드들이 HAS_TABLE로 뻗어 있고, 테이블 사이가 JOINS_TO 점선으로 연결되어 있다", "caption": "공정 테이블과 조인 관계를 연결한 온톨로지 그래프", "note": "고객 테이블 이름 흐림 처리", "page": "4·13쪽" },
+        { "src": "/assets/images/portfolio/samsung-sdi-multi-agent-mlops-poc/mlops-pipeline.webp", "width": 1598, "height": 674, "kind": "screenshot", "alt": "MLOps 워크플로 화면. 학습·테스트·시나리오 데이터 추출, 전처리, 모델 학습·평가, SHAP 예측, 결과 적재 컴포넌트가 모두 성공 상태로 연결되어 있다", "caption": "XAI 모델을 자사 MLOps 워크플로에 배포·연계한 실행 화면", "page": "4·11쪽" }
+      ],
+      "scope": "공정 측정값 표와 고객 문서 원문은 싣지 않았습니다."
+    }
+  }
+}

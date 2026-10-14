@@ -96,6 +96,9 @@ body {
   --console-bg: rgba(8, 30, 57, .8);
   --visual-bg: linear-gradient(160deg, #0d2747, #081a31 70%);
   --elevated-shadow: 0 30px 80px rgba(0, 7, 18, .5);
+  /* 근거 차트 두 계열. dataviz 검증 통과(다크 surface #0b203b). */
+  --chart-source: #bf8a1f;
+  --chart-stored: #3f8ae0;
   min-height: 100vh;
   overflow: clip;
   background: var(--canvas);
@@ -142,6 +145,9 @@ html[data-site-theme="light"] .site-theme {
   --console-bg: rgba(255, 255, 255, .86);
   --visual-bg: linear-gradient(160deg, #f1f7ff, #e3eefb 70%);
   --elevated-shadow: 0 30px 70px rgba(46, 87, 134, .16);
+  /* 근거 차트 두 계열. dataviz 검증 통과(라이트 surface #ffffff). */
+  --chart-source: #b07000;
+  --chart-stored: #0c5fbd;
   color-scheme: light;
 }
 

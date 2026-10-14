@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { CaseEvidence } from "@/components/case-evidence/case-evidence";
 import { CaseAsk } from "@/components/chatbot/case-ask";
 import { ProjectVisual } from "@/components/project-visual";
 import { ReadProgress } from "@/components/read-progress";
@@ -8,6 +9,7 @@ import { Tag } from "@/components/tag";
 import { MarkdownContent } from "@/components/markdown-content";
 import { MarkdownTableOfContents } from "@/components/markdown-table-of-contents";
 import { ContentContactCta, RelatedPortfolio, relatedPortfolioItems } from "@/components/content-discovery";
+import { getProjectEvidence } from "@/lib/content/evidence";
 import { getProjectPresentation } from "@/lib/content/presentation";
 import { getPublishedPortfolioItem, getPublishedPortfolioItems } from "@/lib/content/repository";
 import { absoluteUrl, createSocialImage, DEFAULT_OG_IMAGE_PATH, jsonLd, SITE_AUTHOR_NAME } from "@/lib/site-metadata";
@@ -52,6 +54,7 @@ export default async function PortfolioDetailPage({ params }: PageProps) {
     author: { "@type": "Person", name: SITE_AUTHOR_NAME, url: absoluteUrl("/") },
   };
   const role = getProjectPresentation(item.slug).facts.find((fact) => fact.kind === "role")?.text;
+  const evidence = getProjectEvidence(item.slug);
   const askQuestions = [`${item.title}에서 맡은 역할은 무엇인가요?`, `${item.title}의 결과를 알려주세요.`];
   return (
     <article id="case-article">
@@ -74,6 +77,7 @@ export default async function PortfolioDetailPage({ params }: PageProps) {
           <div className="case-visual"><ProjectVisual item={item} priority /></div>
         </div>
       </section>
+      {evidence ? <CaseEvidence evidence={evidence} /> : null}
       <section className="section">
         <div className="container grid gap-12 lg:grid-cols-[.7fr_1.3fr]">
           <aside className="grid h-fit gap-5 lg:sticky lg:top-28">
