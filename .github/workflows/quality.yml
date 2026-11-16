@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      # 브라우저에 공개되는 값이라 Secret이 아닌 저장소 Variable로 둔다. 빌드와 E2E가 공개 콘텐츠를 읽는다.
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
       NEXT_PUBLIC_CHATBOT_ENABLED: "false"
       CHATBOT_ENABLED: "false"
     steps:
@@ -33,7 +36,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20.9.0
+          # jsdom 30과 vite 8이 Node 20.9에서 실행되지 않는다. 로컬·Vercel과 같은 24 계열을 쓴다.
+          node-version: 24
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
