@@ -73,7 +73,8 @@ export function PortfolioForm({ item, media }: { item?: PortfolioFormItem; media
   useEffect(() => {
     if ((!state.success && !state.error) || handledStateRef.current === state) return;
     handledStateRef.current = state;
-    if (lastIntentRef.current === "publish") setValues((current) => ({ ...current, status: "published" }));
+    // "즉시 발행"이 실제로 저장됐을 때만 상태 선택을 발행으로 맞춘다. 실패한 발행은 선택을 바꾸지 않는다.
+    if (state.success && lastIntentRef.current === "publish") setValues((current) => ({ ...current, status: "published" }));
     if (state.error) {
       const timeout = window.setTimeout(() => setValues((current) => ({ ...current })), 0);
       return () => window.clearTimeout(timeout);

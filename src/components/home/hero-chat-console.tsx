@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { ArrowRight, Cpu, RefreshCw, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { canRetryChatMessage, isUnansweredForLackOfContext } from "@/components/chatbot/chat-state";
 import { describeProgress, useChatbot } from "@/components/chatbot/chatbot-context";
 import { ChatbotSlowNotice } from "@/components/chatbot/chatbot-slow-notice";
 import { getVerifiedSourceUrl } from "@/components/chatbot/chatbot-sources";
 import { CitedText } from "@/components/chatbot/cited-text";
 import type { ChatbotRuntimeAvailability, ChatSourceType } from "@/components/chatbot/chatbot-types";
+import { isChatOffline, isChatOnline } from "@/components/chatbot/runtime-availability";
+import { CHAT_PROGRESS_STEP } from "@/components/chatbot/use-chat-progress";
 
 const STATE_LABEL: Record<ChatbotRuntimeAvailability, string> = {
   checking: "연결 확인 중",
@@ -92,16 +95,17 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
 
   if (!chatbot) return null;
   const { runtimeAvailability: availability, progress, indexStats, isBusy } = chatbot;
-  const offline = availability === "disabled" || availability === "unavailable";
-  const ready = availability === "enabled" && chatbot.isHydrated;
-  const step = exchange ? progress.step : -1;
+  const offlineCopy = isChatOffline(availability) ? OFFLINE_COPY[availability] : null;
+  const offline = offlineCopy !== null;
+  const ready = isChatOnline(availability) && chatbot.isHydrated;
+  const step = exchange ? progress.step : CHAT_PROGRESS_STEP.idle;
   const answer = exchange?.answer;
   const sources = answer?.sources ?? [];
   const stepSmall = [
     "질문 확인",
     indexStats ? `공개 페이지 ${indexStats.documents}` : "공개 콘텐츠",
     progress.sourceCount === null ? "최대 3건" : `${progress.sourceCount}건`,
-    step === 3 ? `생성 중 ${progress.waitSeconds.toFixed(1)}s` : "출처 포함",
+    step === CHAT_PROGRESS_STEP.generating ? `생성 중 ${progress.waitSeconds.toFixed(1)}s` : "출처 포함",
   ];
 
   function ask(question: string) {
@@ -119,7 +123,7 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
   }
 
   return (
-    <div ref={rootRef} className="console" id="hero-chat" aria-label="포트폴리오 도우미">
+    <div ref={rootRef} className="console" id="hero-chat" aria-label="포트폴리오 도우미" data-availability={availability} data-phase={chatbot.phase}>
       <div className="console-head">
         <span className="console-who">
           포트폴리오 도우미
@@ -129,12 +133,12 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
       </div>
       <ChatbotSlowNotice show={progress.slowNotice && !offline} modelLabel={chatbot.modelLabel} />
 
-      {offline ? (
+      {offlineCopy ? (
         <div className="console-offline" role="status">
           <span className="offline-icon" data-state={availability}><Cpu size={20} aria-hidden="true" /></span>
           <div>
-            <h3>{OFFLINE_COPY[availability].title}</h3>
-            <p>{OFFLINE_COPY[availability].copy}</p>
+            <h3>{offlineCopy.title}</h3>
+            <p>{offlineCopy.copy}</p>
           </div>
           <div className="offline-links">
             <Link href="/about" className="focus-ring">기술 스택<small>소개 페이지</small></Link>
@@ -166,14 +170,14 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
               </div>
               <ol className="console-steps" aria-label={describeProgress(progress, indexStats) ?? "답변 완료"}>
                 {["질문 이해", "검색", "근거", "답변"].map((label, index) => (
-                  <li key={label} data-on={step >= index} data-active={step === index && index < 4}>
+                  <li key={label} data-on={step >= index} data-active={step === index}>
                     {label}<small>{stepSmall[index]}</small>
                   </li>
                 ))}
               </ol>
-              {step >= 2 || sources.length ? (
+              {step >= CHAT_PROGRESS_STEP.grounding || sources.length ? (
                 <div className="console-sources">
-                  <span className="console-label">{progress.sourceCount === null && step < 4 ? "근거 찾는 중" : sources.length ? `검색된 근거 ${sources.length}건` : "근거를 찾지 못했어요"}</span>
+                  <span className="console-label">{progress.sourceCount === null && step < CHAT_PROGRESS_STEP.done ? "근거 찾는 중" : sources.length ? `검색된 근거 ${sources.length}건` : "근거를 찾지 못했어요"}</span>
                   {sources.length ? (
                     <ul>
                       {sources.map((source, index) => {
@@ -193,18 +197,20 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
                   ) : null}
                 </div>
               ) : null}
-              {answer && (answer.content || step >= 3) ? (
-                <div className="console-answer" data-tone={answer.delivery === "error" ? "error" : undefined}>
+              {answer && (answer.content || step >= CHAT_PROGRESS_STEP.generating) ? (
+                <div className="console-answer" data-tone={answer.delivery === "error" ? "error" : undefined} data-delivery={answer.delivery}>
                   <span className="console-label">{answer.delivery === "error" ? "답변하지 못했어요" : "답변"}</span>
                   <p>{answer.content ? <CitedText text={answer.content} /> : "답변을 만드는 중이에요…"}</p>
                   {answer.cached ? <small className="console-cached">저장된 답변 · 자주 묻는 질문이라 미리 만들어 둔 답변이에요.</small> : null}
-                  {answer.delivery === "error" && answer.errorCode === "NO_RELEVANT_CONTEXT" ? (
+                  {answer.delivery === "cancelled" ? <small className="console-cached">생성이 취소된 답변입니다.</small> : null}
+                  {answer.delivery === "partial" ? <small className="console-cached">답변이 길이 제한으로 일부만 표시되었습니다.</small> : null}
+                  {answer.delivery === "error" && isUnansweredForLackOfContext(answer) ? (
                     <div className="console-links">
                       <Link href="/about" className="focus-ring">소개 보기 <ArrowRight size={14} aria-hidden="true" /></Link>
                       <Link href="/contact" className="focus-ring">연락처 보기 <ArrowRight size={14} aria-hidden="true" /></Link>
                     </div>
                   ) : null}
-                  {answer.delivery === "error" && answer.errorCode !== "NO_RELEVANT_CONTEXT" && answer.retryMessage ? (
+                  {canRetryChatMessage(answer) ? (
                     <div className="console-links">
                       <button type="button" className="focus-ring" onClick={() => ask(answer.retryMessage!)} disabled={!ready || isBusy}>
                         <RotateCcw size={14} aria-hidden="true" /> 다시 시도
@@ -234,7 +240,7 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
             maxLength={500}
             autoComplete="off"
             disabled={!ready}
-            placeholder={offline ? OFFLINE_COPY[availability].placeholder : availability === "checking" ? "연결 상태를 확인하고 있어요" : "이 포트폴리오에 무엇이든 물어보세요"}
+            placeholder={offlineCopy ? offlineCopy.placeholder : availability === "checking" ? "연결 상태를 확인하고 있어요" : "이 포트폴리오에 무엇이든 물어보세요"}
             onChange={(event) => setInput(event.target.value)}
           />
           <button type="submit" aria-label="질문 보내기" disabled={!ready || isBusy || input.trim().length === 0}>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
+import { canRetryChatMessage, isUnansweredForLackOfContext } from "./chat-state";
 import { ChatbotSources } from "./chatbot-sources";
 import { CitedText } from "./cited-text";
 import type { ChatMessage } from "./chatbot-types";
@@ -13,15 +14,12 @@ type ChatbotMessageProps = {
 export function ChatbotMessage({ message, onRetry, onNavigate }: ChatbotMessageProps) {
   if (!message.content) return null;
   const isAssistant = message.role === "assistant";
-  const canRetry = isAssistant
-    && (message.delivery === "error" || message.delivery === "cancelled" || message.delivery === "partial")
-    && message.errorCode !== "NO_RELEVANT_CONTEXT"
-    && Boolean(message.retryMessage)
-    && Boolean(onRetry);
+  const canRetry = canRetryChatMessage(message) && Boolean(onRetry);
 
   return (
     <article
       className={`chatbot-message chatbot-message--${message.role}`}
+      data-delivery={message.delivery}
       aria-label={isAssistant ? "챗봇 답변" : "사용자 질문"}
     >
       <div className="chatbot-message-bubble">
@@ -31,7 +29,7 @@ export function ChatbotMessage({ message, onRetry, onNavigate }: ChatbotMessageP
         {message.delivery === "partial" ? <small className="chatbot-message-note">답변이 길이 제한으로 일부만 표시되었습니다.</small> : null}
       </div>
       {isAssistant && message.sources?.length ? <ChatbotSources sources={message.sources} onNavigate={onNavigate} /> : null}
-      {message.errorCode === "NO_RELEVANT_CONTEXT" ? (
+      {isUnansweredForLackOfContext(message) ? (
         <div className="chatbot-fallback-links" aria-label="다른 페이지 보기">
           <Link className="focus-ring" href="/about" onClick={onNavigate}>소개 보기</Link>
           <Link className="focus-ring" href="/contact" onClick={onNavigate}>연락처 보기</Link>

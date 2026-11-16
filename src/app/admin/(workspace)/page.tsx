@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FilePlus2, FolderPlus, PenSquare } from "lucide-react";
 import { getDashboardData } from "@/lib/admin/queries";
+import { contentStatusLabel } from "@/lib/content/status";
 import { formatDate } from "@/lib/utils";
 
 function countByStatus(items: { status: string }[], status: string) {
@@ -34,7 +35,7 @@ export default async function AdminDashboardPage() {
           <div className="mt-5 grid divide-y divide-[var(--border)]">
             {data.recent.length ? data.recent.map((item) => (
               <div className="flex items-center justify-between gap-4 py-4" key={`${item.kind}-${item.id}`}>
-                <div className="min-w-0"><p className="truncate text-sm font-semibold">{item.title}</p><p className="mt-1 text-xs text-[var(--body)]">{item.kind} · {item.status}</p></div>
+                <div className="min-w-0"><p className="truncate text-sm font-semibold">{item.title}</p><p className="mt-1 text-xs text-[var(--body)]">{item.kind} · {contentStatusLabel(item.status)}</p></div>
                 <time className="shrink-0 text-xs text-[var(--muted)]">{formatDate(item.updated_at)}</time>
               </div>
             )) : <p className="py-10 text-sm text-[var(--body)]">아직 콘텐츠가 없습니다.</p>}

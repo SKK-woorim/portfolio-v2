@@ -1,36 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { CHAT_ERROR_MESSAGES, chatErrorMessage } from "@/lib/chat/error-messages";
 import { ChatSseParser, type ParsedServerSentEvent } from "./chat-sse-parser";
+import { INITIAL_CHAT_STREAM_STATE, isChatPhaseActive, reduceChatStream, type ChatStreamEvent } from "./chat-state";
 import { sanitizeChatSources } from "./chatbot-sources";
-import type { ChatFinishReason, ChatHistoryMessage, ChatPhase, ChatSource, ChatStreamError } from "./chatbot-types";
+import type { ChatFinishReason, ChatHistoryMessage, ChatSource, ChatStreamError } from "./chatbot-types";
+
+export { advanceChatPhase } from "./chat-state";
 
 const CANCEL_REVEAL_DELAY_MS = 30_000;
-
-const ERROR_MESSAGES: Record<string, string> = {
-  INVALID_REQUEST: "질문 내용을 확인해 주세요.",
-  CHATBOT_DISABLED: "현재 포트폴리오 AI 챗봇 연결이 꺼져 있어요. 소개와 연락처에서 더 많은 정보를 확인해 주세요.",
-  RATE_LIMITED: "요청이 많아요. 잠시 후 다시 질문해 주세요.",
-  SEARCH_UNAVAILABLE: "챗봇 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.",
-  NO_RELEVANT_CONTEXT: "현재 공개된 포트폴리오와 블로그에서는 해당 내용을 확인할 수 없어요. 다른 기술이나 프로젝트에 대해 질문하거나 연락처 페이지를 이용해 주세요.",
-  MODEL_BUSY: "현재 다른 답변을 만들고 있어요. 잠시 후 다시 질문해 주세요.",
-  MODEL_UNAVAILABLE: "챗봇 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.",
-  FIRST_TOKEN_TIMEOUT: "답변 생성에 시간이 너무 오래 걸렸어요. 질문을 조금 짧게 바꿔 다시 시도해 주세요.",
-  GENERATION_TIMEOUT: "답변 생성에 시간이 너무 오래 걸렸어요. 질문을 조금 짧게 바꿔 다시 시도해 주세요.",
-  INTERNAL_ERROR: "답변을 만들지 못했어요. 잠시 후 다시 시도해 주세요.",
-};
-
-const ACTIVE_PHASES = new Set<ChatPhase>(["submitting", "searching", "generating", "streaming"]);
-const PHASE_RANK: Record<ChatPhase, number> = {
-  idle: 0,
-  submitting: 1,
-  searching: 2,
-  generating: 3,
-  streaming: 4,
-  complete: 5,
-  cancelled: 5,
-  error: 5,
-};
 
 type ChatStreamHandlers = {
   onSources?: (requestId: string, sources: ChatSource[]) => void;
@@ -51,17 +30,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function getErrorMessage(code: string, suppliedMessage?: unknown) {
-  if (typeof suppliedMessage === "string") {
-    const message = suppliedMessage.trim();
-    if (message && message.length <= 300) return message;
-  }
-  return ERROR_MESSAGES[code] ?? ERROR_MESSAGES.INTERNAL_ERROR;
-}
-
-export function advanceChatPhase(current: ChatPhase, next: ChatPhase): ChatPhase {
-  if (current === "complete" || current === "cancelled" || current === "error") return current;
-  return PHASE_RANK[next] >= PHASE_RANK[current] ? next : current;
+function internalError(): ChatStreamError {
+  return { code: "INTERNAL_ERROR", message: CHAT_ERROR_MESSAGES.INTERNAL_ERROR };
 }
 
 export async function readChatHttpError(response: Response): Promise<ChatStreamError> {
@@ -79,7 +49,7 @@ export async function readChatHttpError(response: Response): Promise<ChatStreamE
 
   return {
     code,
-    message: getErrorMessage(code, isRecord(payload) ? payload.message : undefined),
+    message: chatErrorMessage(code, isRecord(payload) ? payload.message : undefined),
     ...(retryAfterSeconds === undefined ? {} : { retryAfterSeconds }),
   };
 }
@@ -97,12 +67,22 @@ export function parseChatFinishReason(value: unknown): ChatFinishReason | null {
   return value === "stop" || value === "length" || value === "cancelled" ? value : null;
 }
 
+/** 서버의 `status` 이벤트 단계를 요청 단계로 옮긴다. 모르는 단계는 버린다. */
+function statusEventPhase(value: unknown) {
+  if (value === "accepted") return "submitting" as const;
+  return value === "searching" || value === "generating" ? value : null;
+}
+
+/**
+ * 챗봇 요청 한 건을 보내고 SSE 응답을 요청 단계로 옮긴다.
+ *
+ * 단계 전이는 모두 `reduceChatStream`(chat-state.ts)을 거친다. 이 훅은 한 번에 요청 하나만
+ * 가지며, 진행 중인 요청이 있는지는 `activeRequestIdRef`가 단독으로 정한다.
+ */
 export function useChatStream(handlers: ChatStreamHandlers = {}) {
-  const [phase, setPhase] = useState<ChatPhase>("idle");
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [canCancel, setCanCancel] = useState(false);
+  const [state, setState] = useState(INITIAL_CHAT_STREAM_STATE);
+  const stateRef = useRef(INITIAL_CHAT_STREAM_STATE);
   const handlersRef = useRef(handlers);
-  const phaseRef = useRef<ChatPhase>("idle");
   const activeRequestIdRef = useRef<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
   const cancelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -111,81 +91,58 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
     handlersRef.current = handlers;
   }, [handlers]);
 
+  const transition = useCallback((event: ChatStreamEvent) => {
+    const next = reduceChatStream(stateRef.current, event);
+    if (next === stateRef.current) return;
+    stateRef.current = next;
+    setState(next);
+  }, []);
+
   const clearTimers = useCallback(() => {
     if (cancelTimerRef.current) clearTimeout(cancelTimerRef.current);
     cancelTimerRef.current = null;
   }, []);
 
-  const moveForward = useCallback((next: ChatPhase) => {
-    const advanced = advanceChatPhase(phaseRef.current, next);
-    if (advanced !== next) return false;
-    phaseRef.current = advanced;
-    setPhase(advanced);
-    return true;
-  }, []);
-
-  const finishWithError = useCallback((requestId: string, error: ChatStreamError) => {
-    if (activeRequestIdRef.current !== requestId) return;
+  /** 진행 중인 요청이 `requestId`일 때만 요청 자원을 놓는다. 이미 끝난 요청이면 null. */
+  const releaseRequest = useCallback((requestId: string) => {
+    if (activeRequestIdRef.current !== requestId) return null;
+    const controller = controllerRef.current;
     activeRequestIdRef.current = null;
     controllerRef.current = null;
     clearTimers();
-    setCanCancel(false);
-    phaseRef.current = "error";
-    setPhase("error");
-    setStatusMessage(error.message);
-    handlersRef.current.onError?.(requestId, error);
+    return { controller };
   }, [clearTimers]);
+
+  const finishWithError = useCallback((requestId: string, error: ChatStreamError) => {
+    if (!releaseRequest(requestId)) return;
+    transition({ type: "failed", message: error.message });
+    handlersRef.current.onError?.(requestId, error);
+  }, [releaseRequest, transition]);
 
   const cancel = useCallback(() => {
     const requestId = activeRequestIdRef.current;
     if (!requestId) return;
-
-    activeRequestIdRef.current = null;
-    const controller = controllerRef.current;
-    controllerRef.current = null;
-    clearTimers();
-    setCanCancel(false);
-    phaseRef.current = "cancelled";
-    setPhase("cancelled");
-    setStatusMessage(null);
-    controller?.abort();
+    const released = releaseRequest(requestId);
+    transition({ type: "cancelled" });
+    released?.controller?.abort();
     handlersRef.current.onCancel?.(requestId);
-  }, [clearTimers]);
+  }, [releaseRequest, transition]);
 
-  const sendChat = useCallback(async ({ requestId, sessionId, message, history }: SendChatInput) => {
-    if (activeRequestIdRef.current) return false;
-
-    clearTimers();
-    const controller = new AbortController();
-    activeRequestIdRef.current = requestId;
-    controllerRef.current = controller;
-    phaseRef.current = "submitting";
-    setPhase("submitting");
-    setStatusMessage("질문을 확인하고 있어요.");
-    setCanCancel(false);
-    cancelTimerRef.current = setTimeout(() => {
-      if (activeRequestIdRef.current === requestId) setCanCancel(true);
-    }, CANCEL_REVEAL_DELAY_MS);
-
+  const runRequest = useCallback(async ({ requestId, sessionId, message, history }: SendChatInput, controller: AbortController) => {
+    const isCurrent = () => activeRequestIdRef.current === requestId;
     let receivedToken = false;
     let reachedTerminalEvent = false;
-    let completed = false;
 
     const handleEvent = (event: ParsedServerSentEvent) => {
-      if (activeRequestIdRef.current !== requestId) return;
+      if (!isCurrent()) return;
       const data = parseEventData(event);
 
       if (event.event === "status" && data) {
-        const statusPhase = data.phase;
-        const nextPhase = statusPhase === "accepted"
-          ? "submitting"
-          : statusPhase === "searching" || statusPhase === "generating"
-            ? statusPhase
-            : null;
-        if (!nextPhase || !moveForward(nextPhase)) return;
-
+        const phase = statusEventPhase(data.phase);
+        if (!phase) return;
         // 긴 대기 안내는 use-chat-progress의 6초 슬라이드 안내가 맡는다.
-        if (typeof data.message === "string" && data.message.trim()) setStatusMessage(data.message.trim().slice(0, 300));
+        const statusMessage = typeof data.message === "string" && data.message.trim() ? data.message.trim().slice(0, 300) : undefined;
+        transition({ type: "status", phase, ...(statusMessage ? { message: statusMessage } : {}) });
         return;
       }
 
@@ -195,34 +152,23 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
       }
 
       if (event.event === "token" && data && typeof data.delta === "string") {
-        if (!data.delta || !moveForward("streaming")) return;
+        if (!data.delta) return;
         receivedToken = true;
-        setStatusMessage(null);
+        transition({ type: "token" });
         handlersRef.current.onToken?.(requestId, data.delta);
         return;
       }
 
       if (event.event === "done") {
-        const finishReason = parseChatFinishReason(data?.finishReason);
-        if (!finishReason) {
-          reachedTerminalEvent = true;
-          finishWithError(requestId, { code: "INTERNAL_ERROR", message: ERROR_MESSAGES.INTERNAL_ERROR });
-          return;
-        }
-        if (!receivedToken) {
-          reachedTerminalEvent = true;
-          finishWithError(requestId, { code: "INTERNAL_ERROR", message: ERROR_MESSAGES.INTERNAL_ERROR });
-          return;
-        }
         reachedTerminalEvent = true;
-        completed = true;
-        activeRequestIdRef.current = null;
-        controllerRef.current = null;
-        clearTimers();
-        setCanCancel(false);
-        phaseRef.current = finishReason === "cancelled" ? "cancelled" : "complete";
-        setPhase(phaseRef.current);
-        setStatusMessage(null);
+        const finishReason = parseChatFinishReason(data?.finishReason);
+        // 종료 사유를 모르거나 토큰 없이 끝난 응답은 완료로 치지 않는다.
+        if (!finishReason || !receivedToken) {
+          finishWithError(requestId, internalError());
+          return;
+        }
+        releaseRequest(requestId);
+        transition({ type: "finished", finishReason });
         handlersRef.current.onComplete?.(requestId, finishReason, { cached: data?.cached === true });
         return;
       }
@@ -230,7 +176,7 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
       if (event.event === "error") {
         reachedTerminalEvent = true;
         const code = data && typeof data.code === "string" ? data.code : "INTERNAL_ERROR";
-        finishWithError(requestId, { code, message: getErrorMessage(code, data?.message) });
+        finishWithError(requestId, { code, message: chatErrorMessage(code, data?.message) });
       }
     };
 
@@ -243,21 +189,21 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
         signal: controller.signal,
       });
 
-      if (activeRequestIdRef.current !== requestId) return false;
+      if (!isCurrent()) return;
       if (!response.ok) {
         finishWithError(requestId, await readChatHttpError(response));
-        return false;
+        return;
       }
       if (!response.headers.get("content-type")?.toLowerCase().includes("text/event-stream") || !response.body) {
-        finishWithError(requestId, { code: "INTERNAL_ERROR", message: ERROR_MESSAGES.INTERNAL_ERROR });
-        return false;
+        finishWithError(requestId, internalError());
+        return;
       }
 
       const parser = new ChatSseParser();
       const decoder = new TextDecoder();
       const reader = response.body.getReader();
 
-      while (!reachedTerminalEvent && activeRequestIdRef.current === requestId) {
+      while (!reachedTerminalEvent && isCurrent()) {
         const { value, done } = await reader.read();
         if (done) break;
         const events = parser.push(decoder.decode(value, { stream: true }));
@@ -267,7 +213,7 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
         }
       }
 
-      if (!reachedTerminalEvent && activeRequestIdRef.current === requestId) {
+      if (!reachedTerminalEvent && isCurrent()) {
         const finalEvents = [...parser.push(decoder.decode()), ...parser.finish()];
         for (const event of finalEvents) {
           handleEvent(event);
@@ -275,18 +221,34 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
         }
       }
 
-      if (!reachedTerminalEvent && activeRequestIdRef.current === requestId) {
-        finishWithError(requestId, { code: "INTERNAL_ERROR", message: ERROR_MESSAGES.INTERNAL_ERROR });
-        return false;
-      }
-      return completed;
+      // 종료 이벤트 없이 연결이 끊겼다.
+      if (!reachedTerminalEvent) finishWithError(requestId, internalError());
     } catch (error) {
-      if (activeRequestIdRef.current !== requestId) return false;
-      if (error instanceof DOMException && error.name === "AbortError") return false;
-      finishWithError(requestId, { code: "MODEL_UNAVAILABLE", message: ERROR_MESSAGES.MODEL_UNAVAILABLE });
-      return false;
+      if (!isCurrent()) return;
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      finishWithError(requestId, { code: "MODEL_UNAVAILABLE", message: CHAT_ERROR_MESSAGES.MODEL_UNAVAILABLE });
     }
-  }, [clearTimers, finishWithError, moveForward]);
+  }, [finishWithError, releaseRequest, transition]);
+
+  /**
+   * 요청을 시작한다. 이미 진행 중인 요청이 있으면 아무것도 하지 않고 false를 돌려준다.
+   * 호출한 쪽은 true일 때만 대화 목록에 질문과 답변 자리를 추가하면 된다.
+   */
+  const sendChat = useCallback((input: SendChatInput) => {
+    if (activeRequestIdRef.current) return false;
+
+    clearTimers();
+    const controller = new AbortController();
+    activeRequestIdRef.current = input.requestId;
+    controllerRef.current = controller;
+    transition({ type: "submitted" });
+    cancelTimerRef.current = setTimeout(() => {
+      if (activeRequestIdRef.current === input.requestId) transition({ type: "cancel-revealed" });
+    }, CANCEL_REVEAL_DELAY_MS);
+
+    void runRequest(input, controller);
+    return true;
+  }, [clearTimers, runRequest, transition]);
 
   useEffect(() => () => {
     activeRequestIdRef.current = null;
@@ -296,10 +258,10 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
   }, [clearTimers]);
 
   return {
-    phase,
-    statusMessage,
-    canCancel,
-    isBusy: ACTIVE_PHASES.has(phase),
+    phase: state.phase,
+    statusMessage: state.statusMessage,
+    canCancel: state.canCancel,
+    isBusy: isChatPhaseActive(state.phase),
     sendChat,
     cancel,
   };

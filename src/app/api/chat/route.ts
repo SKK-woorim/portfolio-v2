@@ -2,7 +2,8 @@ import * as Sentry from "@sentry/nextjs";
 import { randomUUID } from "node:crypto";
 import { getChatBackendConfig } from "@/lib/chat/backend-config";
 import { cachedAnswers, chunkCachedAnswer, type CachedAnswer } from "@/lib/chat/cached-answers";
-import { CHAT_REQUEST_MAX_BYTES, chatErrorCodeSchema, chatRequestSchema, type ChatErrorCode, type ChatRequest } from "@/lib/chat/contracts";
+import { CHAT_REQUEST_MAX_BYTES, chatErrorCodeSchema, chatRequestSchema, isTerminalChatSseEvent, type ChatErrorCode, type ChatRequest } from "@/lib/chat/contracts";
+import { CHAT_ERROR_MESSAGES as USER_ERROR_MESSAGES } from "@/lib/chat/error-messages";
 import { getPublicContentVersion } from "@/lib/chat/public-content-version";
 import { consumeChatRateLimit } from "@/lib/chat/rate-limit";
 import { getChatbotRuntimeStatus, isChatbotMasterEnabled } from "@/lib/chat/runtime-status";
@@ -15,18 +16,8 @@ export const maxDuration = 300;
 
 const encoder = new TextEncoder();
 
-const USER_ERROR_MESSAGES: Record<ChatErrorCode, string> = {
-  INVALID_REQUEST: "질문 내용을 확인해 주세요.",
-  CHATBOT_DISABLED: "현재 포트폴리오 AI 챗봇 연결이 꺼져 있어요. 소개와 연락처에서 더 많은 정보를 확인해 주세요.",
-  RATE_LIMITED: "요청이 많아요. 잠시 후 다시 질문해 주세요.",
-  SEARCH_UNAVAILABLE: "관련 콘텐츠를 챗봇에 반영하고 있어요. 잠시 후 다시 질문해 주세요.",
-  NO_RELEVANT_CONTEXT: "현재 공개된 포트폴리오와 블로그에서는 해당 내용을 확인할 수 없어요. 다른 기술이나 프로젝트에 대해 질문하거나 연락처 페이지를 이용해 주세요.",
-  MODEL_BUSY: "요청이 많아요. 잠시 후 다시 질문해 주세요.",
-  MODEL_UNAVAILABLE: "챗봇 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.",
-  FIRST_TOKEN_TIMEOUT: "답변 생성에 시간이 너무 오래 걸렸어요. 질문을 조금 짧게 바꿔 다시 시도해 주세요.",
-  GENERATION_TIMEOUT: "답변 생성에 시간이 너무 오래 걸렸어요. 질문을 조금 짧게 바꿔 다시 시도해 주세요.",
-  INTERNAL_ERROR: "답변을 만들지 못했어요. 잠시 후 다시 시도해 주세요.",
-};
+/** 백엔드 요청을 끊은 까닭. 클라이언트가 떠난 경우에는 오류를 보내지 않는다. */
+type RelayAbortReason = "timeout" | "client";
 
 function jsonError(code: ChatErrorCode, status: number, retryAfterSeconds?: number) {
   return Response.json(
@@ -85,10 +76,11 @@ async function relayBackendStream(
   const rawBody = JSON.stringify(payload);
   const signed = createSignedChatHeaders(backend.secret, rawBody);
   const abortController = new AbortController();
-  const timeout = setTimeout(() => abortController.abort("timeout"), requestTimeoutMs());
-  const abortFromClient = () => abortController.abort("client");
+  const abortRelay = (reason: RelayAbortReason) => abortController.abort(reason);
+  const timeout = setTimeout(() => abortRelay("timeout"), requestTimeoutMs());
+  const abortFromClient = () => abortRelay("client");
   downstreamSignal.addEventListener("abort", abortFromClient, { once: true });
-  if (downstreamSignal.aborted) abortController.abort("client");
+  if (downstreamSignal.aborted) abortRelay("client");
 
   let closed = false;
   const enqueue = (value: string) => {
@@ -143,7 +135,7 @@ async function relayBackendStream(
           } else {
             enqueue(encodeSse(event, data));
           }
-          terminalEventReceived = event === "done" || event === "error";
+          terminalEventReceived = isTerminalChatSseEvent(event);
           if (terminalEventReceived) break;
         }
       }
@@ -155,8 +147,9 @@ async function relayBackendStream(
       await reader.cancel().catch(() => undefined);
     }
   } catch (error) {
-    if (downstreamSignal.aborted || abortController.signal.reason === "client") return;
-    const timedOut = abortController.signal.aborted && abortController.signal.reason === "timeout";
+    const abortReason = abortController.signal.aborted ? abortController.signal.reason as RelayAbortReason : null;
+    if (downstreamSignal.aborted || abortReason === "client") return;
+    const timedOut = abortReason === "timeout";
     const code: ChatErrorCode = timedOut ? "GENERATION_TIMEOUT" : "MODEL_UNAVAILABLE";
     enqueue(encodeSse("error", { code, message: USER_ERROR_MESSAGES[code] }));
     Sentry.captureException(error, { tags: { area: "chat-relay", code }, extra: { requestId: signed.requestId } });

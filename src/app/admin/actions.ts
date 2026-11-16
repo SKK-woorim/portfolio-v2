@@ -16,7 +16,8 @@ import {
   type MediaUploadState,
 } from "@/lib/validation/content";
 import { markdownToPlainText, toMarkdownDocument } from "@/lib/content/markdown";
-import { CONTENT_CACHE_TAGS } from "@/lib/content/types";
+import { CONTENT_STATUS_LABELS, canTransitionContent, isContentStatus, type ContentTransition } from "@/lib/content/status";
+import { CONTENT_CACHE_TAGS, type ContentStatus } from "@/lib/content/types";
 import { InvalidImageUploadError, normalizeImageUpload } from "@/lib/media/image-upload";
 
 type ContentTable = "portfolio_items" | "posts";
@@ -100,51 +101,77 @@ async function getContentRecord(table: ContentTable, id: string) {
   return { data: data as ContentRecord | null, error };
 }
 
-export async function publishContent(table: ContentTable, id: string): Promise<FormState> {
+type TransitionCopy = {
+  /** 현재 상태에서는 실행할 수 없을 때 돌려줄 결과. */
+  rejected: (status: ContentStatus) => FormState;
+  failure: string;
+  success: (table: ContentTable, resultStatus: unknown) => string;
+};
+
+const TRASHED_FIRST_RESTORE = "휴지통의 콘텐츠는 먼저 복구해 주세요.";
+
+const CONTENT_TRANSITION_COPY: Record<ContentTransition, TransitionCopy> = {
+  publish: {
+    rejected: (status) => ({ error: status === "trashed" ? TRASHED_FIRST_RESTORE : "이미 발행된 콘텐츠입니다. 목록을 새로고침해 주세요." }),
+    failure: "발행하지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
+    success: (table) => table === "posts" ? "게시글을 발행했습니다. 챗봇 반영을 준비하고 있습니다." : "포트폴리오 항목을 발행했습니다. 챗봇 반영을 준비하고 있습니다.",
+  },
+  unpublish: {
+    rejected: (status) => ({ error: status === "trashed" ? TRASHED_FIRST_RESTORE : "발행 중인 콘텐츠만 초안으로 전환할 수 있습니다." }),
+    failure: "발행을 중단하지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
+    success: () => "초안으로 전환했습니다.",
+  },
+  trash: {
+    rejected: () => ({ success: "이미 휴지통에 있습니다." }),
+    failure: "휴지통으로 옮기지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
+    success: () => "휴지통으로 옮겼습니다. 언제든 복구할 수 있습니다.",
+  },
+  restore: {
+    rejected: () => ({ error: "휴지통에 있는 콘텐츠만 복구할 수 있습니다." }),
+    failure: "복구하지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
+    success: (_table, resultStatus) => {
+      const restored = isContentStatus(resultStatus) && resultStatus !== "trashed" ? resultStatus : "draft";
+      return `${CONTENT_STATUS_LABELS[restored]} 상태로 복구했습니다.`;
+    },
+  },
+};
+
+/**
+ * 발행 상태 전이의 공통 경로. 전이 규칙은 `@/lib/content/status`의 표를 따르고,
+ * 최종 확정과 동시 수정 충돌 검사는 DB 함수 `transition_content_status_atomic`이 맡는다.
+ */
+async function transitionContent(table: ContentTable, id: string, transition: ContentTransition): Promise<FormState> {
   const command = contentCommandSchema.safeParse({ table, id });
   if (!command.success) return { error: command.error.issues[0]?.message ?? "콘텐츠 정보를 확인해 주세요." };
   await requireAdmin();
   const { data: content, error: lookupError } = await getContentRecord(command.data.table, command.data.id);
   if (lookupError || !content) return { error: "콘텐츠를 찾을 수 없습니다." };
-  if (content.status === "trashed") return { error: "휴지통의 콘텐츠는 먼저 복구해 주세요." };
+
+  const copy = CONTENT_TRANSITION_COPY[transition];
+  // 아는 상태에서만 미리 거른다. 모르는 상태는 DB가 판단하게 둔다.
+  if (isContentStatus(content.status) && !canTransitionContent(content.status, transition)) return copy.rejected(content.status);
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("transition_content_status_atomic", {
     p_content_type: contentType(command.data.table),
     p_content_id: command.data.id,
     p_expected_status: content.status,
-    p_transition: "publish",
+    p_transition: transition,
   });
   if (isConflict(error)) return { error: "다른 요청에서 상태가 변경되었습니다. 목록을 새로고침해 주세요." };
-  if (error) return { error: "발행하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
+  if (error) return { error: copy.failure };
 
-  const result = data as { slug?: unknown } | null;
+  const result = data as { slug?: unknown; status?: unknown } | null;
   revalidateContent(command.data.table, typeof result?.slug === "string" ? result.slug : content.slug);
-  return { success: command.data.table === "posts" ? "게시글을 발행했습니다. 챗봇 반영을 준비하고 있습니다." : "포트폴리오 항목을 발행했습니다. 챗봇 반영을 준비하고 있습니다." };
+  return { success: copy.success(command.data.table, result?.status) };
+}
+
+export async function publishContent(table: ContentTable, id: string): Promise<FormState> {
+  return transitionContent(table, id, "publish");
 }
 
 export async function unpublishContent(table: ContentTable, id: string): Promise<FormState> {
-  const command = contentCommandSchema.safeParse({ table, id });
-  if (!command.success) return { error: command.error.issues[0]?.message ?? "콘텐츠 정보를 확인해 주세요." };
-  await requireAdmin();
-  const { data: content, error: lookupError } = await getContentRecord(command.data.table, command.data.id);
-  if (lookupError || !content) return { error: "콘텐츠를 찾을 수 없습니다." };
-  if (content.status === "trashed") return { error: "휴지통의 콘텐츠는 먼저 복구해 주세요." };
-  if (content.status !== "published") return { error: "발행 중인 콘텐츠만 초안으로 전환할 수 있습니다." };
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("transition_content_status_atomic", {
-    p_content_type: contentType(command.data.table),
-    p_content_id: command.data.id,
-    p_expected_status: content.status,
-    p_transition: "unpublish",
-  });
-  if (isConflict(error)) return { error: "다른 요청에서 상태가 변경되었습니다. 목록을 새로고침해 주세요." };
-  if (error) return { error: "발행을 중단하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
-
-  const result = data as { slug?: unknown } | null;
-  revalidateContent(command.data.table, typeof result?.slug === "string" ? result.slug : content.slug);
-  return { success: "초안으로 전환했습니다." };
+  return transitionContent(table, id, "unpublish");
 }
 
 export async function savePortfolio(_previousState: ContentSaveState, formData: FormData): Promise<ContentSaveState> {
@@ -288,54 +315,11 @@ export async function setChatbotRuntimeEnabled(_previousState: FormState, formDa
 }
 
 export async function moveToTrash(table: ContentTable, id: string): Promise<FormState> {
-  const command = contentCommandSchema.safeParse({ table, id });
-  if (!command.success) return { error: command.error.issues[0]?.message ?? "콘텐츠 정보를 확인해 주세요." };
-  await requireAdmin();
-  const { data: content, error: lookupError } = await getContentRecord(command.data.table, command.data.id);
-  if (lookupError || !content) return { error: "콘텐츠를 찾을 수 없습니다." };
-  if (content.status === "trashed") return { success: "이미 휴지통에 있습니다." };
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("transition_content_status_atomic", {
-    p_content_type: contentType(command.data.table),
-    p_content_id: command.data.id,
-    p_expected_status: content.status,
-    p_transition: "trash",
-  });
-  if (isConflict(error)) return { error: "다른 요청에서 상태가 변경되었습니다. 목록을 새로고침해 주세요." };
-  if (error) return { error: "휴지통으로 옮기지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
-  const result = data as { slug?: unknown } | null;
-  revalidateContent(command.data.table, typeof result?.slug === "string" ? result.slug : content.slug);
-  return { success: "휴지통으로 옮겼습니다. 언제든 복구할 수 있습니다." };
+  return transitionContent(table, id, "trash");
 }
 
 export async function restoreContent(table: ContentTable, id: string): Promise<FormState> {
-  const command = contentCommandSchema.safeParse({ table, id });
-  if (!command.success) return { error: command.error.issues[0]?.message ?? "콘텐츠 정보를 확인해 주세요." };
-  await requireAdmin();
-  const { data: content, error: lookupError } = await getContentRecord(command.data.table, command.data.id);
-  if (lookupError || !content) return { error: "콘텐츠를 찾을 수 없습니다." };
-  if (content.status !== "trashed") return { error: "휴지통에 있는 콘텐츠만 복구할 수 있습니다." };
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("transition_content_status_atomic", {
-    p_content_type: contentType(command.data.table),
-    p_content_id: command.data.id,
-    p_expected_status: content.status,
-    p_transition: "restore",
-  });
-  if (isConflict(error)) return { error: "다른 요청에서 상태가 변경되었습니다. 목록을 새로고침해 주세요." };
-  if (error) return { error: "복구하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
-  const result = data as { slug?: unknown; status?: unknown } | null;
-  const restoredStatus = typeof result?.status === "string" ? result.status : "draft";
-  revalidateContent(command.data.table, typeof result?.slug === "string" ? result.slug : content.slug);
-  const restoredStatusLabel = restoredStatus === "published"
-    ? "발행"
-    : restoredStatus === "hidden"
-      ? "숨김"
-      : restoredStatus === "private"
-        ? "비공개"
-        : "초안";
-  return { success: `${restoredStatusLabel} 상태로 복구했습니다.` };
+  return transitionContent(table, id, "restore");
 }
 
 export async function reorderPortfolioItems(orderedIds: string[]) {

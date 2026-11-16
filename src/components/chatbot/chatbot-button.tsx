@@ -1,6 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import type { RefObject } from "react";
 import type { ChatbotRuntimeAvailability } from "./chatbot-types";
+import { isChatOffline } from "./runtime-availability";
 
 type ChatbotButtonProps = {
   buttonRef: RefObject<HTMLButtonElement | null>;
@@ -14,7 +15,7 @@ type ChatbotButtonProps = {
 };
 
 export function ChatbotButton({ buttonRef, isOpen, hasUnreadError, onClick, isAway = false, pulse = false, runtimeAvailability }: ChatbotButtonProps) {
-  const offline = runtimeAvailability === "disabled" || runtimeAvailability === "unavailable";
+  const offline = runtimeAvailability !== undefined && isChatOffline(runtimeAvailability);
   const className = [
     "chatbot-trigger focus-ring",
     isOpen ? "chatbot-trigger--open" : "",
@@ -31,6 +32,7 @@ export function ChatbotButton({ buttonRef, isOpen, hasUnreadError, onClick, isAw
       aria-haspopup="dialog"
       aria-expanded={isOpen}
       aria-controls="portfolio-chatbot-panel"
+      data-availability={runtimeAvailability}
       tabIndex={isAway ? -1 : undefined}
       onClick={onClick}
     >

@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { RefreshCw, Send, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { isChatPhaseActive } from "./chat-state";
 import { ChatbotMessage } from "./chatbot-message";
 import { ChatbotStatus } from "./chatbot-status";
 import type { ChatbotRuntimeAvailability, ChatMessage, ChatPhase } from "./chatbot-types";
+import { isChatOffline } from "./runtime-availability";
 
 type ChatbotPanelProps = {
   messages: ChatMessage[];
@@ -34,6 +36,14 @@ const WELCOME_MESSAGE: ChatMessage = {
   role: "assistant",
   content: "안녕하세요. 송경근님의 기술, 프로젝트와 블로그에 대해 알려드릴게요.",
   delivery: "complete",
+};
+
+/** 헤더의 연결 상태 한 줄. 네 가지 연결 상태를 빠짐없이 다룬다. */
+const HEADER_STATUS: Record<ChatbotRuntimeAvailability, string> = {
+  checking: "연결 상태를 확인하고 있어요",
+  enabled: "공개된 콘텐츠를 바탕으로 답해요",
+  disabled: "현재 AI 연결이 꺼져 있어요",
+  unavailable: "연결 상태를 확인할 수 없어요",
 };
 
 function getFocusableElements(container: HTMLElement) {
@@ -70,9 +80,8 @@ export function ChatbotPanel({
   const [showNewReply, setShowNewReply] = useState(false);
   const isChecking = runtimeAvailability === "checking";
   const isDisabled = runtimeAvailability === "disabled";
-  const isUnavailable = runtimeAvailability === "unavailable";
-  const isOffline = isDisabled || isUnavailable;
-  const isBusy = isChecking || phase === "submitting" || phase === "searching" || phase === "generating" || phase === "streaming";
+  const isOffline = isChatOffline(runtimeAvailability);
+  const isBusy = isChecking || isChatPhaseActive(phase);
   const hasUserMessage = messages.some((message) => message.role === "user");
 
   useEffect(() => {
@@ -161,6 +170,8 @@ export function ChatbotPanel({
         aria-modal="true"
         aria-label="포트폴리오 챗봇"
         aria-busy={isBusy}
+        data-availability={runtimeAvailability}
+        data-phase={phase}
         onKeyDown={handlePanelKeyDown}
       >
         <header className="chatbot-panel-header">
@@ -168,9 +179,9 @@ export function ChatbotPanel({
             <span className="chatbot-panel-icon" aria-hidden="true"><Sparkles size={18} /></span>
             <div>
               <h2>포트폴리오 AI</h2>
-              <p className={isDisabled ? "chatbot-panel-status--offline" : undefined}>
+              <p className={isOffline ? "chatbot-panel-status--offline" : undefined}>
                 <span aria-hidden="true" />
-                {isChecking ? "연결 상태를 확인하고 있어요" : isDisabled ? "현재 AI 연결이 꺼져 있어요" : "공개된 콘텐츠를 바탕으로 답해요"}
+                {HEADER_STATUS[runtimeAvailability]}
               </p>
             </div>
           </div>

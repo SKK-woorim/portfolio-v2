@@ -95,6 +95,18 @@ describe("PostForm", () => {
     await waitFor(() => expect(view.getByText("게시글을 발행했습니다.")).toBeTruthy());
     expect((view.getByLabelText("저장 상태") as HTMLSelectElement).value).toBe("published");
   });
+
+  it("keeps the chosen status when an immediate publish fails", async () => {
+    actionMocks.savePost.mockResolvedValueOnce({ error: "이미 사용 중인 slug 또는 태그입니다." });
+    const view = render(createElement(PostForm, { post: postFixture(), categories: [], media }));
+    const before = (view.getByLabelText("저장 상태") as HTMLSelectElement).value;
+
+    fireEvent.click(view.getByRole("button", { name: "즉시 발행" }));
+
+    await waitFor(() => expect(view.getByRole("alert")).toBeTruthy());
+    expect(before).not.toBe("published");
+    await waitFor(() => expect((view.getByLabelText("저장 상태") as HTMLSelectElement).value).toBe(before));
+  });
 });
 
 describe("PortfolioForm", () => {

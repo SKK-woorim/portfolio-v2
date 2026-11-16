@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { ArrowRight, Mail, MessageCircle } from "lucide-react";
 import { useChatbot } from "@/components/chatbot/chatbot-context";
+import { isChatOffline } from "@/components/chatbot/runtime-availability";
 
 /** 히어로 CTA. 챗봇을 쓸 수 없으면 질문하기 대신 연락하기를 보여준다. */
 export function HeroActions() {
   const chatbot = useChatbot();
-  const canAsk = chatbot && chatbot.runtimeAvailability !== "disabled" && chatbot.runtimeAvailability !== "unavailable";
+  const canAsk = chatbot && !isChatOffline(chatbot.runtimeAvailability);
 
   function focusConsole() {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -24,6 +24,7 @@ import {
   setChatbotRuntimeEnabled,
   updateMediaAlt,
   updateSiteProfile,
+  unpublishContent,
   uploadMedia,
 } from "./actions";
 
@@ -97,6 +98,36 @@ describe("CMS content status workflow", () => {
     setupContentClient({ id: POST_ID, slug: "private-post", status: "trashed", status_before_trash: "private" });
 
     await expect(restoreContent("posts", POST_ID)).resolves.toEqual({ success: "비공개 상태로 복구했습니다." });
+  });
+
+  it("refuses transitions the status machine does not allow without calling the database", async () => {
+    const published = setupContentClient({ id: ITEM_ID, slug: "live-project", status: "published" });
+    await expect(publishContent("portfolio_items", ITEM_ID)).resolves.toEqual({ error: "이미 발행된 콘텐츠입니다. 목록을 새로고침해 주세요." });
+    expect(published.rpc).not.toHaveBeenCalled();
+
+    const draft = setupContentClient({ id: POST_ID, slug: "draft-post", status: "draft" });
+    await expect(unpublishContent("posts", POST_ID)).resolves.toEqual({ error: "발행 중인 콘텐츠만 초안으로 전환할 수 있습니다." });
+    await expect(restoreContent("posts", POST_ID)).resolves.toEqual({ error: "휴지통에 있는 콘텐츠만 복구할 수 있습니다." });
+    expect(draft.rpc).not.toHaveBeenCalled();
+
+    const trashed = setupContentClient({ id: POST_ID, slug: "old-post", status: "trashed", status_before_trash: "draft" });
+    await expect(publishContent("posts", POST_ID)).resolves.toEqual({ error: "휴지통의 콘텐츠는 먼저 복구해 주세요." });
+    await expect(unpublishContent("posts", POST_ID)).resolves.toEqual({ error: "휴지통의 콘텐츠는 먼저 복구해 주세요." });
+    await expect(moveToTrash("posts", POST_ID)).resolves.toEqual({ success: "이미 휴지통에 있습니다." });
+    expect(trashed.rpc).not.toHaveBeenCalled();
+    expect(contentMocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("unpublishes a published post back to draft", async () => {
+    const client = setupContentClient({ id: POST_ID, slug: "published-post", status: "published" });
+
+    await expect(unpublishContent("posts", POST_ID)).resolves.toEqual({ success: "초안으로 전환했습니다." });
+    expect(client.rpc).toHaveBeenCalledWith("transition_content_status_atomic", expect.objectContaining({
+      p_content_type: "post",
+      p_expected_status: "published",
+      p_transition: "unpublish",
+    }));
+    expect(contentMocks.revalidatePath).toHaveBeenCalledWith("/blog");
   });
 
   it("surfaces a conditional transition race as a conflict", async () => {

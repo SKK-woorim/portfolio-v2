@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useChatbot } from "@/components/chatbot/chatbot-context";
+import { isChatOffline } from "@/components/chatbot/runtime-availability";
 
 const OPEN_EVENT = "portfolio:open-command-palette";
 
@@ -69,7 +70,7 @@ export function CommandPalette({ projects, posts, email }: CommandPaletteProps) 
     return () => window.cancelAnimationFrame(frame);
   }, [open]);
 
-  const chatAvailable = Boolean(chatbot && chatbot.runtimeAvailability !== "disabled" && chatbot.runtimeAvailability !== "unavailable");
+  const chatAvailable = Boolean(chatbot && !isChatOffline(chatbot.runtimeAvailability));
 
   const entries = useMemo<PaletteEntry[]>(() => {
     const go = (href: string) => () => router.push(href);

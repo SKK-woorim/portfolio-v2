@@ -1,4 +1,5 @@
 import { Square } from "lucide-react";
+import { isChatPhaseActive } from "./chat-state";
 import type { ChatPhase } from "./chatbot-types";
 
 type ChatbotStatusProps = {
@@ -9,8 +10,7 @@ type ChatbotStatusProps = {
 };
 
 export function ChatbotStatus({ phase, message, canCancel, onCancel }: ChatbotStatusProps) {
-  const isActive = phase === "submitting" || phase === "searching" || phase === "generating" || phase === "streaming";
-  if (!isActive || (!message && !canCancel)) return null;
+  if (!isChatPhaseActive(phase) || (!message && !canCancel)) return null;
 
   return (
     <div className="chatbot-status" aria-live="polite" aria-atomic="true">

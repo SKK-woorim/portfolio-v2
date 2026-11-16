@@ -6,6 +6,7 @@ import { ChatbotButton } from "./chatbot-button";
 import { ChatbotProvider, describeProgress, SUGGESTED_QUESTIONS, useChatbot } from "./chatbot-context";
 import { ChatbotPanel } from "./chatbot-panel";
 import { ChatbotSlowNotice } from "./chatbot-slow-notice";
+import { isChatOnline } from "./runtime-availability";
 
 export { SUGGESTED_QUESTIONS };
 
@@ -36,12 +37,12 @@ function ChatbotFloating() {
 
   // 버튼이 처음 보일 때 연결된 상태라면 안내 말풍선을 한 번 띄운다.
   useEffect(() => {
-    if (away || isOpen || runtimeAvailability !== "enabled" || readTeaserSeen()) return;
+    if (away || isOpen || !isChatOnline(runtimeAvailability) || readTeaserSeen()) return;
     const timer = window.setTimeout(() => setTeaserVisible(true), TEASER_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [away, isOpen, runtimeAvailability]);
 
-  const showTeaser = teaserVisible && !away && !isOpen && runtimeAvailability === "enabled";
+  const showTeaser = teaserVisible && !away && !isOpen && isChatOnline(runtimeAvailability);
 
   function dismissTeaser() {
     markTeaserSeen();
@@ -80,7 +81,7 @@ function ChatbotFloating() {
           statusMessage={describeProgress(chatbot.progress, chatbot.indexStats) ?? chatbot.statusMessage}
           canCancel={chatbot.canCancel}
           input={chatbot.input}
-          isReady={chatbot.isHydrated && runtimeAvailability === "enabled"}
+          isReady={chatbot.isHydrated && isChatOnline(runtimeAvailability)}
           runtimeAvailability={runtimeAvailability}
           announcement={chatbot.announcement}
           suggestedQuestions={chatbot.suggestions}
