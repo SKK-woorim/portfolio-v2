@@ -26,6 +26,7 @@ export function ChatbotMessage({ message, onRetry, onNavigate }: ChatbotMessageP
     >
       <div className="chatbot-message-bubble">
         <p>{isAssistant ? <CitedText text={message.content} /> : message.content}</p>
+        {message.cached ? <small className="chatbot-message-note" data-kind="cached">저장된 답변 · 자주 묻는 질문이라 미리 만들어 둔 답변이에요.</small> : null}
         {message.delivery === "cancelled" ? <small className="chatbot-message-note">생성이 취소된 답변입니다.</small> : null}
         {message.delivery === "partial" ? <small className="chatbot-message-note">답변이 길이 제한으로 일부만 표시되었습니다.</small> : null}
       </div>

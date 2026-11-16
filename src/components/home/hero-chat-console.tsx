@@ -197,6 +197,7 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
                 <div className="console-answer" data-tone={answer.delivery === "error" ? "error" : undefined}>
                   <span className="console-label">{answer.delivery === "error" ? "답변하지 못했어요" : "답변"}</span>
                   <p>{answer.content ? <CitedText text={answer.content} /> : "답변을 만드는 중이에요…"}</p>
+                  {answer.cached ? <small className="console-cached">저장된 답변 · 자주 묻는 질문이라 미리 만들어 둔 답변이에요.</small> : null}
                   {answer.delivery === "error" && answer.errorCode === "NO_RELEVANT_CONTEXT" ? (
                     <div className="console-links">
                       <Link href="/about" className="focus-ring">소개 보기 <ArrowRight size={14} aria-hidden="true" /></Link>

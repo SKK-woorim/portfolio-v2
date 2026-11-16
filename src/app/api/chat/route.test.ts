@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const chatRouteMocks = vi.hoisted(() => ({
   consumeChatRateLimit: vi.fn(),
   getChatbotRuntimeStatus: vi.fn(),
+  getPublicContentVersion: vi.fn(),
   captureException: vi.fn(),
 }));
 
@@ -11,6 +12,19 @@ vi.mock("@/lib/chat/rate-limit", async () => {
   return { ...actual, consumeChatRateLimit: chatRouteMocks.consumeChatRateLimit };
 });
 vi.mock("@sentry/nextjs", () => ({ captureException: chatRouteMocks.captureException }));
+vi.mock("@/lib/chat/public-content-version", () => ({ getPublicContentVersion: chatRouteMocks.getPublicContentVersion }));
+vi.mock("@/lib/chat/cached-answers", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/chat/cached-answers")>("@/lib/chat/cached-answers");
+  return {
+    ...actual,
+    cachedAnswers: actual.createCachedAnswerLookup({
+      version: 1,
+      generatedAt: "2026-11-10T00:00:00.000Z",
+      contentVersion: "0123456789abcdef",
+      entries: [{ question: "주요 기술 스택이 궁금해요", answer: "Python과 RAG를 주로 사용합니다. [S1]", sources: [{ id: "S1", title: "소개", type: "profile", url: "/about" }] }],
+    }),
+  };
+});
 vi.mock("@/lib/chat/runtime-status", () => ({
   getChatbotRuntimeStatus: chatRouteMocks.getChatbotRuntimeStatus,
   isChatbotMasterEnabled: () => process.env.CHATBOT_ENABLED === "true",
@@ -39,6 +53,7 @@ describe("POST /api/chat", () => {
     vi.stubEnv("CHAT_REQUEST_TIMEOUT_MS", "5000");
     chatRouteMocks.consumeChatRateLimit.mockResolvedValue({ allowed: true, retryAfterSeconds: 0 });
     chatRouteMocks.getChatbotRuntimeStatus.mockResolvedValue({ enabled: true, updatedAt: null });
+    chatRouteMocks.getPublicContentVersion.mockResolvedValue("0123456789abcdef");
   });
 
   afterEach(() => {
@@ -119,5 +134,52 @@ describe("POST /api/chat", () => {
     expect(stream).not.toContain("evil.example");
     expect(stream).toContain('"code":"MODEL_UNAVAILABLE"');
     expect(chatRouteMocks.captureException).toHaveBeenCalledOnce();
+  });
+
+  describe("cached answers", () => {
+    const cachedRequest = { sessionId, message: "  주요 기술 스택이   궁금해요 ", history: [] };
+
+    it("streams a stored answer without rate limiting or calling the backend", async () => {
+      vi.stubGlobal("fetch", vi.fn());
+      const response = await POST(request(cachedRequest));
+      expect(response.status).toBe(200);
+      const stream = await response.text();
+      expect(stream).toContain('event: sources\ndata: {"items":[{"id":"S1","title":"소개","type":"profile","url":"/about"}]}');
+      const answer = [...stream.matchAll(/event: token\ndata: (.+)/g)].map((match) => (JSON.parse(match[1]) as { delta: string }).delta).join("");
+      expect(answer).toBe("Python과 RAG를 주로 사용합니다. [S1]");
+      expect(stream).toMatch(/event: done\ndata: \{"requestId":"[0-9a-f-]{36}","finishReason":"stop","cached":true\}/);
+      expect(fetch).not.toHaveBeenCalled();
+      expect(chatRouteMocks.consumeChatRateLimit).not.toHaveBeenCalled();
+    });
+
+    it("falls back to live generation when public content changed after the answers were stored", async () => {
+      chatRouteMocks.getPublicContentVersion.mockResolvedValue("fedcba9876543210");
+      vi.stubGlobal("fetch", vi.fn(async () => new Response('event: error\ndata: {"code":"MODEL_BUSY","message":"busy"}\n\n', { headers: { "content-type": "text/event-stream" } })));
+      const stream = await (await POST(request(cachedRequest))).text();
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(stream).not.toContain('"cached":true');
+    });
+
+    it("falls back to live generation when the content version cannot be read", async () => {
+      chatRouteMocks.getPublicContentVersion.mockRejectedValue(new Error("supabase down"));
+      vi.stubGlobal("fetch", vi.fn(async () => new Response('event: error\ndata: {"code":"MODEL_BUSY","message":"busy"}\n\n', { headers: { "content-type": "text/event-stream" } })));
+      await (await POST(request(cachedRequest))).text();
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(chatRouteMocks.captureException).toHaveBeenCalledOnce();
+    });
+
+    it("lets the generation script bypass stored answers", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => new Response('event: error\ndata: {"code":"MODEL_BUSY","message":"busy"}\n\n', { headers: { "content-type": "text/event-stream" } })));
+      const bypass = new Request("https://portfolio.example/api/chat", { method: "POST", headers: { "content-type": "application/json", "x-chat-cache": "bypass" }, body: JSON.stringify(cachedRequest) });
+      await (await POST(bypass)).text();
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(chatRouteMocks.getPublicContentVersion).not.toHaveBeenCalled();
+    });
+
+    it("still refuses stored answers while the chatbot is switched off", async () => {
+      chatRouteMocks.getChatbotRuntimeStatus.mockResolvedValue({ enabled: false, updatedAt: null });
+      const response = await POST(request(cachedRequest));
+      expect(response.status).toBe(503);
+    });
   });
 });

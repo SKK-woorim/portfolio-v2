@@ -9,6 +9,7 @@ import { Tag } from "@/components/tag";
 import { MarkdownContent } from "@/components/markdown-content";
 import { MarkdownTableOfContents } from "@/components/markdown-table-of-contents";
 import { ContentContactCta, RelatedPortfolio, relatedPortfolioItems } from "@/components/content-discovery";
+import { caseAskQuestions } from "@/lib/chat/case-questions";
 import { getProjectEvidence } from "@/lib/content/evidence";
 import { getProjectPresentation } from "@/lib/content/presentation";
 import { getPublishedPortfolioItem, getPublishedPortfolioItems } from "@/lib/content/repository";
@@ -55,7 +56,7 @@ export default async function PortfolioDetailPage({ params }: PageProps) {
   };
   const role = getProjectPresentation(item.slug).facts.find((fact) => fact.kind === "role")?.text;
   const evidence = getProjectEvidence(item.slug);
-  const askQuestions = [`${item.title}에서 맡은 역할은 무엇인가요?`, `${item.title}의 결과를 알려주세요.`];
+  const askQuestions = caseAskQuestions(item.title);
   return (
     <article id="case-article">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(projectJsonLd) }} />

@@ -1,0 +1,253 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-10T02:15:17.266Z",
+  "contentVersion": "ef37d437deaf2f56",
+  "entries": [
+    {
+      "question": "데이터 이관 경험이 궁금해요",
+      "answer": "저는 대용량 의료데이터 이관 경험을 통해 문제 해결 능력과 기술 적용 능력을 입증했습니다. MSSQL의 26개 테이블, 약 30억 건, 1.3TB에 달하는 원천 데이터를 ClickHouse 기반 자사 DB로 2일 만에 이관하는 성과를 달성했습니다. 초기에는 Python을 이용한 Parquet 변환 방식을 사용했으나, 대용량 조회 시 처리 지연과 서버 리소스 부담이 발생하여 JDBC 기반 쉘 스크립트로 조회 구간을 나누고 즉시 적재하는 방식으로 전환하여 문제를 해결했습니다. [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축",
+          "type": "portfolio",
+          "url": "/portfolio/yonsei-medical-data-platform"
+        },
+        {
+          "id": "S2",
+          "title": "자연어 질문을 데이터 분석으로 연결하는 NL2SQL",
+          "type": "post",
+          "url": "/blog/nl2sql-workflow"
+        }
+      ]
+    },
+    {
+      "question": "삼성SDI PoC에서 맡은 역할은?",
+      "answer": "저는 삼성SDI PoC에서 Agent 영역을 단독으로 담당했습니다. 저는 XAI 모델을 MLOps와 Agent에 연결하고, 기존 SHAP 기반 XAI 불량 예측 모델을 Airflow 기반 자사 MLOps 환경에 배포하며 FastAPI로 서빙하는 작업을 수행했습니다. 또한, API가 전달하는 피처별 SHAP 기여도를 Dify HTTP 노드에서 받아 Agent 분석 입력으로 연계하는 역할을 담당했습니다. [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC",
+          "type": "portfolio",
+          "url": "/portfolio/samsung-sdi-multi-agent-mlops-poc"
+        }
+      ]
+    },
+    {
+      "question": "주요 기술 스택이 궁금해요",
+      "answer": "제가 보유한 주요 기술 스택은 Python, SQL, ClickHouse를 기반으로 데이터 이관 및 ETL 작업을 수행하는 능력입니다. 또한, AI Agent, RAG, Multi-Agent, MLOps, Dify와 같은 최신 AI 관련 기술을 다루며 온톨로지 구축 경험도 갖추고 있습니다. [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "송경근",
+          "type": "profile",
+          "url": "/about"
+        },
+        {
+          "id": "S2",
+          "title": "T2G — Text to 3D",
+          "type": "portfolio",
+          "url": "/portfolio/text-to-3d-platform"
+        }
+      ]
+    },
+    {
+      "question": "어떤 분야의 협업이 가능한가요?",
+      "answer": "저는 데이터 이관, 지식 연결, 현장 적용 AI 모델 개발 분야에서 협업이 가능합니다. 저는 Python, SQL, ClickHouse와 같은 데이터 처리 기술을 활용하여 AI Agent, RAG, Multi-Agent 시스템을 구축하고 MLOps를 경험했습니다. 이러한 기술 스택을 바탕으로 데이터 플랫폼 엔지니어로서 다양한 기술 분야와 시너지를 내는 협업에 강점을 가집니다. [S2]",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "AI 프로젝트를 이끌며 배운 협업의 기준",
+          "type": "post",
+          "url": "/blog/leading-ai-projects"
+        },
+        {
+          "id": "S2",
+          "title": "송경근",
+          "type": "profile",
+          "url": "/about"
+        }
+      ]
+    },
+    {
+      "question": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC에서 맡은 역할은 무엇인가요?",
+      "answer": "저는 삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC에서 Agent 영역을 단독으로 담당했습니다. 핵심 범위는 XAI 모델 MLOps 배포와 연계, 공정 온톨로지 및 RAG 구축, Multi-Agent 워크플로우 개발, 그리고 고객사 교육까지였습니다. [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC",
+          "type": "portfolio",
+          "url": "/portfolio/samsung-sdi-multi-agent-mlops-poc"
+        },
+        {
+          "id": "S2",
+          "title": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축",
+          "type": "portfolio",
+          "url": "/portfolio/yonsei-medical-data-platform"
+        }
+      ]
+    },
+    {
+      "question": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC의 결과를 알려주세요.",
+      "answer": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC의 결과는 실제 2주 만에 SHAP 기반 XAI 모델 MLOps 연계부터 공정 온톨로지, RAG, Multi-Agent 분석 파이프라인 구축 및 고객사 교육까지 Agent 영역을 완료한 것입니다 [S1]. 검증은 전체 1,005개 LOT 중 제공된 99개를 대상으로 진행하였으며, 지식 연계 효과는 정성 GAP 비교를 통해 확인하였습니다 [S1]. 저는 이 프로젝트를 통해 복잡한 AI 에이전트 기반 MLOps 파이프라인을 단기간에 구현해내는 저의 역량을 입증하였습니다.",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC",
+          "type": "portfolio",
+          "url": "/portfolio/samsung-sdi-multi-agent-mlops-poc"
+        },
+        {
+          "id": "S2",
+          "title": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축",
+          "type": "portfolio",
+          "url": "/portfolio/yonsei-medical-data-platform"
+        }
+      ]
+    },
+    {
+      "question": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축에서 맡은 역할은 무엇인가요?",
+      "answer": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축 프로젝트에서 저는 3명으로 구성된 팀의 팀원으로 데이터 수집·구축과 기술 이전·교육을 맡았습니다 [S1]. 약 30억 건에 달하는 의료데이터 1.3TB를 2일 만에 ClickHouse 기반 자사 DB로 이관하는 작업을 성공적으로 완료했습니다 [S1]. 또한, 26개 테이블에 대한 정합성 검증을 수행하고, 분석 솔루션 및 MIG 기반 GPU 분할 할당 VDI 구축을 지원하며 사용자 및 관리자 교육까지 책임졌습니다 [S1].",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축",
+          "type": "portfolio",
+          "url": "/portfolio/yonsei-medical-data-platform"
+        },
+        {
+          "id": "S2",
+          "title": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC",
+          "type": "portfolio",
+          "url": "/portfolio/samsung-sdi-multi-agent-mlops-poc"
+        }
+      ]
+    },
+    {
+      "question": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축의 결과를 알려주세요.",
+      "answer": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축의 결과는 약 30억 건과 1.3TB에 달하는 의료데이터를 2일 만에 ClickHouse 기반 자사 DB로 이관한 것입니다[S1]. 또한, 26개 테이블에 대한 정합성 검증을 완료하고 분석 솔루션 및 MIG 기반 GPU 분할 할당 VDI 구축을 지원하며 사용자 및 관리자 교육까지 성공적으로 수행하였습니다[S1]. 저는 이러한 대규모 데이터 이관과 시스템 구축을 통해 안정적인 의료데이터 플랫폼을 성공적으로 마련하는 데 기여하였습니다.",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "연세대학교 AI혁신연구원 의료데이터 플랫폼 구축",
+          "type": "portfolio",
+          "url": "/portfolio/yonsei-medical-data-platform"
+        },
+        {
+          "id": "S2",
+          "title": "삼성SDI 멀티 에이전트 기반 MLOps 플랫폼 PoC",
+          "type": "portfolio",
+          "url": "/portfolio/samsung-sdi-multi-agent-mlops-poc"
+        }
+      ]
+    },
+    {
+      "question": "AI Agent & RAG 워크플로우에서 맡은 역할은 무엇인가요?",
+      "answer": "저는 Dify와 같은 오픈소스 AI 오케스트레이션 플랫폼을 활용하여 AI Agent와 LLM 워크플로우를 설계하고 개발하는 역할을 수행합니다. 구체적으로 PDF, HWP, HWPX와 같은 비정형 문서를 OCR, 전처리, 청킹, 메타데이터 구성하는 과정을 거쳐 RAG 지식베이스를 구축합니다 [S1]. 또한, 자연어 질의를 SQL과 분석 결과로 연결하는 NL2SQL 흐름을 구현하고 Python 기반의 데이터 정제 및 변환과 ClickHouse 데이터베이스 이관을 위한 ETL 프로세스도 설계했습니다 [S1]. 이러한 복잡한 워크플로우를 성공적으로 구현하며 비정형 문서를 지식으로 변환하는 데 깊이 몰두했습니다.",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "AI Agent & RAG 워크플로우",
+          "type": "portfolio",
+          "url": "/portfolio/ai-agent-rag-workflows"
+        },
+        {
+          "id": "S2",
+          "title": "RAG 품질은 문서 전처리에서 시작됩니다",
+          "type": "post",
+          "url": "/blog/rag-document-pipeline"
+        }
+      ]
+    },
+    {
+      "question": "AI Agent & RAG 워크플로우의 결과를 알려주세요.",
+      "answer": "AI Agent와 RAG 워크플로우의 결과는 비정형 문서를 지식으로 변환하고 자연어 질문을 분석 결과로 연결하는 시스템을 설계하고 개발하는 것입니다. 저는 Dify와 같은 오픈소스 AI 오케스트레이션 플랫폼을 활용하여 PDF, HWP, HWPX 문서의 OCR, 전처리, 청킹, 메타데이터 구성을 거쳐 RAG 지식베이스를 구축합니다. 또한, 자연어 질의를 SQL과 분석 결과로 연결하는 NL2SQL 흐름을 구현하고, Python 기반의 데이터 정제 및 변환과 ClickHouse 데이터베이스 이관을 위한 ETL 프로세스까지 설계하여 완성합니다. [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "AI Agent & RAG 워크플로우",
+          "type": "portfolio",
+          "url": "/portfolio/ai-agent-rag-workflows"
+        },
+        {
+          "id": "S2",
+          "title": "RAG 품질은 문서 전처리에서 시작됩니다",
+          "type": "post",
+          "url": "/blog/rag-document-pipeline"
+        }
+      ]
+    },
+    {
+      "question": "지하수 수위 예측 AI 모델에서 맡은 역할은 무엇인가요?",
+      "answer": "저는 지하수 수위 예측 AI 모델 프로젝트에서 팀장으로서 프로젝트 설계와 데이터 처리를 총괄했습니다. 홍천 지역 테스트셋에서 RMSE 0.054라는 성과를 달성했으며, 모델 비교 및 분석 결과를 한국컴퓨터정보학회 학술발표논문으로 발표했습니다. 이러한 연구를 통해 저는 복잡한 시계열 데이터를 다루고 예측 모델을 구축하는 역량을 심화시킬 수 있었습니다.",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "지하수 수위 예측 AI 모델",
+          "type": "portfolio",
+          "url": "/portfolio/groundwater-level-prediction"
+        }
+      ]
+    },
+    {
+      "question": "지하수 수위 예측 AI 모델의 결과를 알려주세요.",
+      "answer": "지하수 수위 예측 AI 모델의 결과는 홍천 지역 테스트셋에서 RMSE 0.054를 기록했습니다 [S1]. 저는 기상 변화와 지하수 수위의 상관관계를 분석하고 LSTM을 활용하여 수위 변동을 예측하는 연구 프로젝트를 수행했습니다 [S1]. 이러한 성과를 바탕으로 교내외 창업 경진대회에서 우수상, 장려상, 대상을 수상했으며, 모델 비교 및 분석 결과를 한국컴퓨터정보학회 학술발표논문으로 발표하였습니다 [S1].",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "지하수 수위 예측 AI 모델",
+          "type": "portfolio",
+          "url": "/portfolio/groundwater-level-prediction"
+        }
+      ]
+    },
+    {
+      "question": "꿀벌지키미에서 맡은 역할은 무엇인가요?",
+      "answer": "저는 꿀벌지키미 프로젝트에서 팀장으로서 기획을 담당하고 프론트엔드 개발과 데이터 전처리를 수행했습니다. 이 프로젝트를 통해 2024 Global Capstone Design Project에서 Bronze Award를 수상하며 팀의 문제 정의와 구현 결과를 검증받았습니다. 저는 이러한 도전적인 프로젝트를 성공적으로 이끌어냈습니다. [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "꿀벌지키미",
+          "type": "portfolio",
+          "url": "/portfolio/bee-guardian"
+        }
+      ]
+    },
+    {
+      "question": "꿀벌지키미의 결과를 알려주세요.",
+      "answer": "꿀벌지키미는 YOLOv5 객체 인식을 활용하여 말벌을 감지함으로써 양봉 환경의 위험을 신속하게 알려주는 AI 시스템입니다 [S1]. 저는 이 프로젝트에서 팀장으로서 기획을 담당하고 프론트엔드 개발과 데이터 전처리를 모두 수행하였습니다 [S1]. 이 시스템은 2024 Global Capstone Design Project에서 Bronze Award를 수상하며 팀의 문제 정의와 구현 결과를 성공적으로 검증받았습니다 [S1].",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "꿀벌지키미",
+          "type": "portfolio",
+          "url": "/portfolio/bee-guardian"
+        }
+      ]
+    },
+    {
+      "question": "T2G — Text to 3D에서 맡은 역할은 무엇인가요?",
+      "answer": "저는 T2G — Text to 3D 프로젝트에서 서비스 기획, 프론트엔드 개발, 그리고 역할 분배를 총괄했습니다. 사용자 입력 기반의 자동화 흐름을 시연하는 역할을 수행하며 프로젝트를 이끌었습니다. 이러한 경험을 통해 저는 복합적인 개발 프로세스를 성공적으로 관리하는 역량을 길렀습니다. [S1]",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "T2G — Text to 3D",
+          "type": "portfolio",
+          "url": "/portfolio/text-to-3d-platform"
+        }
+      ]
+    },
+    {
+      "question": "T2G — Text to 3D의 결과를 알려주세요.",
+      "answer": "T2G — Text to 3D는 사용자가 입력한 텍스트를 3D 모델로 생성하고 이를 G-code로 변환하는 AI 기반 웹사이트입니다 [S1]. 저는 이 프로젝트에서 팀장으로서 서비스 기획, 프론트엔드 개발, 역할 분배를 총괄하며 사용자 입력 기반 자동화 흐름을 시연했습니다 [S1]. 강원SW페스티벌 SW프로젝트 성과발표회에서 우수팀으로 선정되는 성과를 거두었습니다 [S1].",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "T2G — Text to 3D",
+          "type": "portfolio",
+          "url": "/portfolio/text-to-3d-platform"
+        }
+      ]
+    }
+  ]
+}

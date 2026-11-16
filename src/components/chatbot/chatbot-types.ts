@@ -27,6 +27,8 @@ export type ChatMessage = {
   content: string;
   delivery: "complete" | "partial" | "streaming" | "cancelled" | "error";
   sources?: ChatSource[];
+  /** 미리 만들어 저장해 둔 답변이면 true. */
+  cached?: boolean;
   errorCode?: string;
   retryMessage?: string;
 };

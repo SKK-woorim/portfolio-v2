@@ -104,6 +104,7 @@ function restoreMessages(value: unknown): ChatMessage[] {
       content: interruptedWithoutContent ? "이전 답변 연결이 종료되었어요. 다시 시도해 주세요." : item.content,
       delivery,
       ...(sources.length ? { sources } : {}),
+      ...(item.cached === true ? { cached: true } : {}),
       ...(retryMessage ? { retryMessage } : {}),
       ...(errorCode ? { errorCode } : {}),
     });
@@ -211,11 +212,11 @@ export function ChatbotProvider({ children, checkOnMount = false, disabled = fal
         ? { ...message, content: `${message.content}${delta}`, delivery: "streaming" }
         : message));
     },
-    onComplete(requestId, finishReason: ChatFinishReason) {
+    onComplete(requestId, finishReason: ChatFinishReason, meta) {
       submitLockRef.current = false;
       const delivery = finishReason === "length" ? "partial" : finishReason === "cancelled" ? "cancelled" : "complete";
       setMessages((current) => current.map((message) => message.id === requestId
-        ? { ...message, content: message.content || "답변 생성을 취소했어요.", delivery }
+        ? { ...message, content: message.content || "답변 생성을 취소했어요.", delivery, ...(meta?.cached ? { cached: true } : {}) }
         : message));
       announce(finishReason === "length" ? "답변이 길이 제한으로 일부 완료되었습니다." : finishReason === "cancelled" ? "답변 생성을 취소했습니다." : "챗봇 답변이 완료되었습니다.");
     },

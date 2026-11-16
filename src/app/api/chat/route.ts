@@ -1,6 +1,9 @@
 import * as Sentry from "@sentry/nextjs";
+import { randomUUID } from "node:crypto";
 import { getChatBackendConfig } from "@/lib/chat/backend-config";
+import { cachedAnswers, chunkCachedAnswer, type CachedAnswer } from "@/lib/chat/cached-answers";
 import { CHAT_REQUEST_MAX_BYTES, chatErrorCodeSchema, chatRequestSchema, type ChatErrorCode, type ChatRequest } from "@/lib/chat/contracts";
+import { getPublicContentVersion } from "@/lib/chat/public-content-version";
 import { consumeChatRateLimit } from "@/lib/chat/rate-limit";
 import { getChatbotRuntimeStatus, isChatbotMasterEnabled } from "@/lib/chat/runtime-status";
 import { createSignedChatHeaders } from "@/lib/chat/signature";
@@ -166,6 +169,51 @@ async function relayBackendStream(
   }
 }
 
+const CACHED_CHUNK_DELAY_MS = 18;
+
+/**
+ * 고정 문구 질문(추천 질문, 사례별 질문)에 미리 만들어 둔 답변을 찾는다.
+ * 답변을 만들 때의 콘텐츠 지문이 현재와 다르면 쓰지 않고 실제 생성 경로로 넘긴다.
+ */
+async function findCurrentCachedAnswer(request: Request, message: string) {
+  if (request.headers.get("x-chat-cache")?.trim().toLowerCase() === "bypass") return undefined;
+  const entry = cachedAnswers.find(message);
+  if (!entry) return undefined;
+  try {
+    return cachedAnswers.isCurrent(await getPublicContentVersion()) ? entry : undefined;
+  } catch (error) {
+    Sentry.captureException(error, { tags: { area: "chat-cached-answer" } });
+    return undefined;
+  }
+}
+
+function cachedAnswerStream(entry: CachedAnswer, signal: AbortSignal) {
+  let stopped = false;
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const enqueue = (value: string) => {
+        if (!stopped && !signal.aborted) controller.enqueue(encoder.encode(value));
+      };
+      enqueue(encodeSse("status", { phase: "accepted", message: "질문을 확인하고 있어요." }));
+      enqueue(encodeSse("status", { phase: "searching", message: "관련 정보를 검색하고 있어요." }));
+      enqueue(encodeSse("sources", { items: entry.sources }));
+      enqueue(encodeSse("status", { phase: "generating", message: "저장된 답변을 불러오고 있어요." }));
+      for (const delta of chunkCachedAnswer(entry.answer)) {
+        if (stopped || signal.aborted) return;
+        enqueue(encodeSse("token", { delta }));
+        await new Promise((resolve) => setTimeout(resolve, CACHED_CHUNK_DELAY_MS));
+      }
+      if (stopped || signal.aborted) return;
+      enqueue(encodeSse("done", { requestId: randomUUID(), finishReason: "stop", cached: true }));
+      stopped = true;
+      controller.close();
+    },
+    cancel() {
+      stopped = true;
+    },
+  });
+}
+
 export async function POST(request: Request) {
   if (!isChatbotMasterEnabled()) return jsonError("CHATBOT_DISABLED", 503);
   try {
@@ -199,6 +247,9 @@ export async function POST(request: Request) {
   }
   const parsed = chatRequestSchema.safeParse(input);
   if (!parsed.success) return jsonError("INVALID_REQUEST", 400);
+
+  const cached = await findCurrentCachedAnswer(request, parsed.data.message);
+  if (cached) return new Response(cachedAnswerStream(cached, request.signal), { status: 200, headers: CHAT_SSE_HEADERS });
 
   try {
     getChatBackendConfig();

@@ -17,7 +17,8 @@
     "test:e2e": "playwright test",
     "verify:fonts": "node scripts/verify-pretendard-assets.mjs",
     "verify:migrations": "node scripts/verify-migration-contracts.mjs",
-    "backfill:portfolio-content-text": "tsx scripts/backfill-portfolio-content-text.ts"
+    "backfill:portfolio-content-text": "tsx scripts/backfill-portfolio-content-text.ts",
+    "chat:cache": "tsx scripts/generate-cached-chat-answers.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

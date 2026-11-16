@@ -67,6 +67,8 @@ export const chatSseEventSchema = z.discriminatedUnion("event", [
     data: z.object({
       requestId: z.string().uuid(),
       finishReason: z.enum(["stop", "length", "cancelled"]),
+      // 미리 만들어 저장해 둔 답변이면 true. 화면에 "저장된 답변"으로 표시한다.
+      cached: z.literal(true).optional(),
     }).strict(),
   }),
   z.object({

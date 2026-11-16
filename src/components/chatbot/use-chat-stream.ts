@@ -35,7 +35,7 @@ const PHASE_RANK: Record<ChatPhase, number> = {
 type ChatStreamHandlers = {
   onSources?: (requestId: string, sources: ChatSource[]) => void;
   onToken?: (requestId: string, delta: string) => void;
-  onComplete?: (requestId: string, finishReason: ChatFinishReason) => void;
+  onComplete?: (requestId: string, finishReason: ChatFinishReason, meta?: { cached: boolean }) => void;
   onError?: (requestId: string, error: ChatStreamError) => void;
   onCancel?: (requestId: string) => void;
 };
@@ -223,7 +223,7 @@ export function useChatStream(handlers: ChatStreamHandlers = {}) {
         phaseRef.current = finishReason === "cancelled" ? "cancelled" : "complete";
         setPhase(phaseRef.current);
         setStatusMessage(null);
-        handlersRef.current.onComplete?.(requestId, finishReason);
+        handlersRef.current.onComplete?.(requestId, finishReason, { cached: data?.cached === true });
         return;
       }
 
