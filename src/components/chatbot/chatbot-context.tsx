@@ -13,7 +13,7 @@ const STORAGE_KEY = "portfolio-chatbot-session-v2";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MAX_STORED_MESSAGES = 40;
 const RUNTIME_STATUS_POLL_MS = 15_000;
-const DEFAULT_MODEL_LABEL = "Gemma 4 E2B";
+const DEFAULT_MODEL_LABEL = "서버 모델";
 
 export const SUGGESTED_QUESTIONS = chatSuggestions;
 

@@ -168,6 +168,7 @@ def create_app(
                 "status": "ok" if ready else "not_ready",
                 "embeddingReady": resolved.embeddings.ready,
                 "modelReady": model_ready,
+                "modelLabel": resolved.settings.llama_model_label,
                 "generation": {
                     "running": snapshot.running,
                     "waiting": snapshot.waiting,

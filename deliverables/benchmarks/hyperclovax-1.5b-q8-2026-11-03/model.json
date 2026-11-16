@@ -1,0 +1,16 @@
+{
+  "model": "naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B",
+  "quantization": "Q8_0",
+  "ggufPublisher": "cherryDavid/HyperCLOVAX-SEED-Text-Instruct-1.5B-Q8_0-GGUF",
+  "revision": "fda4577218ac3e345cd65ce6f16def669ca42a96",
+  "filename": "hyperclovax-seed-text-instruct-1.5b-q8_0.gguf",
+  "sha256": "bb698279be71986ac833c5e07830ff2a035dca51d74ac0a6122fc778a5d7f4fb",
+  "sizeBytes": 1929646944,
+  "sourceUrl": "https://huggingface.co/cherryDavid/HyperCLOVAX-SEED-Text-Instruct-1.5B-Q8_0-GGUF/resolve/fda4577218ac3e345cd65ce6f16def669ca42a96/hyperclovax-seed-text-instruct-1.5b-q8_0.gguf",
+  "installedPath": "/opt/portfolio-rag/models/hyperclovax-seed-text-instruct-1.5b-q8_0-fda4577218ac.gguf",
+  "runtime": "llama.cpp b9298-c0c7e147e",
+  "contextTokens": 8192,
+  "threads": 2,
+  "embeddingChanged": false,
+  "retrievalChanged": false
+}

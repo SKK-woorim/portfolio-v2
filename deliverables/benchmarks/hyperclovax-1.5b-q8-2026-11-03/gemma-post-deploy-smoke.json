@@ -1,0 +1,168 @@
+{
+  "label": "gemma-model-label-production",
+  "datasetSha256": "e1002b5b5c96c9063372c6be6337c47e8cee6c0404c4ad1a43ab04d80e747759",
+  "configuration": {
+    "promptSha256": "0cab3422af8d24cd76ccd5fbcf1039ca05c4c897ce14e600bd6333f974f9183b",
+    "embeddingModel": "/opt/portfolio-rag/models/embeddinggemma-300m-57c266a740f537b4dc058e1b0cda161fd15afa75",
+    "threshold": "0.31",
+    "maxOutputTokens": "200"
+  },
+  "results": [
+    {
+      "id": "profile-01",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "b6cf7b603745c9ff4b7495eb531311d0a4a5eb5d93fdf8d38c3b584e94c95493",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 1,
+        "answerCharacters": 227,
+        "answerSha256": "8ffbb7f76700d2439f247f9d488f85043296791692d32f4b2bc0f4d9d3e3712b",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 9614.363,
+        "total": 24401.037,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "portfolio-01",
+      "group": "portfolio",
+      "critical": false,
+      "questionSha256": "2efcb93dd22bd57abc5788b0de25dbea52e07f262aeb6b1bbecf66ba5037ae92",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 385,
+        "answerSha256": "ce53a01324c462808d9b28552fed54af4218b17f14a8c94c995fb6094d95c90b",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 20809.924,
+        "total": 42735.683,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    }
+  ],
+  "answerChecks": [
+    {
+      "id": "profile-01",
+      "hasCitation": true,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "portfolio-01",
+      "hasCitation": true,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    }
+  ],
+  "durationSeconds": 67.13978349231184,
+  "metrics": {
+    "caseCount": 2,
+    "expectedCaseCount": 2,
+    "matchedCaseCount": 2,
+    "missingCaseIds": [],
+    "unknownResultIds": [],
+    "duplicateResultIds": [],
+    "caseSetComplete": true,
+    "passedCount": 2,
+    "passRate": 1.0,
+    "protocolCompletionRate": 1.0,
+    "sourceUrlValidityRate": 1.0,
+    "expectedSourceHitAt3": 1.0,
+    "expectedTermCasePassRate": 1.0,
+    "privacyBoundaryRate": null,
+    "noRelevantContextAccuracy": null,
+    "injectionRefusalAccuracy": null,
+    "refusalCorrectness": null,
+    "firstTokenMs": {
+      "sampleCount": 2,
+      "p50": 9614.363,
+      "p95": 20809.924
+    },
+    "totalMs": {
+      "sampleCount": 2,
+      "p50": 24401.037,
+      "p95": 42735.683
+    },
+    "latencyBudgetMs": {
+      "firstToken": 90000,
+      "total": 240000
+    },
+    "groupPassRates": {
+      "portfolio": {
+        "caseCount": 1,
+        "resultCount": 1,
+        "passedCount": 1,
+        "passRate": 1.0
+      },
+      "profile": {
+        "caseCount": 1,
+        "resultCount": 1,
+        "passedCount": 1,
+        "passRate": 1.0
+      }
+    },
+    "errorsByCode": {},
+    "failedCaseIds": [],
+    "criticalFailedCaseIds": [],
+    "releaseGate": {
+      "passed": false,
+      "criteria": {
+        "caseSetComplete": true,
+        "passRateAtLeast90": true,
+        "groupPassRatesAtLeast90": true,
+        "privacyBoundary100": false,
+        "sourceUrlValidity100": true,
+        "expectedSourceHitAt3AtLeast90": true,
+        "expectedTermCasePassRateAtLeast90": true,
+        "refusalCorrectnessAtLeast90": false,
+        "protocolCompletionAtLeast95": true,
+        "firstTokenP95WithinBudget": true,
+        "totalP95WithinBudget": true,
+        "criticalFailuresZero": true
+      }
+    }
+  }
+}

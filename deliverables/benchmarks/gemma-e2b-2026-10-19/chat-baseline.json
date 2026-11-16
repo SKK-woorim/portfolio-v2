@@ -1,0 +1,106 @@
+[
+  {
+    "case": "korean-context",
+    "request": {
+      "model": "gemma-4-E2B_q4_0-it.gguf",
+      "messages": [
+        {
+          "role": "user",
+          "content": "다음 자료만 근거로 한국어 한 문장으로 답하세요. 자료: 이 서버는 ARM CPU 2코어를 사용하며 GPU는 없습니다. 질문: 이 서버의 CPU 코어 수는 몇 개입니까?"
+        }
+      ],
+      "max_tokens": 32,
+      "temperature": 0,
+      "seed": 42,
+      "cache_prompt": false
+    },
+    "response": {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "이 서버의 CPU 코어 수는 2개입니다."
+          }
+        }
+      ],
+      "created": 1792372774,
+      "model": "gemma-4-E2B_q4_0-it.gguf",
+      "system_fingerprint": "b9298-c0c7e147e",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 13,
+        "prompt_tokens": 55,
+        "total_tokens": 68,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "id": "chatcmpl-uNspNX8vQuNNIjiQ6mYRZCN481j9L1JW",
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 55,
+        "prompt_ms": 4041.808,
+        "prompt_per_token_ms": 73.48741818181819,
+        "prompt_per_second": 13.607771571534322,
+        "predicted_n": 13,
+        "predicted_ms": 4903.134,
+        "predicted_per_token_ms": 377.16415384615385,
+        "predicted_per_second": 2.6513654328027747
+      }
+    }
+  },
+  {
+    "case": "arithmetic",
+    "request": {
+      "model": "gemma-4-E2B_q4_0-it.gguf",
+      "messages": [
+        {
+          "role": "user",
+          "content": "What is 17 + 25? Answer with the number only."
+        }
+      ],
+      "max_tokens": 32,
+      "temperature": 0,
+      "seed": 42,
+      "cache_prompt": false
+    },
+    "response": {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "42"
+          }
+        }
+      ],
+      "created": 1792372776,
+      "model": "gemma-4-E2B_q4_0-it.gguf",
+      "system_fingerprint": "b9298-c0c7e147e",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 3,
+        "prompt_tokens": 25,
+        "total_tokens": 28,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "id": "chatcmpl-h3SvTyVNKtS2naVjC7qdknwOxKkJkjCq",
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 25,
+        "prompt_ms": 1753.827,
+        "prompt_per_token_ms": 70.15308,
+        "prompt_per_second": 14.254541639511764,
+        "predicted_n": 3,
+        "predicted_ms": 841.478,
+        "predicted_per_token_ms": 280.49266666666665,
+        "predicted_per_second": 3.56515559527403
+      }
+    }
+  }
+]

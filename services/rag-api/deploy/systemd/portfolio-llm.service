@@ -13,7 +13,8 @@ EnvironmentFile=/etc/portfolio-rag.env
 Environment=LD_LIBRARY_PATH=/opt/llama.cpp/c0c7e147e7efa6c5858754b47259ba4880f8a906/bin
 WorkingDirectory=/opt/portfolio-rag/current/services/rag-api
 ExecStartPre=/opt/portfolio-rag/venv/bin/python deploy/verify_model.py
-ExecStart=/opt/llama.cpp/c0c7e147e7efa6c5858754b47259ba4880f8a906/bin/llama-server --model ${LLAMA_MODEL_FILE} --host 127.0.0.1 --port 8080 --ctx-size 8192 --n-predict 320 --threads 2 --parallel 1 --reasoning off
+# Bound the prompt-state cache below the service's 9 GiB memory ceiling.
+ExecStart=/opt/llama.cpp/c0c7e147e7efa6c5858754b47259ba4880f8a906/bin/llama-server --model ${LLAMA_MODEL_FILE} --host 127.0.0.1 --port 8080 --ctx-size 8192 --n-predict 320 --threads 2 --parallel 1 --reasoning off --cache-ram 512
 Restart=on-failure
 RestartSec=10
 TimeoutStopSec=30

@@ -1,0 +1,70 @@
+{
+  "deploymentId": "dpl_5tVCWK8V29U8dCFPJT8Kj8t9SURn",
+  "url": "https://portfolio-bcx5erngj-skk-woorim1.vercel.app",
+  "target": "production",
+  "team": "skk-woorim1",
+  "projectId": "prj_FHbUTJeS89Me9BknoDd4fjO6IrtK",
+  "buildStatus": "READY",
+  "readiness": {
+    "status": "ready",
+    "components": {
+      "supabaseConfig": "ready",
+      "publishedContent": "ready",
+      "chatbotRelay": "ready",
+      "chatbotBackend": "ready"
+    }
+  },
+  "chatbotStatus": "enabled",
+  "browserModelLabel": "Gemma 4 E2B · Q4_0",
+  "browserChunksChecked": 15,
+  "webChat": {
+    "done": true,
+    "error": false,
+    "sources": true,
+    "tokens": true
+  },
+  "productionGenerationModelChanged": false,
+  "productionEmbeddingChanged": false,
+  "publicUrl": "https://portfolio-three-chi-dgdi7wj28c.vercel.app",
+  "promoted": true,
+  "verifiedAt": "2026-11-03T04:18:09.763218+00:00",
+  "publicReadiness": {
+    "status": "ready",
+    "components": {
+      "supabaseConfig": "ready",
+      "publishedContent": "ready",
+      "chatbotRelay": "ready",
+      "chatbotBackend": "ready"
+    }
+  },
+  "publicChatStatus": {
+    "status": "enabled",
+    "enabled": true,
+    "index": {
+      "documents": 10,
+      "profile": 1,
+      "portfolio": 6,
+      "post": 3
+    }
+  },
+  "publicModelChunkMatchesStaged": true,
+  "errorLogCount": 0,
+  "errorLogScanWindow": "15m",
+  "operatingServices": {
+    "llm": "active",
+    "ragApi": "active",
+    "worker": "active",
+    "q8ModelTrial": "inactive",
+    "q8ApiTrial": "inactive"
+  },
+  "validation": {
+    "pythonTests": 21,
+    "webTests": 28,
+    "typecheck": "passed",
+    "changedFilesEslint": "passed",
+    "localProductionBuild": "passed",
+    "vercelProductionBuild": "passed",
+    "postDeployBackendSmoke": "2/2",
+    "webSseSmoke": "done without error"
+  }
+}

@@ -1,0 +1,82 @@
+[
+  {
+    "case": "korean-context",
+    "seconds": 5.935944728553295,
+    "response": {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "이 서버는 ARM CPU 2코어를 사용하므로 2개입니다."
+          }
+        }
+      ],
+      "created": 1793670738,
+      "model": "hyperclovax-seed-text-instruct-1.5b-q8_0.gguf",
+      "system_fingerprint": "b9298-c0c7e147e",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 18,
+        "prompt_tokens": 52,
+        "total_tokens": 70,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "id": "chatcmpl-Rtll3ukt6hcKR4uVsRbkgj86iRgcxQ3o",
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 52,
+        "prompt_ms": 1928.951,
+        "prompt_per_token_ms": 37.09521153846154,
+        "prompt_per_second": 26.957657296634288,
+        "predicted_n": 18,
+        "predicted_ms": 3989.542,
+        "predicted_per_token_ms": 221.6412222222222,
+        "predicted_per_second": 4.511796090879605
+      }
+    }
+  },
+  {
+    "case": "arithmetic",
+    "seconds": 0.549187233671546,
+    "response": {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "42"
+          }
+        }
+      ],
+      "created": 1793670738,
+      "model": "hyperclovax-seed-text-instruct-1.5b-q8_0.gguf",
+      "system_fingerprint": "b9298-c0c7e147e",
+      "object": "chat.completion",
+      "usage": {
+        "completion_tokens": 2,
+        "prompt_tokens": 22,
+        "total_tokens": 24,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "id": "chatcmpl-PUCWjoCNoivLM0H81GcPSL6FCW2tWFLq",
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 22,
+        "prompt_ms": 454.647,
+        "prompt_per_token_ms": 20.665772727272728,
+        "prompt_per_second": 48.3891898549864,
+        "predicted_n": 2,
+        "predicted_ms": 86.069,
+        "predicted_per_token_ms": 43.0345,
+        "predicted_per_second": 23.237170177415795
+      }
+    }
+  }
+]

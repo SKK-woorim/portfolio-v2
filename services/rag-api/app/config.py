@@ -35,6 +35,7 @@ class Settings(BaseSettings):
 
     llama_base_url: str = "http://127.0.0.1:8080"
     llama_model_id: str
+    llama_model_label: OptionalString = Field(default=None, max_length=80)
     embedding_model_id: str
     embedding_dimension: int = Field(default=768, ge=1)
 
@@ -109,6 +110,16 @@ class Settings(BaseSettings):
         ):
             raise ValueError("must be a pinned, non-placeholder model identifier")
         return clean
+
+    @field_validator("llama_model_label")
+    @classmethod
+    def validate_model_label(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        clean = value.strip()
+        if any(ord(char) < 32 or ord(char) == 127 for char in clean):
+            raise ValueError("model label must be a single line")
+        return clean or None
 
     @field_validator("log_level")
     @classmethod

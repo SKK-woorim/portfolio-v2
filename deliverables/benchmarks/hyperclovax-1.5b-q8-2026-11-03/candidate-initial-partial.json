@@ -1,0 +1,729 @@
+{
+  "label": "hyperclovax-q8-candidate",
+  "datasetSha256": "e1002b5b5c96c9063372c6be6337c47e8cee6c0404c4ad1a43ab04d80e747759",
+  "results": [
+    {
+      "id": "profile-01",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "b6cf7b603745c9ff4b7495eb531311d0a4a5eb5d93fdf8d38c3b584e94c95493",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 1,
+        "answerCharacters": 152,
+        "answerSha256": "9c5227b9e1e1dac98f43d34d29453cc74daab9098bf0e9536f3b1a1d77128251",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 23579.23,
+        "total": 32180.567,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-02",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "b37abbbb09767d6498926cfcda833b7714fd672232a2e41882d735df2e660f3c",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 516,
+        "answerSha256": "d2a229c7820a30caa1f8d7dfe611b2c6369f334c089b1b3e9392875b081561ce",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 4182.287,
+        "total": 29037.842,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-03",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "0f4ae9190c9c6c0bdd3470a479d5d421387013c7423b22296785907725cf0d76",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 183,
+        "answerSha256": "1c7863a3a6500d9ed043d191623a1bc07435feeafab0cc41b1ba17ba0876ebe1",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 11493.498,
+        "total": 20057.086,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-04",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "aa34486283da7f2e395d692b274e4e1aef4e84f9bfe46cb65779d3d7de317120",
+      "passed": false,
+      "failedChecks": [
+        "expectedTerms"
+      ],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": false,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 236,
+        "answerSha256": "b9fcbbfefa4ac8463f04907178d3b6fc333023ab421eeda750ee090ba278450e",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [
+          "SQL",
+          "ETL"
+        ],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 17618.793,
+        "total": 29337.832,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-05",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "37386c67f1c3719bc76ce338141b63ef08ad5e3c59d7aa37fa611cf87a6bd586",
+      "passed": false,
+      "failedChecks": [
+        "expectedOutcome",
+        "expectedSources",
+        "expectedTerms"
+      ],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": false,
+        "expectedSources": false,
+        "expectedTerms": false,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "error",
+        "errorCode": "NO_RELEVANT_CONTEXT",
+        "protocolError": null,
+        "sourceCount": 0,
+        "answerCharacters": 0,
+        "answerSha256": null,
+        "missingSourcePatterns": [
+          "/about"
+        ],
+        "missingExpectedTerms": [
+          "이메일"
+        ],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": null,
+        "total": 424.86,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-06",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "d63776f62906e8afaf92032b1fa844b6b20d316d57d14679117245111527edcb",
+      "passed": false,
+      "failedChecks": [
+        "expectedTerms"
+      ],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": false,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 227,
+        "answerSha256": "5e9d319e32030ec91f04c2b947f87b33b4c83dcef3dd9cf6fb4648df64575fb7",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [
+          "청킹"
+        ],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 13402.167,
+        "total": 24638.96,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-07",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "2aee76448d27c2cf9631bd0d55253143b300fb1ae6075f295d45b3b973653c96",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 202,
+        "answerSha256": "d8edcd998b19a70cbbcc2754c9d73225bb562b52156a8027359f02bb53674842",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 11367.367,
+        "total": 21859.234,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-08",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "4c63007dfbc5e29f76ea1dba3c0c30289a1c8fc00b0f5b19c728f1d69067330c",
+      "passed": false,
+      "failedChecks": [
+        "expectedTerms"
+      ],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": false,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 215,
+        "answerSha256": "338c4970d152110ada29647231f2777b1664cccd8f7a816ccdc4e3ec1760b7f5",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [
+          "Dify",
+          "LLM"
+        ],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 13632.66,
+        "total": 25653.46,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-09",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "f3441f4a30ba7428b5605ab6d3a46a0cbbb7cdefc722d5b557b38d39edd2a55c",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 1,
+        "answerCharacters": 53,
+        "answerSha256": "ff54d62683e12a9a80ecdd868338b808e452b68931bce9070c11c4560670e613",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 1247.221,
+        "total": 3676.09,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "profile-10",
+      "group": "profile",
+      "critical": false,
+      "questionSha256": "0702295a86441598c39bcb1858d9b03533921a2d2a06f53a2abedbf9e232a499",
+      "passed": false,
+      "failedChecks": [
+        "expectedTerms"
+      ],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": false,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 1,
+        "answerCharacters": 72,
+        "answerSha256": "747ee59a481eb7a97e99293d75b3bed28e94b2f7ac6f538de42f43076f903905",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [
+          "RAG"
+        ],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 7642.614,
+        "total": 11367.207,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "portfolio-01",
+      "group": "portfolio",
+      "critical": false,
+      "questionSha256": "2efcb93dd22bd57abc5788b0de25dbea52e07f262aeb6b1bbecf66ba5037ae92",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 327,
+        "answerSha256": "d838eeef3f7d26096597f1af291ca122036f2c4dbd0e9bae890ab86e6b9d6e60",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 7275.684,
+        "total": 24593.226,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "portfolio-02",
+      "group": "portfolio",
+      "critical": false,
+      "questionSha256": "1a8e4de867ffbcfba2f24ca7241f2b2d488fc5d04635b39b2b7ce2a5eb18306b",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 3,
+        "answerCharacters": 202,
+        "answerSha256": "24af89582d3aa8f954f90df6af78ffec96ea040d6d90bec97accb0be8d02477a",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 6942.34,
+        "total": 16711.655,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "portfolio-03",
+      "group": "portfolio",
+      "critical": false,
+      "questionSha256": "5829f6d53ca6eabaebe2ff2e6f54eb4d7ba567c3190ee33f7a17c4b57e25390d",
+      "passed": false,
+      "failedChecks": [
+        "expectedSources"
+      ],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": false,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 193,
+        "answerSha256": "8e01b885e7f7ee02ad03e5fd36196c22091300276c7f852d0342171de07a76a2",
+        "missingSourcePatterns": [
+          "/portfolio/*"
+        ],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 9789.367,
+        "total": 20398.592,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "portfolio-04",
+      "group": "portfolio",
+      "critical": false,
+      "questionSha256": "11f2c23f8eb4c6cff10e3cfc9e2e38e01bf4aceefa7bd6f7476dfd0327ce95d2",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 218,
+        "answerSha256": "2a629a83799b7190ee017e087dab352da623ef5587889ef2f2de74bbfd229ea6",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 10810.159,
+        "total": 22865.183,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "portfolio-05",
+      "group": "portfolio",
+      "critical": false,
+      "questionSha256": "0a19b7a0ead3a0494ecb3972a595253daee9382a51221ea3203454a34b1b911d",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 410,
+        "answerSha256": "c7a7cc51224a6fadb842dd7cbf9070d61bd20ebd98ef304463daee2b3ea48fc1",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 26977.461,
+        "total": 52497.884,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    },
+    {
+      "id": "portfolio-06",
+      "group": "portfolio",
+      "critical": false,
+      "questionSha256": "05a0546eaba1239750b6a007d77d7d7cf9ffc0bd6640b88d8b4185a877afd4ad",
+      "passed": true,
+      "failedChecks": [],
+      "checks": {
+        "protocolCompletion": true,
+        "expectedOutcome": true,
+        "expectedSources": true,
+        "expectedTerms": true,
+        "mustNotContain": true,
+        "sourceUrlValidity": true,
+        "firstTokenLatency": true,
+        "totalLatency": true
+      },
+      "observations": {
+        "terminal": "done",
+        "errorCode": null,
+        "protocolError": null,
+        "sourceCount": 2,
+        "answerCharacters": 359,
+        "answerSha256": "af42459bd51cc85a60838884e597935c56cd8ac206a48ce8af7ece49af06d3e5",
+        "missingSourcePatterns": [],
+        "missingExpectedTerms": [],
+        "forbiddenTermMatches": [],
+        "noRelevantContextCorrect": null,
+        "refusalCorrect": null
+      },
+      "latencyMs": {
+        "firstToken": 18306.186,
+        "total": 38217.832,
+        "maxFirstToken": 90000,
+        "maxTotal": 240000
+      }
+    }
+  ],
+  "answerChecks": [
+    {
+      "id": "profile-01",
+      "hasCitation": true,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": true
+    },
+    {
+      "id": "profile-02",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "profile-03",
+      "hasCitation": true,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "profile-04",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "profile-05",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "profile-06",
+      "hasCitation": true,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "profile-07",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "profile-08",
+      "hasCitation": true,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "profile-09",
+      "hasCitation": true,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "profile-10",
+      "hasCitation": true,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "portfolio-01",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "portfolio-02",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "portfolio-03",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "portfolio-04",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "portfolio-05",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    },
+    {
+      "id": "portfolio-06",
+      "hasCitation": false,
+      "hasSpecialTokenLeak": false,
+      "hasThirdPerson": false
+    }
+  ],
+  "durationSeconds": 373.56185795366764,
+  "complete": false,
+  "stopReason": "Stopped to correct instruction-following before production deployment."
+}

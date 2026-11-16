@@ -1,0 +1,14 @@
+{
+  "baselinePassed": 36,
+  "candidatePassed": 32,
+  "caseCount": 50,
+  "candidateReleaseGatePassed": false,
+  "notes": [
+    "Candidate had one SEARCH_UNAVAILABLE during a concurrent local web build.",
+    "Manual review found invented URLs and refusal despite available context.",
+    "Native input, compact prompt and output grammar probes did not resolve the observed quality problems."
+  ],
+  "finalDecision": "Keep existing Gemma 4 E2B Q4_0 and deploy model-label discovery only",
+  "candidateDeployed": false,
+  "originalPromptRestored": true
+}

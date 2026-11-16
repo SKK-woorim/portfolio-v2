@@ -76,6 +76,14 @@ sudoedit /etc/portfolio-rag.env
 
 필수 비밀값은 Supabase 서버 전용 secret key(`sb_secret_...`, 레거시 환경은 service-role key)와 Vercel 중계기와 공유하는 HMAC secret이다. 브라우저/Vercel 공개 변수/로그에 서버 전용 키를 복사하지 않는다. `SUPABASE_SERVICE_ROLE_KEY` 환경 변수 이름은 기존 배포 계약을 유지하지만 두 키 형식을 모두 지원한다. 설정은 Pydantic Settings가 프로세스 시작 시 URL, 비밀 길이, placeholder, 모델 ID, 검색 임계값과 timeout 관계를 검증한다.
 
+### 웹 모델명 표시
+
+`LLAMA_MODEL_LABEL`에는 공개할 모델명(최대 80자)을 설정한다. API는 시작 시 읽어 `/health.modelLabel`로 제공한다. 운영 모델 설정과 함께 관리해야 하며 파일명이나 비밀값은 넣지 않는다.
+
+웹은 빌드·시작 설정을 읽을 때 이 값을 한 번 조회한다. 조회 실패 시 `NEXT_PUBLIC_CHATBOT_MODEL_LABEL`, 마지막으로 `서버 모델`을 사용한다. 브라우저에서 모델명을 실시간 조회하지 않는다. 이미 빌드한 브라우저 번들의 표시를 바꾸려면 API 재시작 후 웹도 재빌드·배포한다.
+
+2026-11-03 검증 결과와 유지 결정은 [Q8 검증 기록](hyperclovax-1.5b-q8-switch-2026-11-03.md)을 따른다.
+
 ## 5. systemd 설치
 
 [`deploy/systemd`](../../services/rag-api/deploy/systemd/)의 세 unit이 고정 llama.cpp 경로를 사용하는지 확인한다. Gemma 4의 reasoning 전용 출력이 사용자 답변을 비우지 않도록 llama.cpp는 `--reasoning off`로 실행한다.

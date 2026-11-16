@@ -1,0 +1,23 @@
+{
+  "startedAt": "2026-11-03T04:07:03.489566+00:00",
+  "backup": "/var/backups/portfolio-llm/hyperclovax-20261103T021800Z",
+  "generationModelChanged": false,
+  "embeddingChanged": false,
+  "publicModelLabel": "Gemma 4 E2B · Q4_0",
+  "status": "deployed",
+  "health": {
+    "status": "ok",
+    "embeddingReady": true,
+    "modelReady": true,
+    "modelLabel": "Gemma 4 E2B · Q4_0",
+    "generation": {
+      "running": 0,
+      "waiting": 0,
+      "maxWaiters": 5
+    }
+  },
+  "modelPath": "/opt/portfolio-rag/models/gemma-4-E2B_q4_0-it.gguf",
+  "promptRestored": true,
+  "testServicesStopped": true,
+  "finishedAt": "2026-11-03T04:07:20.169401+00:00"
+}

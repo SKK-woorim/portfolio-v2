@@ -32,6 +32,7 @@ class UnusedGenerator:
 
 
 def test_api_checks_body_hmac_replay_and_stream_contract(settings) -> None:
+    settings.llama_model_label = "HyperCLOVA X 1.5B · Q8_0"
     embedding = FakeEmbedding()
     service = ChatService(
         settings,
@@ -80,6 +81,9 @@ def test_api_checks_body_hmac_replay_and_stream_contract(settings) -> None:
         health = client.get("/health")
         assert health.status_code == 200
         assert health.json()["generation"] == {"running": 0, "waiting": 0, "maxWaiters": 5}
+        assert health.json()["modelLabel"] == "HyperCLOVA X 1.5B · Q8_0"
+        assert "llama_model_id" not in health.text
+        assert settings.chat_backend_secret.get_secret_value() not in health.text
 
 
 def test_body_limit_rejects_before_authentication(settings) -> None:
