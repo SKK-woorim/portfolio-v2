@@ -7,6 +7,14 @@ export function ReadProgress({ targetId }: { targetId: string }) {
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (
+      typeof CSS !== "undefined" &&
+      typeof CSS.supports === "function" &&
+      CSS.supports("animation-timeline", "scroll()") &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
     const target = document.getElementById(targetId);
     const bar = barRef.current;
     if (!target || !bar) return;
@@ -16,7 +24,7 @@ export function ReadProgress({ targetId }: { targetId: string }) {
       const rect = target.getBoundingClientRect();
       const total = rect.height - window.innerHeight;
       const ratio = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 1;
-      bar.style.width = `${ratio * 100}%`;
+      bar.style.transform = `scaleX(${ratio})`;
     };
     const schedule = () => { if (!frame) frame = window.requestAnimationFrame(update); };
     update();
@@ -29,5 +37,5 @@ export function ReadProgress({ targetId }: { targetId: string }) {
     };
   }, [targetId]);
 
-  return <div ref={barRef} className="read-progress" style={{ width: 0 }} aria-hidden="true" />;
+  return <div ref={barRef} className="read-progress" aria-hidden="true" />;
 }
