@@ -143,7 +143,7 @@ function buildSeries() {
   const y = (value: number) => (168 - ((value - 0.12) / 0.86) * 132).toFixed(1);
   const path = (values: (number | null)[], from: number) => values.map((value, index) => (value === null ? "" : `${index === from ? "M" : "L"}${x(index)} ${y(value)}`)).join("");
   const tail = predicted.slice(split) as number[];
-  const band = `M${x(split)} ${y(tail[0] + .05)}${tail.map((value, offset) => `L${x(split + offset)} ${y(value + .05)}`).join("")}${[...tail].reverse().map((value, offset) => `L${x(count - 1 - offset)} ${y(value - .05)}`).join("")}Z`;
+  const band = `M${x(split)} ${y(tail[0] + .05)}${tail.map((value, offset) => `L${x(split + offset)} ${y(value + .05)}`).join("")}${tail.toReversed().map((value, offset) => `L${x(count - 1 - offset)} ${y(value - .05)}`).join("")}Z`;
   return { observed: path(observed, 0), predicted: path(predicted, split), band, splitX: Number(x(split)), end: [x(count - 1), y(tail[tail.length - 1])] as const };
 }
 

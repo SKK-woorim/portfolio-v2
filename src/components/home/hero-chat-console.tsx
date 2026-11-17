@@ -78,13 +78,11 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
 
   const exchange = useMemo(() => {
     const messages = chatbot?.messages ?? [];
-    let answerIndex = messages.length - 1;
-    while (answerIndex >= 0 && messages[answerIndex].role !== "assistant") answerIndex -= 1;
+    const answerIndex = messages.findLastIndex((message) => message.role === "assistant");
     if (answerIndex < 0) return null;
-    let questionIndex = answerIndex - 1;
-    while (questionIndex >= 0 && messages[questionIndex].role !== "user") questionIndex -= 1;
+    const question = messages.slice(0, answerIndex).findLast((message) => message.role === "user");
     const answer = messages[answerIndex];
-    return { question: questionIndex >= 0 ? messages[questionIndex].content : answer.retryMessage ?? "", answer };
+    return { question: question ? question.content : answer.retryMessage ?? "", answer };
   }, [chatbot?.messages]);
 
   // 답변이 넘치면 스트리밍을 따라 내려가되, 사용자가 직접 스크롤하면 멈춘다.

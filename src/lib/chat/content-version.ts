@@ -17,8 +17,8 @@ function bySlug(left: { slug: string }, right: { slug: string }) {
 export function computeContentVersion({ profile, projects, posts }: ContentVersionInput) {
   const canonical = JSON.stringify({
     profile: [profile.displayName, profile.roleTitle, profile.headline, profile.bio, profile.email, profile.skills, profile.socialLinks.map((link) => [link.label, link.href])],
-    projects: [...projects].sort(bySlug).map((item) => [item.slug, item.updatedAt]),
-    posts: [...posts].sort(bySlug).map((item) => [item.slug, item.updatedAt]),
+    projects: projects.toSorted(bySlug).map((item) => [item.slug, item.updatedAt]),
+    posts: posts.toSorted(bySlug).map((item) => [item.slug, item.updatedAt]),
   });
   return createHash("sha256").update(canonical).digest("hex").slice(0, 16);
 }

@@ -340,7 +340,7 @@ export function ChatbotProvider({ children, checkOnMount = false, disabled = fal
     return () => window.cancelAnimationFrame(frame);
   }, [isOpen, pendingQuestion, runtimeAvailability, sendMessage]);
 
-  const latestAssistant = useMemo(() => [...messages].reverse().find((message) => message.role === "assistant"), [messages]);
+  const latestAssistant = useMemo(() => messages.findLast((message) => message.role === "assistant"), [messages]);
   const progressState = useChatProgress({
     requestKey: latestAssistant?.id ?? null,
     active: Boolean(latestAssistant && latestAssistant.delivery === "streaming" && stream.isBusy),
