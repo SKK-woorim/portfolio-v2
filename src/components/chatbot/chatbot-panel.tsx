@@ -74,7 +74,6 @@ export function ChatbotPanel({
 }: ChatbotPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const messageListRef = useRef<HTMLDivElement>(null);
   const shouldStickToBottomRef = useRef(true);
   const [showNewReply, setShowNewReply] = useState(false);
@@ -87,13 +86,6 @@ export function ChatbotPanel({
   useEffect(() => {
     closeButtonRef.current?.focus({ preventScroll: true });
   }, []);
-
-  useEffect(() => {
-    const textarea = inputRef.current;
-    if (!textarea) return;
-    textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 112)}px`;
-  }, [input]);
 
   useEffect(() => {
     const closeOnEscape = (event: globalThis.KeyboardEvent) => {
@@ -255,7 +247,6 @@ export function ChatbotPanel({
             <label className="sr-only" htmlFor="portfolio-chatbot-input">포트폴리오에 대해 질문하기</label>
             <div className="chatbot-input-wrap">
               <textarea
-                ref={inputRef}
                 id="portfolio-chatbot-input"
                 value={input}
                 rows={1}

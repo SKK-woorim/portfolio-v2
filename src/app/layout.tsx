@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Martian_Mono } from "next/font/google";
 import "@/app/globals.css";
 import "@/styles/visual-system.css";
@@ -6,6 +6,10 @@ import { DEFAULT_OG_IMAGE, DEFAULT_OG_IMAGE_PATH, SITE_AUTHOR_NAME, getSiteUrl }
 
 // 라벨·수치·도식 글자용 보조 서체. 한글은 Pretendard로 대체된다.
 const martianMono = Martian_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-martian", display: "swap" });
+
+export const viewport: Viewport = {
+  colorScheme: "light dark",
+};
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),

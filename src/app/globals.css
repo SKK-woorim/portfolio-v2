@@ -12,7 +12,12 @@
   --border: #d7e4f5;
   --dark: #0a1930;
   --dark-elevated: #132844;
+  color-scheme: light;
+  interpolate-size: allow-keywords;
 }
+
+html[data-site-theme="dark"] { color-scheme: dark; }
+html[data-site-theme="light"] { color-scheme: light; }
 
 * { box-sizing: border-box; }
 
@@ -280,6 +285,8 @@ body.chatbot-scroll-locked { overflow: hidden; }
 .chatbot-backdrop {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
   background: rgba(2, 12, 25, .18);
   pointer-events: auto;
   animation: chatbot-fade-in 160ms ease-out both;
@@ -631,9 +638,13 @@ body.chatbot-scroll-locked { overflow: hidden; }
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 .chatbot-input-wrap textarea {
+  field-sizing: content;
   width: 100%;
+  height: auto;
   min-height: 42px;
   max-height: 112px;
+  min-block-size: 42px;
+  max-block-size: 112px;
   padding: 10px 0 8px;
   resize: none;
   border: 0;
