@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { useChatbot } from "@/components/chatbot/chatbot-context";
 import { isChatOffline } from "@/components/chatbot/runtime-availability";
 
@@ -31,22 +31,25 @@ export function CommandPalette({ projects, posts, email }: CommandPaletteProps) 
   const router = useRouter();
   const chatbot = useChatbot();
   const listId = useId();
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
 
   const openPalette = useCallback(() => {
-    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setQuery("");
     setSelected(0);
     setOpen(true);
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    window.requestAnimationFrame(() => inputRef.current?.focus());
   }, []);
 
   const closePalette = useCallback(() => {
-    setOpen(false);
-    window.requestAnimationFrame(() => restoreFocusRef.current?.focus({ preventScroll: true }));
+    const dialog = dialogRef.current;
+    if (dialog?.open) dialog.close();
+    else setOpen(false);
   }, []);
 
   useEffect(() => {
@@ -63,12 +66,6 @@ export function CommandPalette({ projects, posts, email }: CommandPaletteProps) 
       window.removeEventListener(OPEN_EVENT, openPalette);
     };
   }, [closePalette, open, openPalette]);
-
-  useEffect(() => {
-    if (!open) return;
-    const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
-    return () => window.cancelAnimationFrame(frame);
-  }, [open]);
 
   const chatAvailable = Boolean(chatbot && !isChatOffline(chatbot.runtimeAvailability));
 
@@ -93,65 +90,87 @@ export function CommandPalette({ projects, posts, email }: CommandPaletteProps) 
     return filtered;
   }, [chatAvailable, chatbot, email, posts, projects, query, router]);
 
-  if (!open) return null;
   const activeIndex = Math.min(selected, Math.max(0, entries.length - 1));
 
   function choose(entry: PaletteEntry | undefined) {
     if (!entry) return;
-    setOpen(false);
+    closePalette();
     entry.run();
   }
 
-  function handleKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Escape") { event.preventDefault(); closePalette(); }
-    else if (event.key === "ArrowDown") { event.preventDefault(); setSelected((activeIndex + 1) % Math.max(1, entries.length)); }
+  function handleKeyDown(event: ReactKeyboardEvent<HTMLDialogElement>) {
+    if (event.key === "ArrowDown") { event.preventDefault(); setSelected((activeIndex + 1) % Math.max(1, entries.length)); }
     else if (event.key === "ArrowUp") { event.preventDefault(); setSelected((activeIndex - 1 + entries.length) % Math.max(1, entries.length)); }
     else if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); choose(entries[activeIndex]); }
   }
 
+  function handleDialogClick(event: ReactMouseEvent<HTMLDialogElement>) {
+    if ("closedBy" in HTMLDialogElement.prototype) return;
+    const dialog = dialogRef.current;
+    if (!dialog || event.target !== dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    const isDialogContent =
+      rect.top <= event.clientY &&
+      event.clientY <= rect.top + rect.height &&
+      rect.left <= event.clientX &&
+      event.clientX <= rect.left + rect.width;
+    if (!isDialogContent) dialog.close();
+  }
+
   let lastGroup = "";
   return (
-    <div className="cmdk-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) closePalette(); }}>
-      <div className="cmdk" role="dialog" aria-modal="true" aria-label="검색" onKeyDown={handleKeyDown}>
-        <div className="cmdk-input">
-          <Search size={18} aria-hidden="true" />
-          <input
-            ref={inputRef}
-            value={query}
-            placeholder="프로젝트, 글, 페이지 검색"
-            aria-label="검색어"
-            role="combobox"
-            aria-expanded="true"
-            aria-controls={listId}
-            aria-activedescendant={entries.length ? `${listId}-${activeIndex}` : undefined}
-            autoComplete="off"
-            onChange={(event) => { setQuery(event.target.value); setSelected(0); }}
-          />
-        </div>
-        <ul id={listId} role="listbox" aria-label="검색 결과">
-          {entries.length === 0 ? <li className="cmdk-empty">결과가 없어요.</li> : null}
-          {entries.map((entry, index) => {
-            const heading = entry.group !== lastGroup ? entry.group : null;
-            lastGroup = entry.group;
-            return [
-              heading ? <li key={`group-${heading}`} className="cmdk-group" role="presentation">{heading}</li> : null,
-              <li
-                key={`${entry.group}-${entry.title}`}
-                id={`${listId}-${index}`}
-                role="option"
-                aria-selected={index === activeIndex}
-                className="cmdk-item"
-                onMouseEnter={() => setSelected(index)}
-                onClick={() => choose(entry)}
-              >
-                <span>{entry.title}</span>
-                <small>{entry.hint}</small>
-              </li>,
-            ];
-          })}
-        </ul>
-        <div className="cmdk-foot" aria-hidden="true"><span>↑↓ 이동</span><span>↵ 열기</span><span>esc 닫기</span></div>
-      </div>
-    </div>
+    <dialog
+      ref={dialogRef}
+      className="cmdk"
+      aria-label="검색"
+      onClose={() => setOpen(false)}
+      onClick={handleDialogClick}
+      onKeyDown={handleKeyDown}
+      {...({ closedby: "any" } as Record<string, string>)}
+    >
+      {open ? (
+        <>
+          <div className="cmdk-input">
+            <Search size={18} aria-hidden="true" />
+            <input
+              ref={inputRef}
+              value={query}
+              placeholder="프로젝트, 글, 페이지 검색"
+              aria-label="검색어"
+              role="combobox"
+              aria-expanded="true"
+              aria-controls={listId}
+              aria-activedescendant={entries.length ? `${listId}-${activeIndex}` : undefined}
+              autoComplete="off"
+              autoFocus
+              onChange={(event) => { setQuery(event.target.value); setSelected(0); }}
+            />
+          </div>
+          <ul id={listId} role="listbox" aria-label="검색 결과">
+            {entries.length === 0 ? <li className="cmdk-empty">결과가 없어요.</li> : null}
+            {entries.map((entry, index) => {
+              const heading = entry.group !== lastGroup ? entry.group : null;
+              lastGroup = entry.group;
+              return [
+                heading ? <li key={`group-${heading}`} className="cmdk-group" role="presentation">{heading}</li> : null,
+                <li
+                  key={`${entry.group}-${entry.title}`}
+                  id={`${listId}-${index}`}
+                  role="option"
+                  aria-selected={index === activeIndex}
+                  className="cmdk-item"
+                  onMouseEnter={() => setSelected(index)}
+                  onClick={() => choose(entry)}
+                >
+                  <span>{entry.title}</span>
+                  <small>{entry.hint}</small>
+                </li>,
+              ];
+            })}
+          </ul>
+          <div className="cmdk-foot" aria-hidden="true"><span>↑↓ 이동</span><span>↵ 열기</span><span>esc 닫기</span></div>
+        </>
+      ) : null}
+    </dialog>
   );
 }
