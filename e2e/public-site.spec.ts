@@ -45,7 +45,7 @@ test("direct and site 404 views each expose one main landmark", async ({ page })
 
 test("visitor can ask the chatbot and inspect a verified source", async ({ page }) => {
   await page.route("**/api/chat/status", async (route) => {
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ enabled: true }) });
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: "enabled" }) });
   });
   await page.route("**/api/chat", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 120));
@@ -64,16 +64,24 @@ test("visitor can ask the chatbot and inspect a verified source", async ({ page 
     });
   });
 
-  await page.goto("/");
+  // 홈에서는 히어로 콘솔이 보이는 동안 떠 있는 실행 버튼이 숨으므로 다른 공개 페이지에서 연다.
+  await page.goto("/about");
   const openButton = page.getByRole("button", { name: "포트폴리오 챗봇 열기" });
+  await expect(openButton).toHaveAttribute("data-availability", "enabled");
   await openButton.click();
-  await expect(page.getByRole("dialog", { name: "포트폴리오 챗봇" })).toBeVisible();
-  await page.getByRole("button", { name: "RAG 관련 프로젝트를 알려주세요" }).click();
-  await expect(page.getByText("질문을 확인하고 있어요.")).toBeVisible();
-  await expect(page.getByText(/RAG 파이프라인을 설계/)).toBeVisible();
-  await expect(page.getByRole("link", { name: /RAG 프로젝트/ })).toHaveAttribute("href", "/portfolio/rag-project");
+
+  const panel = page.getByRole("dialog", { name: "포트폴리오 챗봇" });
+  await expect(panel).toHaveAttribute("data-availability", "enabled");
+  const composer = panel.getByRole("textbox", { name: "포트폴리오에 대해 질문하기" });
+  await expect(composer).toBeEnabled();
+  await composer.fill("RAG 관련 프로젝트를 알려주세요");
+  await composer.press("Enter");
+
+  await expect(panel).toHaveAttribute("data-phase", "complete");
+  await expect(panel.locator('article[data-delivery="complete"]', { hasText: "RAG 파이프라인을 설계" })).toBeVisible();
+  await expect(panel.getByRole("navigation", { name: "답변 출처" }).getByRole("link", { name: /RAG 프로젝트/ })).toHaveAttribute("href", "/portfolio/rag-project");
 
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: "포트폴리오 챗봇" })).toBeHidden();
+  await expect(panel).toBeHidden();
   await expect(openButton).toBeFocused();
 });

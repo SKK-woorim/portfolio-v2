@@ -46,6 +46,10 @@ const HEADER_STATUS: Record<ChatbotRuntimeAvailability, string> = {
   unavailable: "연결 상태를 확인할 수 없어요",
 };
 
+function supportsFieldSizing() {
+  return typeof CSS !== "undefined" && typeof CSS.supports === "function" && CSS.supports("field-sizing", "content");
+}
+
 function getFocusableElements(container: HTMLElement) {
   return Array.from(container.querySelectorAll<HTMLElement>(
     'button:not([disabled]), a[href], textarea:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
@@ -74,6 +78,7 @@ export function ChatbotPanel({
 }: ChatbotPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const messageListRef = useRef<HTMLDivElement>(null);
   const shouldStickToBottomRef = useRef(true);
   const [showNewReply, setShowNewReply] = useState(false);
@@ -86,6 +91,15 @@ export function ChatbotPanel({
   useEffect(() => {
     closeButtonRef.current?.focus({ preventScroll: true });
   }, []);
+
+  useEffect(() => {
+    // field-sizing을 지원하는 브라우저는 CSS가 높이를 맞추므로, 미지원 브라우저에서만 직접 늘린다.
+    if (supportsFieldSizing()) return;
+    const textarea = inputRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 112)}px`;
+  }, [input]);
 
   useEffect(() => {
     const closeOnEscape = (event: globalThis.KeyboardEvent) => {
@@ -145,10 +159,11 @@ export function ChatbotPanel({
   }
 
   function handleInputKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
-      event.preventDefault();
-      onSubmit(input);
-    }
+    if (event.key !== "Enter" || event.shiftKey) return;
+    event.preventDefault();
+    // Safari는 IME 확정 Enter보다 compositionend를 먼저 전달해 isComposing이 false일 수 있어 keyCode 229도 함께 본다.
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+    onSubmit(input);
   }
 
   return (
@@ -247,6 +262,7 @@ export function ChatbotPanel({
             <label className="sr-only" htmlFor="portfolio-chatbot-input">포트폴리오에 대해 질문하기</label>
             <div className="chatbot-input-wrap">
               <textarea
+                ref={inputRef}
                 id="portfolio-chatbot-input"
                 value={input}
                 rows={1}

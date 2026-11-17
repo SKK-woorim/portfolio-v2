@@ -2,29 +2,18 @@
 
 import Image from "next/image";
 import { Maximize2, X } from "lucide-react";
-import { useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useRef, useState } from "react";
+import { useDialogLightDismiss } from "@/components/use-dialog-light-dismiss";
 import type { EvidenceFigure } from "@/lib/content/evidence";
 
 export function EvidenceGallery({ figures }: { figures: EvidenceFigure[] }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState<EvidenceFigure | null>(null);
+  useDialogLightDismiss(dialogRef);
 
   function show(figure: EvidenceFigure) {
     setOpen(figure);
     dialogRef.current?.showModal();
-  }
-
-  function handleDialogClick(event: ReactMouseEvent<HTMLDialogElement>) {
-    if ("closedBy" in HTMLDialogElement.prototype) return;
-    const dialog = dialogRef.current;
-    if (!dialog || event.target !== dialog) return;
-    const rect = dialog.getBoundingClientRect();
-    const isDialogContent =
-      rect.top <= event.clientY &&
-      event.clientY <= rect.top + rect.height &&
-      rect.left <= event.clientX &&
-      event.clientX <= rect.left + rect.width;
-    if (!isDialogContent) dialog.close();
   }
 
   return (
@@ -51,7 +40,6 @@ export function EvidenceGallery({ figures }: { figures: EvidenceFigure[] }) {
         className="evidence-lightbox"
         aria-label={open?.caption ?? "이미지 크게 보기"}
         onClose={() => setOpen(null)}
-        onClick={handleDialogClick}
         {...({ closedby: "any" } as Record<string, string>)}
       >
         {open ? (

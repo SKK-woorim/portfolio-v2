@@ -1,10 +1,11 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useChatbot } from "@/components/chatbot/chatbot-context";
 import { isChatOffline } from "@/components/chatbot/runtime-availability";
+import { useDialogLightDismiss } from "@/components/use-dialog-light-dismiss";
 
 const OPEN_EVENT = "portfolio:open-command-palette";
 
@@ -36,6 +37,7 @@ export function CommandPalette({ projects, posts, email }: CommandPaletteProps) 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
+  useDialogLightDismiss(dialogRef);
 
   const openPalette = useCallback(() => {
     setQuery("");
@@ -98,23 +100,16 @@ export function CommandPalette({ projects, posts, email }: CommandPaletteProps) 
     entry.run();
   }
 
-  function handleKeyDown(event: ReactKeyboardEvent<HTMLDialogElement>) {
+  // 검색어 입력에서만 목록을 조작한다. 닫기 버튼에 초점이 있을 때 Enter는 버튼 기본 동작(닫기)을 따른다.
+  function handleInputKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown") { event.preventDefault(); setSelected((activeIndex + 1) % Math.max(1, entries.length)); }
     else if (event.key === "ArrowUp") { event.preventDefault(); setSelected((activeIndex - 1 + entries.length) % Math.max(1, entries.length)); }
-    else if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); choose(entries[activeIndex]); }
-  }
-
-  function handleDialogClick(event: ReactMouseEvent<HTMLDialogElement>) {
-    if ("closedBy" in HTMLDialogElement.prototype) return;
-    const dialog = dialogRef.current;
-    if (!dialog || event.target !== dialog) return;
-    const rect = dialog.getBoundingClientRect();
-    const isDialogContent =
-      rect.top <= event.clientY &&
-      event.clientY <= rect.top + rect.height &&
-      rect.left <= event.clientX &&
-      event.clientX <= rect.left + rect.width;
-    if (!isDialogContent) dialog.close();
+    else if (event.key === "Enter") {
+      event.preventDefault();
+      // Safari는 IME 확정 Enter보다 compositionend를 먼저 전달해 isComposing이 false일 수 있어 keyCode 229도 함께 본다.
+      if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+      choose(entries[activeIndex]);
+    }
   }
 
   let lastGroup = "";
@@ -124,8 +119,6 @@ export function CommandPalette({ projects, posts, email }: CommandPaletteProps) 
       className="cmdk"
       aria-label="검색"
       onClose={() => setOpen(false)}
-      onClick={handleDialogClick}
-      onKeyDown={handleKeyDown}
       {...({ closedby: "any" } as Record<string, string>)}
     >
       {open ? (
@@ -144,7 +137,12 @@ export function CommandPalette({ projects, posts, email }: CommandPaletteProps) 
               autoComplete="off"
               autoFocus
               onChange={(event) => { setQuery(event.target.value); setSelected(0); }}
+              onKeyDown={handleInputKeyDown}
             />
+            {/* 터치·음성 제어 사용자도 배경 탭 없이 닫을 수 있게 보이는 닫기 버튼을 둔다. */}
+            <button type="button" className="cmdk-close focus-ring" aria-label="검색 닫기" onClick={closePalette}>
+              <X size={18} aria-hidden="true" />
+            </button>
           </div>
           <ul id={listId} role="listbox" aria-label="검색 결과">
             {entries.length === 0 ? <li className="cmdk-empty">결과가 없어요.</li> : null}

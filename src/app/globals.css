@@ -16,8 +16,10 @@
   interpolate-size: allow-keywords;
 }
 
-html[data-site-theme="dark"] { color-scheme: dark; }
-html[data-site-theme="light"] { color-scheme: light; }
+/* 공개 사이트(.site-theme)가 있는 문서만 루트 테마를 따른다. 관리자 화면은 항상 라이트로 둔다. */
+/* 속성이 없을 때도 .site-theme 기본값(다크)과 맞춘다. 라이트 규칙은 명시도가 더 높아 우선한다. */
+:root:has(.site-theme) { color-scheme: dark; }
+:root[data-site-theme="light"]:has(.site-theme) { color-scheme: light; }
 
 * { box-sizing: border-box; }
 

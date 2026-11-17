@@ -221,7 +221,7 @@ function renderBlocks(lines: string[], headings: MarkdownHeading[] = [], inlineI
       index += 2;
       const rows: string[][] = [];
       while (index < lines.length && lines[index].includes("|") && lines[index].trim()) rows.push(tableCells(lines[index++]));
-      blocks.push(<div key={key} className="my-6 overflow-x-auto"><table className="w-full border-collapse text-left text-sm"><thead className="bg-[var(--primary-soft)] text-[var(--ink)]"><tr>{header.map((cell, cellIndex) => <th key={cellIndex} scope="col" className="border border-[var(--border)] px-3 py-2 font-semibold">{renderInline(cell, inlineImages)}</th>)}</tr></thead><tbody>{rows.map((row, rowIndex) => <tr key={rowIndex}>{header.map((_, cellIndex) => <td key={cellIndex} className="border border-[var(--border)] px-3 py-2 align-top">{renderInline(row[cellIndex] ?? "", inlineImages)}</td>)}</tr>)}</tbody></table></div>);
+      blocks.push(<div key={key} tabIndex={0} role="region" aria-label="표" className="focus-ring my-6 overflow-x-auto"><table className="w-full border-collapse text-left text-sm"><thead className="bg-[var(--primary-soft)] text-[var(--ink)]"><tr>{header.map((cell, cellIndex) => <th key={cellIndex} scope="col" className="border border-[var(--border)] px-3 py-2 font-semibold">{renderInline(cell, inlineImages)}</th>)}</tr></thead><tbody>{rows.map((row, rowIndex) => <tr key={rowIndex}>{header.map((_, cellIndex) => <td key={cellIndex} className="border border-[var(--border)] px-3 py-2 align-top">{renderInline(row[cellIndex] ?? "", inlineImages)}</td>)}</tr>)}</tbody></table></div>);
       continue;
     }
     const paragraph: string[] = [];

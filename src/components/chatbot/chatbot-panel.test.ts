@@ -10,7 +10,10 @@ vi.mock("next/link", () => ({
   default: ({ children, href, ...props }: { children?: ReactNode; href: string; [key: string]: unknown }) => createElement("a", { ...props, href }, children),
 }));
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 const baseProps = {
   messages: [] as ChatMessage[],
@@ -67,6 +70,45 @@ describe("ChatbotPanel interaction states", () => {
     expect(onSubmit).not.toHaveBeenCalled();
     fireEvent.keyDown(input, { key: "Enter", shiftKey: false });
     expect(onSubmit).toHaveBeenCalledWith("첫 줄\n둘째 줄");
+  });
+
+  it("does not submit on an IME-confirming enter reported with keyCode 229", () => {
+    const onSubmit = vi.fn();
+    const view = renderPanel({ input: "안녕", onSubmit });
+    const input = view.getByRole("textbox", { name: "포트폴리오에 대해 질문하기" });
+
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 229 });
+    fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 13 });
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves shift-enter unprevented so the textarea inserts a newline", () => {
+    const view = renderPanel({ input: "첫 줄" });
+    const input = view.getByRole("textbox", { name: "포트폴리오에 대해 질문하기" });
+
+    expect(fireEvent.keyDown(input, { key: "Enter", shiftKey: true })).toBe(true);
+    expect(fireEvent.keyDown(input, { key: "Enter", keyCode: 229 })).toBe(false);
+  });
+
+  it("grows the textarea in script only where field-sizing is unsupported", () => {
+    const scrollHeight = vi.spyOn(HTMLTextAreaElement.prototype, "scrollHeight", "get").mockReturnValue(300);
+    try {
+      vi.stubGlobal("CSS", { supports: vi.fn(() => false) });
+      const fallback = renderPanel({ input: "긴 질문" });
+      const fallbackInput = fallback.getByRole("textbox", { name: "포트폴리오에 대해 질문하기" }) as HTMLTextAreaElement;
+      expect(fallbackInput.style.height).toBe("112px");
+      fallback.unmount();
+
+      vi.stubGlobal("CSS", { supports: vi.fn((property: string, value: string) => property === "field-sizing" && value === "content") });
+      const native = renderPanel({ input: "긴 질문" });
+      const nativeInput = native.getByRole("textbox", { name: "포트폴리오에 대해 질문하기" }) as HTMLTextAreaElement;
+      expect(nativeInput.style.height).toBe("");
+    } finally {
+      scrollHeight.mockRestore();
+    }
   });
 
   it("shows a new-reply affordance when a long conversation is scrolled away", () => {

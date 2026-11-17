@@ -88,6 +88,11 @@ describe("MarkdownContent", () => {
     expect(html).not.toContain("검색\\");
   });
 
+  it("makes the scrollable table wrapper a focusable, named region", () => {
+    const html = renderToStaticMarkup(createElement(MarkdownContent, { markdown: "| 항목 | 설명 |\n| --- | --- |\n| RAG | 검색 |" }));
+    expect(html).toMatch(/<div tabindex="0" role="region" aria-label="표" class="focus-ring my-6 overflow-x-auto"><table/);
+  });
+
   it("preserves ordinary backslashes in Markdown table cells", () => {
     const markdown = String.raw`| 항목 | 경로 |
 | --- | --- |

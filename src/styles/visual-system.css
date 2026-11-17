@@ -254,6 +254,9 @@
 .cmdk::backdrop { overflow: hidden; overscroll-behavior: contain; background: rgba(2, 10, 22, .5); backdrop-filter: blur(6px); }
 .cmdk-input { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid rgb(var(--primary-rgb) / .14); color: var(--muted); }
 .cmdk-input input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 16px; }
+/* 40px 누름 영역을 확보하되, 음수 여백으로 입력 줄 높이는 그대로 둔다. */
+.cmdk-close { display: inline-grid; flex: 0 0 auto; place-items: center; inline-size: 40px; block-size: 40px; margin: -8px -8px -8px 0; padding: 0; border: 0; border-radius: 12px; background: transparent; color: var(--muted); cursor: pointer; }
+.cmdk-close:hover { background: rgb(var(--primary-rgb) / .12); color: var(--ink); }
 .cmdk ul { max-height: 50vh; margin: 0; overflow-y: auto; padding: 8px; list-style: none; }
 .cmdk-group { padding: 10px 10px 6px; color: var(--muted); font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; }
 .cmdk-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; border-radius: 12px; color: var(--ink); cursor: pointer; font-size: 14px; }
@@ -270,9 +273,13 @@
       from { transform: scaleX(0); }
       to { transform: scaleX(1); }
     }
+    /* 막대는 대상의 자손이라 이 이름을 볼 수 있다. 대상 위끝이 화면 위에 닿을 때 0, 아래끝이 화면 아래에 닿을 때 1이다. */
+    .read-progress-target { view-timeline: --read-progress block; }
     .read-progress {
-      animation: vs-read-progress auto linear;
-      animation-timeline: scroll(root block);
+      animation: vs-read-progress auto linear both;
+      /* 단축 속성이 타임라인과 범위를 초기화하므로 반드시 뒤에 둔다. */
+      animation-timeline: --read-progress;
+      animation-range: contain 0% contain 100%;
     }
   }
 }

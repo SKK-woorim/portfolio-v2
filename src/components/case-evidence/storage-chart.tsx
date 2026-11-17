@@ -61,7 +61,8 @@ export function StorageChart({ chart }: { chart: StorageChartData }) {
       </p>
       <details className="storage-table">
         <summary>표로 보기</summary>
-        <div className="storage-table-scroll">
+        {/* 좁은 화면에서 가로로 넘치는 표를 키보드로도 스크롤할 수 있게 초점을 받는다. */}
+        <div className="storage-table-scroll focus-ring" tabIndex={0} role="region" aria-label={`${chart.title} 표`}>
           <table>
             <thead><tr><th scope="col">분류</th><th scope="col">테이블</th><th scope="col">건수</th><th scope="col">{chart.series.source}</th><th scope="col">{chart.series.stored}</th><th scope="col">감소율</th></tr></thead>
             <tbody>
