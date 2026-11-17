@@ -66,7 +66,7 @@ export function SiteHeader({ name }: { name: string }) {
           </button>
         </div>
       </div>
-      <div id="mobile-menu" aria-hidden={!open} className={cn("overflow-hidden border-t border-[var(--border)] bg-[var(--surface)] transition-[max-height] duration-200 md:hidden", open ? "max-h-80" : "max-h-0 border-t-0")}>
+      <div id="mobile-menu" inert={!open} aria-hidden={!open} className={cn("overflow-hidden border-t border-[var(--border)] bg-[var(--surface)] transition-[block-size,max-height] duration-200 md:hidden", open ? "h-auto max-h-80" : "h-0 max-h-0 border-t-0")}>
         <nav className="container flex flex-col py-3" aria-label="모바일 주요 메뉴">
           {navigation.map((item, index) => { const active = isCurrentPath(item.href); return <Link ref={index === 0 ? firstMobileLinkRef : undefined} aria-current={active ? "page" : undefined} tabIndex={open ? 0 : -1} onClick={closeMenu} className={cn("focus-ring rounded-xl px-3 py-3 text-sm font-medium hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]", active ? "bg-[var(--primary-soft)] font-bold text-[var(--primary)]" : "text-[var(--body)]")} href={item.href} key={item.href}>{item.label}</Link>; })}
         </nav>
