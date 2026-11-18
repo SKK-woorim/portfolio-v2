@@ -7,6 +7,12 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 export const aiProviderSchema = z.enum(["openai", "gemini"]);
 export type AiProvider = z.infer<typeof aiProviderSchema>;
 
+const generationProviderSchema = z.union([aiProviderSchema, z.literal("local")]);
+export const aiProviderOrderSchema = z
+  .tuple([generationProviderSchema, generationProviderSchema, generationProviderSchema])
+  .refine((order) => new Set(order).size === order.length);
+export type AiProviderOrder = z.infer<typeof aiProviderOrderSchema>;
+
 const keyMetadataSchema = z.array(z.object({
   provider: aiProviderSchema,
   updated_at: z.iso.datetime({ offset: true }),
@@ -22,11 +28,21 @@ function createKeyStoreClient() {
   });
 }
 
-export async function getAiProviderKeyMetadata() {
-  const { data, error } = await createKeyStoreClient().rpc("get_ai_provider_keys", { p_include_values: false });
-  const result = keyMetadataSchema.safeParse(data);
-  if (error || !result.success) throw new Error("Could not load AI provider key metadata");
+const configurationMetadataSchema = z.object({
+  provider_order: aiProviderOrderSchema,
+  keys: keyMetadataSchema,
+});
+
+export async function getAiProviderConfigurationMetadata() {
+  const { data, error } = await createKeyStoreClient().rpc("get_ai_provider_configuration", { p_include_values: false });
+  const result = configurationMetadataSchema.safeParse(data);
+  if (error || !result.success) throw new Error("Could not load AI provider configuration");
   return result.data;
+}
+
+export async function setAiProviderOrder(order: AiProviderOrder) {
+  const { error } = await createKeyStoreClient().rpc("set_ai_provider_order", { p_provider_order: order });
+  if (error) throw new Error("Could not update AI provider order");
 }
 
 export async function setAiProviderKey(provider: AiProvider, apiKey: string | null) {

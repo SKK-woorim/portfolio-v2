@@ -275,4 +275,27 @@ for (const signature of ["record_chatbot_call_log(uuid, jsonb, text)", "list_cha
 requireOccurrences(chatbotCallLogs, "security invoker", 2);
 requireOccurrences(chatbotCallLogs, "where started_at > statement_timestamp() - interval '30 days'", 2);
 
+const aiProviderOrder = "20261118084314_ai_provider_order.sql";
+requireContract(aiProviderOrder, [
+  "singleton boolean primary key default true check (singleton)",
+  "provider_order text[] not null",
+  "constraint ai_provider_order_is_permutation check",
+  "array_dims(provider_order) = '[1:3]'",
+  "provider_order @> array['openai', 'gemini', 'local']::text[]) is true",
+  "alter table portfolio_private.ai_provider_settings enable row level security",
+  "revoke all on table portfolio_private.ai_provider_settings\n  from public, anon, authenticated, service_role",
+  "grant select, insert, update on table portfolio_private.ai_provider_settings\n  to service_role",
+  "'provider_order', coalesce(",
+  "array['openai', 'gemini', 'local']::text[]",
+  "'keys', portfolio_private.get_ai_provider_keys(p_include_values)",
+  "on conflict (singleton) do update\n    set provider_order = excluded.provider_order",
+]);
+for (const signature of ["get_ai_provider_configuration(boolean)", "set_ai_provider_order(text[])"]) {
+  requireContract(aiProviderOrder, [
+    `revoke all on function public.${signature} from public, anon, authenticated`,
+    `grant execute on function public.${signature} to service_role`,
+  ]);
+}
+requireOccurrences(aiProviderOrder, "security invoker\nset search_path = ''", 2);
+
 console.log(`Migration contracts verified across ${entries.length} forward SQL files.`);

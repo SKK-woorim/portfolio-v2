@@ -51,7 +51,6 @@ class RequestCallLog:
         self.request_id = request_id
         self._sink = sink
         self._attempts: list[dict] = []
-        self.remote_budget_expired = False
         self.key_lookup_status: str | None = None
 
     def finish(
@@ -83,10 +82,7 @@ class RequestCallLog:
 
     def failure(self, attempt: ProviderAttempt, exc: BaseException) -> None:
         if isinstance(exc, asyncio.CancelledError):
-            if attempt.provider != "local" and self.remote_budget_expired:
-                self.finish(attempt, "timeout", "RemoteBudgetTimeout")
-            else:
-                self.finish(attempt, "cancelled", "CancelledError")
+            self.finish(attempt, "cancelled", "CancelledError")
         elif isinstance(exc, (TimeoutError, httpx.TimeoutException)):
             self.finish(attempt, "timeout", "TimeoutError")
         else:

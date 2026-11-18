@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from itertools import permutations
 from uuid import uuid4
 
 import httpx
@@ -164,7 +165,10 @@ async def test_cancelled_queue_wait_is_removed(settings) -> None:
 @pytest.mark.parametrize("remote_answer", [True, False])
 async def test_remote_answer_or_local_fallback_reuses_retrieved_context(settings, remote_answer):
     class Remote:
-        async def generate(self, messages, call_log=None):
+        async def load_routing(self, call_log, timeout):
+            return ("openai", "local"), {"openai": "test-key"}
+
+        async def generate(self, provider, messages, api_key, call_log, budget):
             assert "공개된 근거 본문" in messages[-1]["content"]
             if remote_answer:
                 return GenerationDelta("원격 근거 답변 [S1]", "stop")
@@ -188,28 +192,6 @@ async def test_remote_answer_or_local_fallback_reuses_retrieved_context(settings
     assert "event: error" not in frames
 
 
-async def test_remote_budget_cancels_slow_request_and_preserves_local_first_token(settings):
-    cancelled = asyncio.Event()
-
-    class Remote:
-        async def generate(self, messages, call_log=None):
-            try:
-                await asyncio.sleep(5)
-            finally:
-                cancelled.set()
-
-    settings = settings.model_copy(
-        update={"chat_first_token_timeout_ms": 900, "chat_total_timeout_ms": 1000}
-    )
-    service = ChatService(
-        settings, FakeEmbedding(), Retriever(), ImmediateGenerator(), GenerationGate(), Remote()
-    )
-    frames = b"".join([frame async for frame in service.stream(request(), uuid4())]).decode()
-    assert cancelled.is_set()
-    assert '"delta":"근거 답변 [S1]"' in frames
-    assert "event: error" not in frames
-
-
 @pytest.mark.parametrize(
     ("keys", "expected_providers", "lookup_status"),
     [
@@ -225,6 +207,16 @@ async def test_provider_log_records_actual_attempts_and_safe_metadata(
     payloads = []
 
     def handle(req):
+        if req.url.path.endswith("/get_ai_provider_configuration"):
+            if keys is None:
+                return httpx.Response(503)
+            return httpx.Response(
+                200,
+                json={
+                    "provider_order": ["openai", "gemini", "local"],
+                    "keys": [{"provider": provider, "api_key": "secret-key"} for provider in keys],
+                },
+            )
         if req.url.path.endswith("/get_ai_provider_keys"):
             if keys is None:
                 return httpx.Response(503)
@@ -370,8 +362,14 @@ async def test_remote_attempt_status_and_usage(settings, expire_budget):
     payloads = []
 
     async def handle(req):
-        if req.url.path.endswith("/get_ai_provider_keys"):
-            return httpx.Response(200, json=[{"provider": "openai", "api_key": "key"}])
+        if req.url.path.endswith("/get_ai_provider_configuration"):
+            return httpx.Response(
+                200,
+                json={
+                    "provider_order": ["openai", "gemini", "local"],
+                    "keys": [{"provider": "openai", "api_key": "key"}],
+                },
+            )
         if req.url.path.endswith("/record_chatbot_call_log"):
             payloads.append(json.loads(req.content))
             return httpx.Response(204)
@@ -415,3 +413,140 @@ async def test_remote_attempt_status_and_usage(settings, expire_budget):
         assert attempts[0]["status"] == "success"
         assert attempts[0]["http_status"] == 200
         assert attempts[0]["total_tokens"] == 11
+
+
+@pytest.mark.parametrize("order", list(permutations(("openai", "gemini", "local"))))
+async def test_provider_order_controls_attempts_and_discards_partial_local_answer(settings, order):
+    calls = []
+    payloads = []
+    winner = order[-1]
+
+    class Local(ImmediateGenerator):
+        async def stream(self, messages, attempt=None):
+            calls.append("local")
+            if winner == "local":
+                yield GenerationDelta(content="local won", finish_reason="stop")
+            else:
+                yield GenerationDelta(content="discarded partial answer")
+
+    def handle(req):
+        if req.url.path.endswith("/get_ai_provider_configuration"):
+            assert json.loads(req.content) == {"p_include_values": True}
+            return httpx.Response(
+                200,
+                json={
+                    "provider_order": order,
+                    "keys": [
+                        {"provider": provider, "api_key": "key"}
+                        for provider in ("openai", "gemini")
+                    ],
+                },
+            )
+        if req.url.path.endswith("/record_chatbot_call_log"):
+            payloads.append(json.loads(req.content))
+            return httpx.Response(204)
+        provider = "openai" if req.url.host == "api.openai.com" else "gemini"
+        calls.append(provider)
+        if provider != winner:
+            return httpx.Response(503)
+        if provider == "openai":
+            return httpx.Response(
+                200,
+                json={
+                    "status": "completed",
+                    "output": [
+                        {
+                            "type": "message",
+                            "content": [{"type": "output_text", "text": "openai won"}],
+                        }
+                    ],
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [
+                    {"finishReason": "STOP", "content": {"parts": [{"text": "gemini won"}]}}
+                ],
+            },
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        service = ChatService(
+            settings,
+            FakeEmbedding(),
+            Retriever(),
+            Local(),
+            GenerationGate(),
+            RemoteGeneration(settings, client),
+            ProviderLogSink(settings, client),
+        )
+        frames = b"".join([frame async for frame in service.stream(request(), uuid4())]).decode()
+        await service.close()
+
+    assert calls == list(order)
+    assert f"{winner} won" in frames
+    assert "discarded partial answer" not in frames
+    assert frames.count("event: token") == 1
+    assert frames.count("event: done") == 1
+    assert "event: error" not in frames
+    assert len(payloads) == 1
+    attempts = payloads[0]["p_attempts"]
+    assert [attempt["provider"] for attempt in attempts] == list(order)
+    assert [attempt["status"] for attempt in attempts] == ["error", "error", "success"]
+
+
+@pytest.mark.parametrize("local_busy", [True, False])
+async def test_local_first_either_wins_or_skips_a_busy_gate(settings, local_busy):
+    class Local(ImmediateGenerator):
+        async def stream(self, messages, attempt=None):
+            yield GenerationDelta(content="근거 답변 [S1]", finish_reason="stop")
+
+    class Remote:
+        attempted = False
+
+        async def load_routing(self, call_log, timeout):
+            return ("local", "gemini"), {"gemini": "key"}
+
+        async def generate(self, provider, messages, api_key, call_log, budget):
+            assert provider == "gemini"
+            self.attempted = True
+            return GenerationDelta(content="remote won", finish_reason="stop")
+
+    gate = GenerationGate()
+    if local_busy:
+        await gate.acquire()
+    remote = Remote()
+    service = ChatService(settings, FakeEmbedding(), Retriever(), Local(), gate, remote)
+    frames = b"".join([frame async for frame in service.stream(request(), uuid4())]).decode()
+    assert remote.attempted is local_busy
+    assert ("remote won" if local_busy else "근거 답변 [S1]") in frames
+    assert (await gate.snapshot()).waiting == 0
+    if local_busy:
+        await gate.release()
+
+
+async def test_slow_nonfinal_local_keeps_time_for_remote_and_discards_its_partial_output(settings):
+    class SlowLocal(ImmediateGenerator):
+        async def stream(self, messages, attempt=None):
+            yield GenerationDelta(content="discarded local token")
+            await asyncio.sleep(10)
+
+    class Remote:
+        async def load_routing(self, call_log, timeout):
+            return ("local", "gemini"), {"gemini": "key"}
+
+        async def generate(self, provider, messages, api_key, call_log, budget):
+            assert budget > 0
+            return GenerationDelta(content="remote won", finish_reason="stop")
+
+    settings = settings.model_copy(
+        update={"chat_first_token_timeout_ms": 900, "chat_total_timeout_ms": 1000}
+    )
+    gate = GenerationGate()
+    service = ChatService(settings, FakeEmbedding(), Retriever(), SlowLocal(), gate, Remote())
+    frames = b"".join([frame async for frame in service.stream(request(), uuid4())])
+    assert b"remote won" in frames
+    assert b"discarded local token" not in frames
+    assert b"event: done" in frames
+    assert (await gate.snapshot()).running == 0

@@ -27,14 +27,14 @@ class GenerationGate:
         self._waiters: deque[asyncio.Future[None]] = deque()
         self._lock = asyncio.Lock()
 
-    async def acquire(self) -> None:
+    async def acquire(self, *, wait: bool = True) -> None:
         future: asyncio.Future[None] | None = None
         async with self._lock:
             if not self._running:
                 self._running = True
                 return
             self._remove_cancelled_locked()
-            if len(self._waiters) >= self.max_waiters:
+            if not wait or len(self._waiters) >= self.max_waiters:
                 raise ModelBusyError("generation queue is full")
             future = asyncio.get_running_loop().create_future()
             self._waiters.append(future)

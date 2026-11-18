@@ -5,7 +5,7 @@ import logging
 from collections.abc import AsyncIterator, Sequence
 from contextlib import aclosing
 from time import monotonic
-from typing import Protocol
+from typing import Protocol, TypeVar
 from uuid import UUID
 
 from anyio import CancelScope
@@ -17,11 +17,12 @@ from app.generation import GenerationDelta
 from app.prompting import build_messages
 from app.provider_logging import ProviderAttempt, ProviderLogSink, RequestCallLog
 from app.queue import GenerationGate, ModelBusyError
-from app.remote_generation import RemoteGeneration
+from app.remote_generation import Provider, RemoteGeneration, RemoteProvider
 from app.retrieval import RetrievalResult, build_search_query
 from app.sse import event, heartbeat
 
 logger = logging.getLogger(__name__)
+_T = TypeVar("_T")
 
 NO_CONTEXT_MESSAGE = (
     "현재 공개된 포트폴리오와 블로그에서는 해당 내용을 확인할 수 없어요. "
@@ -52,6 +53,12 @@ ERROR_MESSAGES = {
     "GENERATION_TIMEOUT": "답변 생성에 시간이 너무 오래 걸렸어요. 질문을 조금 짧게 바꿔 다시 시도해 주세요.",
     "INTERNAL_ERROR": "답변을 만들지 못했어요. 잠시 후 다시 시도해 주세요.",
 }
+
+
+class LocalGenerationError(Exception):
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
 
 
 def error_event(code: str) -> bytes:
@@ -133,83 +140,132 @@ class ChatService:
 
         yield event("status", {"phase": "generating", "message": "답변을 생성하고 있어요."})
         messages = build_messages(request.message, request.history, result)
-        remote_budget = (
-            total_deadline - monotonic() - self.settings.chat_first_token_timeout_ms / 1000
-        )
-        if self.remote is not None and remote_budget > 0:
-            remote_task = asyncio.create_task(self.remote.generate(messages, call_log))
-            remote_deadline = monotonic() + remote_budget
-            try:
-                while not remote_task.done():
-                    remaining = remote_deadline - monotonic()
-                    if remaining <= 0:
-                        call_log.remote_budget_expired = True
-                        break
-                    done, _ = await asyncio.wait(
-                        {remote_task},
-                        timeout=min(self.settings.chat_heartbeat_seconds, remaining),
-                    )
-                    if not done and monotonic() < remote_deadline:
-                        yield heartbeat()
-                if remote_task.done() and (answer := remote_task.result()) is not None:
-                    call_log.submit()
-                    for offset in range(0, len(answer.content), 1_000):
-                        yield event("token", {"delta": answer.content[offset : offset + 1_000]})
-                    yield event(
-                        "done",
-                        {"requestId": str(request_id), "finishReason": answer.finish_reason},
-                    )
-                    return
-            finally:
-                if not remote_task.done():
-                    remote_task.cancel()
-                    with CancelScope(shield=True):
-                        await asyncio.gather(remote_task, return_exceptions=True)
-
-        acquired = False
-        acquire_task = asyncio.create_task(self.gate.acquire())
-        try:
-            while not acquire_task.done():
-                remaining = total_deadline - monotonic()
-                if remaining <= 0:
-                    acquire_task.cancel()
-                    await asyncio.gather(acquire_task, return_exceptions=True)
-                    call_log.submit()
-                    yield error_event("GENERATION_TIMEOUT")
-                    return
-                done, _ = await asyncio.wait(
-                    {acquire_task},
-                    timeout=min(self.settings.chat_heartbeat_seconds, remaining),
-                )
-                if not done:
-                    yield heartbeat()
-            try:
-                acquire_task.result()
-                acquired = True
-            except ModelBusyError:
-                call_log.submit()
-                yield error_event("MODEL_BUSY")
-                return
-
-            async with aclosing(
-                self._stream_generation(messages, call_log, total_deadline)
-            ) as frames:
+        order: tuple[Provider, ...] = ("local",)
+        keys: dict[RemoteProvider, str] = {}
+        remaining = total_deadline - monotonic()
+        if self.remote is not None and remaining > 0:
+            # Keep at least half of a short remaining request budget for generation.
+            routing = asyncio.create_task(self.remote.load_routing(call_log, remaining / 2))
+            async with aclosing(self._wait_for_task(routing)) as frames:
                 async for frame in frames:
                     yield frame
-        except (asyncio.CancelledError, GeneratorExit):
-            if acquire_task.done() and not acquire_task.cancelled() and not acquired:
+            order, keys = routing.result()
+
+        last_error = "MODEL_UNAVAILABLE"
+        for index, provider in enumerate(order):
+            remaining = total_deadline - monotonic()
+            if remaining <= 0:
+                last_error = "GENERATION_TIMEOUT"
+                break
+            later = order[index + 1 :]
+            budget = self._attempt_budget(provider, later, remaining)
+
+            if provider == "local":
+                buffered: list[str] = []
+                finish_reason = "stop"
                 try:
-                    acquire_task.result()
-                    acquired = True
-                except ModelBusyError:
-                    pass
-            else:
-                acquire_task.cancel()
-                with CancelScope(shield=True):
-                    await asyncio.gather(acquire_task, return_exceptions=True)
-            raise
+                    async with aclosing(
+                        self._stream_local(
+                            messages, call_log, total_deadline - (remaining - budget), bool(later)
+                        )
+                    ) as deltas:
+                        async for delta in deltas:
+                            if delta is None:
+                                yield heartbeat()
+                                continue
+                            if delta.content:
+                                if later:
+                                    buffered.append(delta.content)
+                                else:
+                                    yield event("token", {"delta": delta.content})
+                            if delta.finish_reason:
+                                finish_reason = delta.finish_reason
+                except LocalGenerationError as exc:
+                    last_error = exc.code
+                    continue
+                call_log.submit()
+                for content in buffered:
+                    yield event("token", {"delta": content})
+                yield event("done", {"requestId": str(request_id), "finishReason": finish_reason})
+                return
+
+            assert self.remote is not None
+            task = asyncio.create_task(
+                self.remote.generate(provider, messages, keys[provider], call_log, budget)
+            )
+            async with aclosing(self._wait_for_task(task)) as frames:
+                async for frame in frames:
+                    yield frame
+            if (answer := task.result()) is not None:
+                call_log.submit()
+                for offset in range(0, len(answer.content), 1_000):
+                    yield event("token", {"delta": answer.content[offset : offset + 1_000]})
+                yield event(
+                    "done",
+                    {"requestId": str(request_id), "finishReason": answer.finish_reason},
+                )
+                return
+
+        call_log.submit()
+        yield error_event(last_error)
+
+    def _attempt_budget(
+        self, provider: Provider, later: tuple[Provider, ...], remaining: float
+    ) -> float:
+        remote_timeout = self.settings.chat_provider_timeout_ms / 1000
+        local_reserve = self.settings.chat_first_token_timeout_ms / 1000
+        reserve = sum(local_reserve if item == "local" else remote_timeout for item in later)
+        # Normally reserve the full timeouts. For a short deadline each provider still
+        # receives a share instead of losing its turn entirely.
+        max_reserve = (
+            remaining * len(later) / (len(later) + 1) if provider == "local" else remaining * 0.9
+        )
+        return remaining - min(reserve, max_reserve)
+
+    async def _wait_for_task(self, task: asyncio.Task[_T]) -> AsyncIterator[bytes]:
+        try:
+            while not task.done():
+                done, _ = await asyncio.wait({task}, timeout=self.settings.chat_heartbeat_seconds)
+                if not done:
+                    yield heartbeat()
         finally:
-            if acquired:
+            if not task.done():
+                task.cancel()
+                with CancelScope(shield=True):
+                    await asyncio.gather(task, return_exceptions=True)
+
+    async def _stream_local(
+        self,
+        messages: Sequence[dict[str, str]],
+        call_log: RequestCallLog,
+        deadline: float,
+        can_fallback: bool,
+    ) -> AsyncIterator[GenerationDelta | None]:
+        async def acquire() -> None:
+            async with asyncio.timeout(max(0, deadline - monotonic())):
+                await self.gate.acquire(wait=not can_fallback)
+
+        acquire_task = asyncio.create_task(acquire())
+        try:
+            async with aclosing(self._wait_for_task(acquire_task)) as frames:
+                async for _ in frames:
+                    yield None
+            acquire_task.result()
+            async with aclosing(
+                self._stream_generation(messages, call_log, deadline, can_fallback)
+            ) as deltas:
+                async for delta in deltas:
+                    yield delta
+        except ModelBusyError as exc:
+            raise LocalGenerationError("MODEL_BUSY") from exc
+        except TimeoutError as exc:
+            raise LocalGenerationError("GENERATION_TIMEOUT") from exc
+        finally:
+            if (
+                acquire_task.done()
+                and not acquire_task.cancelled()
+                and acquire_task.exception() is None
+            ):
                 with CancelScope(shield=True):
                     await self.gate.release()
 
@@ -221,43 +277,40 @@ class ChatService:
         self,
         messages: Sequence[dict[str, str]],
         call_log: RequestCallLog,
-        total_deadline: float,
-    ) -> AsyncIterator[bytes]:
+        deadline: float,
+        require_finish: bool,
+    ) -> AsyncIterator[GenerationDelta | None]:
         started = monotonic()
-        if started >= total_deadline:
-            yield error_event("GENERATION_TIMEOUT")
-            return
+        if started >= deadline:
+            raise LocalGenerationError("GENERATION_TIMEOUT")
 
-        request_id = call_log.request_id
         attempt = ProviderAttempt("local", self.settings.llama_model_id)
-        iterator = self.generator.stream(messages, attempt).__aiter__()
-        pending = asyncio.create_task(iterator.__anext__())
+        iterator: AsyncIterator[GenerationDelta] | None = None
+        pending: asyncio.Task[GenerationDelta] | None = None
         first_token_deadline = min(
-            total_deadline,
+            deadline,
             started + self.settings.chat_first_token_timeout_ms / 1000,
         )
         saw_token = False
-        finish_reason = "stop"
+        saw_nonblank = False
+        finish_reason = None
         try:
+            iterator = self.generator.stream(messages, attempt).__aiter__()
+            pending = asyncio.create_task(iterator.__anext__())
             while True:
-                now = monotonic()
-                deadline = total_deadline if saw_token else first_token_deadline
-                remaining = deadline - now
+                remaining = (deadline if saw_token else first_token_deadline) - monotonic()
                 if remaining <= 0:
-                    pending.cancel()
-                    await asyncio.gather(pending, return_exceptions=True)
                     code = "GENERATION_TIMEOUT" if saw_token else "FIRST_TOKEN_TIMEOUT"
                     error_class = "GenerationTimeout" if saw_token else "FirstTokenTimeout"
                     call_log.finish(attempt, "timeout", error_class)
-                    call_log.submit()
-                    yield error_event(code)
-                    return
+                    raise LocalGenerationError(code)
                 done, _ = await asyncio.wait(
                     {pending},
                     timeout=min(self.settings.chat_heartbeat_seconds, remaining),
                 )
                 if not done:
-                    yield heartbeat()
+                    if monotonic() < (deadline if saw_token else first_token_deadline):
+                        yield None
                     continue
                 try:
                     delta = pending.result()
@@ -265,51 +318,55 @@ class ChatService:
                     break
                 if delta.content:
                     saw_token = True
-                    yield event("token", {"delta": delta.content})
+                    saw_nonblank = saw_nonblank or bool(delta.content.strip())
+                    yield GenerationDelta(content=delta.content)
                 if delta.finish_reason:
-                    finish_reason = (
-                        delta.finish_reason
-                        if delta.finish_reason in {"stop", "length", "cancelled"}
-                        else "stop"
-                    )
+                    if delta.finish_reason in {"stop", "length", "cancelled"}:
+                        finish_reason = delta.finish_reason
                     break
                 pending = asyncio.create_task(iterator.__anext__())
 
-            if not saw_token:
-                call_log.finish(attempt, "error", "EmptyResponse")
-                call_log.submit()
-                yield error_event("MODEL_UNAVAILABLE")
-                return
             if finish_reason == "cancelled":
                 call_log.finish(attempt, "cancelled", "CancelledError")
+                if require_finish or not saw_token:
+                    raise LocalGenerationError("MODEL_UNAVAILABLE")
+            elif not saw_token or (require_finish and not saw_nonblank):
+                call_log.finish(attempt, "error", "EmptyResponse")
+                raise LocalGenerationError("MODEL_UNAVAILABLE")
+            elif require_finish and finish_reason is None:
+                call_log.finish(attempt, "error", "IncompleteResponse")
+                raise LocalGenerationError("MODEL_UNAVAILABLE")
             else:
                 call_log.finish(attempt)
-            call_log.submit()
-            yield event(
-                "done",
-                {"requestId": str(request_id), "finishReason": finish_reason},
-            )
+            yield GenerationDelta(finish_reason=finish_reason or "stop")
+        except LocalGenerationError:
+            raise
         except (asyncio.CancelledError, GeneratorExit):
             if not attempt.finished:
                 call_log.finish(attempt, "cancelled", "CancelledError")
             raise
-        except Exception as exc:  # noqa: BLE001 - convert model failures to the SSE contract
+        except Exception as exc:
             call_log.failure(attempt, exc)
-            call_log.submit()
             logger.warning(
                 "generation failed request_id=%s error_type=%s",
-                request_id,
+                call_log.request_id,
                 type(exc).__name__,
             )
-            yield error_event("MODEL_UNAVAILABLE")
+            raise LocalGenerationError("MODEL_UNAVAILABLE") from exc
         finally:
             with CancelScope(shield=True):
-                if not pending.done():
-                    pending.cancel()
-                await asyncio.gather(pending, return_exceptions=True)
+                if pending is not None:
+                    if not pending.done():
+                        pending.cancel()
+                    await asyncio.gather(pending, return_exceptions=True)
                 aclose = getattr(iterator, "aclose", None)
                 if aclose is not None:
-                    await aclose()
+                    try:
+                        await aclose()
+                    except Exception as exc:  # noqa: BLE001 - preserve the recorded attempt result
+                        logger.warning(
+                            "local stream close failed error_type=%s", type(exc).__name__
+                        )
 
     async def close(self) -> None:
         if self.provider_logs is not None:

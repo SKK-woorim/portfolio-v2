@@ -35,7 +35,7 @@
 | 16 | 복사 버튼 | `idle` `copied` `failed`(또는 `selected`) | 각 컴포넌트 | `contact-copy-button.test.ts` |
 | 17 | 준비 상태 점검 | 구성 요소별 `ready` `not_ready` `disabled` | `src/lib/health/readiness.ts` | `readiness.test.ts` |
 | 18 | 저장된 답변 유효성 | 현재 콘텐츠와 지문 일치 / 불일치 | `src/lib/chat/cached-answers.ts` `isCurrent` | `cached-answers.test.ts` |
-| 19 | 챗봇 생성 모델 선택 | GPT → Gemini → 로컬 모델 | `services/rag-api/app/remote_generation.py`, `services/rag-api/app/service.py` | `services/rag-api/tests/test_remote_generation.py`, `test_service.py` |
+| 19 | 챗봇 생성 모델 선택 | 관리자 순서에 따른 GPT · Gemini · 로컬 모델 시도 | `services/rag-api/app/service.py`, `services/rag-api/app/remote_generation.py` | `services/rag-api/tests/test_remote_generation.py`, `test_service.py` |
 
 ## 1. 챗봇 요청 단계
 
@@ -199,14 +199,16 @@ reserve(예약) ─▶ signInWithPassword ─▶ finalize(success | failure | ab
 ## 19. 챗봇 생성 모델 선택
 
 ```text
-공개 근거 검색 → GPT → Gemini → 로컬 대기열 → 로컬 토큰 스트림
-                   │      │
-                   └──────┴── 완료되고 본문이 있는 답변 → token… → done
+공개 근거 검색 → 관리자 설정 조회 → 다음 사용 가능 모델
+                                     ├─ 성공 → token… → done
+                                     ├─ 실패·시간 초과·로컬 사용 중 → 다음 사용 가능 모델
+                                     └─ 후보 소진 → error
 ```
 
-- GPT와 Gemini는 근거가 있는 질문에 대해서만 시도한다. 키가 없거나 응답이 실패하거나 시간 초과가 나면 다음 모델로 넘어간다.
-- 원격 후보 하나에 기본 8초를 할당하고, 전체 요청 제한에서 로컬 첫 토큰 대기 시간을 확보한다.
-- 첫 번째 성공한 원격 답변을 SSE로 보낸다. 원격 후보가 모두 실패하면 기존 로컬 대기열과 스트림을 사용한다.
+- 관리자가 GPT, Gemini, 로컬 모델의 순서를 정한다. 설정을 조회할 수 없거나 응답의 순서가 잘못되면 기본 순서(GPT → Gemini → 로컬)를 사용한다. 키가 확인된 원격 모델만 시도한다.
+- 원격 모델은 기본 8초 안에 답변해야 한다. 각 시도에 시간을 배정할 때 뒤에 남은 모델의 실행 시간을 확보한다.
+- 로컬 모델 뒤에 원격 후보가 남아 있으면, 로컬 실행 슬롯이 사용 중일 때 다음 후보로 넘어간다. 로컬 답변은 완료될 때까지 모아 두고, 실패하면 버린다. 마지막 후보인 로컬 모델은 대기열에 들어가고 생성되는 대로 토큰을 보낸다.
+- 요청 UUID별 로그에는 실제 모델 호출과 그 결과를 시도한 순서대로 남긴다. 키를 조회하지 못했거나 키가 비어 건너뛴 경우에는 해당 요청의 키 조회 결과에 표시한다.
 
 ## 화면에서 상태 읽기
 

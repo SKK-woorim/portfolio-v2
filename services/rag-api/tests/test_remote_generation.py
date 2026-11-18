@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import json
+from uuid import uuid4
 
 import httpx
 import pytest
 
+from app.provider_logging import RequestCallLog
 from app.remote_generation import RemoteGeneration
 
 MESSAGES = [
@@ -24,6 +26,18 @@ GEMINI_RESPONSE = {
         }
     ],
 }
+
+
+async def generate_remotely(remote):
+    log = RequestCallLog(uuid4(), None)
+    order, keys = await remote.load_routing(log, 2)
+    for provider in order:
+        if provider == "local":
+            continue
+        answer = await remote.generate(provider, MESSAGES, keys[provider], log, 30)
+        if answer is not None:
+            return answer
+    return None
 
 
 @pytest.mark.parametrize(
@@ -68,6 +82,8 @@ async def test_provider_order_and_request_mapping(
 
     def handle(request):
         body = json.loads(request.content)
+        if request.url.path.endswith("/get_ai_provider_configuration"):
+            return httpx.Response(404)
         if request.url.path.endswith("/get_ai_provider_keys"):
             assert body == {"p_include_values": True}
             return httpx.Response(
@@ -95,7 +111,7 @@ async def test_provider_order_and_request_mapping(
         return httpx.Response(200, json=GEMINI_RESPONSE)
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
-        answer = await RemoteGeneration(settings, client).generate(MESSAGES)
+        answer = await generate_remotely(RemoteGeneration(settings, client))
     assert (answer.content if answer else None) == expected
     assert calls == hosts
     assert "secret" not in caplog.text
@@ -104,13 +120,16 @@ async def test_provider_order_and_request_mapping(
 
 async def test_timeout_reaches_gemini(settings):
     async def handle(request):
-        if request.url.path.endswith("/get_ai_provider_keys"):
+        if request.url.path.endswith("/get_ai_provider_configuration"):
             return httpx.Response(
                 200,
-                json=[
-                    {"provider": "openai", "api_key": "openai-key"},
-                    {"provider": "gemini", "api_key": "gemini-key"},
-                ],
+                json={
+                    "provider_order": ["openai", "gemini", "local"],
+                    "keys": [
+                        {"provider": "openai", "api_key": "openai-key"},
+                        {"provider": "gemini", "api_key": "gemini-key"},
+                    ],
+                },
             )
         if request.url.host == "api.openai.com":
             await asyncio.sleep(2)
@@ -119,17 +138,20 @@ async def test_timeout_reaches_gemini(settings):
 
     settings = settings.model_copy(update={"chat_provider_timeout_ms": 100})
     async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
-        answer = await RemoteGeneration(settings, client).generate(MESSAGES)
+        answer = await generate_remotely(RemoteGeneration(settings, client))
     assert answer and answer.content == "Gemini [S1]"
 
 
 async def test_key_lookup_error_skips_remote_calls(settings):
     def handle(request):
-        assert request.url.path.endswith("/get_ai_provider_keys")
+        assert request.url.path.rsplit("/", 1)[-1] in {
+            "get_ai_provider_configuration",
+            "get_ai_provider_keys",
+        }
         return httpx.Response(404)
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
-        assert await RemoteGeneration(settings, client).generate(MESSAGES) is None
+        assert await generate_remotely(RemoteGeneration(settings, client)) is None
 
 
 async def test_health_uses_only_provider_metadata(settings):
@@ -140,3 +162,25 @@ async def test_health_uses_only_provider_metadata(settings):
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
         assert await RemoteGeneration(settings, client).has_configured_provider()
+
+
+async def test_invalid_provider_order_preserves_valid_keys_and_uses_default(settings):
+    def handle(request):
+        assert request.url.path.endswith("/get_ai_provider_configuration")
+        return httpx.Response(
+            200,
+            json={
+                "provider_order": ["gemini", "local", "local"],
+                "keys": [
+                    {"provider": "gemini", "api_key": "gemini-key"},
+                    {"provider": "openai", "api_key": "openai-key"},
+                ],
+            },
+        )
+
+    log = RequestCallLog(uuid4(), None)
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        order, keys = await RemoteGeneration(settings, client).load_routing(log, 2)
+    assert order == ("openai", "gemini", "local")
+    assert set(keys) == {"openai", "gemini"}
+    assert log.key_lookup_status is None
