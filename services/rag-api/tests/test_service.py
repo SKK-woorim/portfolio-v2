@@ -237,7 +237,7 @@ async def test_provider_log_records_actual_attempts_and_safe_metadata(
             return httpx.Response(204)
         if req.url.host == "api.openai.com":
             return httpx.Response(429, json={"error": "private error body"})
-        if req.url.host == "aiplatform.googleapis.com":
+        if req.url.host == "generativelanguage.googleapis.com":
             return httpx.Response(
                 200,
                 json={

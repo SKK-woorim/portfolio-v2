@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth/admin";
 
 const labels = {
   openai: "OpenAI (GPT)",
-  gemini: "Google Gemini (Vertex AI Express Mode)",
+  gemini: "Google Gemini",
 } satisfies Record<AiProvider, string>;
 
 const providers = ["openai", "gemini"] as const;

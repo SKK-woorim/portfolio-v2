@@ -6,8 +6,6 @@ from collections.abc import Sequence
 from typing import Any, Literal
 
 import httpx
-from google import genai
-from google.genai import errors, types
 
 from app.config import Settings
 from app.generation import GenerationDelta
@@ -151,51 +149,40 @@ class RemoteGeneration:
     async def _gemini(
         self, messages: Sequence[dict[str, str]], api_key: str, attempt: ProviderAttempt
     ) -> GenerationDelta | None:
-        try:
-            with genai.Client(
-                vertexai=True,
-                api_key=api_key,
-                http_options=types.HttpOptions(
-                    api_version="v1",
-                    httpx_async_client=self._client,
-                    retry_options=types.HttpRetryOptions(attempts=1),
-                ),
-            ) as client:
-                async with client.aio as async_client:
-                    response = await async_client.models.generate_content(
-                        model=self._settings.gemini_model_id,
-                        contents=[
-                            types.Content(
-                                role="model" if item["role"] == "assistant" else "user",
-                                parts=[types.Part(text=item["content"])],
-                            )
-                            for item in messages[1:]
-                            if item["content"]
-                        ],
-                        config=types.GenerateContentConfig(
-                            system_instruction=messages[0]["content"],
-                            max_output_tokens=self._settings.chat_max_output_tokens + 1024,
-                            thinking_config=types.ThinkingConfig(thinking_level="LOW"),
-                        ),
-                    )
-        except errors.APIError as exc:
-            if isinstance(exc.response, httpx.Response):
-                attempt.response(exc.response)
-            raise
-
-        attempt.http_status = 200
-        attempt.usage(
-            response.usage_metadata.model_dump() if response.usage_metadata else None,
-            "prompt_token_count",
-            "candidates_token_count",
-            "total_token_count",
+        model = self._settings.gemini_model_id
+        response = await self._client.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+            headers={"x-goog-api-key": api_key},
+            json={
+                "systemInstruction": {"parts": [{"text": messages[0]["content"]}]},
+                "contents": [
+                    {
+                        "role": "model" if item["role"] == "assistant" else "user",
+                        "parts": [{"text": item["content"]}],
+                    }
+                    for item in messages[1:]
+                    if item["content"]
+                ],
+                "generationConfig": {
+                    "maxOutputTokens": self._settings.chat_max_output_tokens + 1024,
+                    "thinkingConfig": {"thinkingLevel": "LOW"},
+                },
+            },
         )
-        for candidate in response.candidates or []:
-            if candidate.finish_reason == types.FinishReason.STOP and candidate.content:
+        attempt.response(response)
+        data = response.json()
+        attempt.usage(
+            data.get("usageMetadata"),
+            "promptTokenCount",
+            "candidatesTokenCount",
+            "totalTokenCount",
+        )
+        for candidate in data.get("candidates", []):
+            if candidate.get("finishReason") == "STOP":
                 content = "".join(
-                    part.text
-                    for part in candidate.content.parts or []
-                    if not part.thought and part.text
+                    part["text"]
+                    for part in candidate.get("content", {}).get("parts", [])
+                    if not part.get("thought") and isinstance(part.get("text"), str)
                 )
                 return GenerationDelta(content=content, finish_reason="stop")
         return None
