@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import json
+from uuid import uuid4
 
 import httpx
 import pytest
 
+from app.provider_logging import RequestCallLog
 from app.remote_generation import RemoteGeneration
 
 MESSAGES = [
@@ -41,21 +43,21 @@ GEMINI_RESPONSE = {
             429,
             {"error": "private details"},
             "Gemini [S1]",
-            ["api.openai.com", "generativelanguage.googleapis.com"],
+            ["api.openai.com", "aiplatform.googleapis.com"],
         ),
         (
             ["openai", "gemini"],
             200,
             {**GPT_RESPONSE, "status": "incomplete"},
             "Gemini [S1]",
-            ["api.openai.com", "generativelanguage.googleapis.com"],
+            ["api.openai.com", "aiplatform.googleapis.com"],
         ),
         (
             ["gemini"],
             200,
             {},
             "Gemini [S1]",
-            ["generativelanguage.googleapis.com"],
+            ["aiplatform.googleapis.com"],
         ),
         (["openai"], 401, {}, None, ["api.openai.com"]),
         ([], 200, {}, None, []),
@@ -89,9 +91,10 @@ async def test_provider_order_and_request_mapping(
         assert request.headers["x-goog-api-key"] == "secret-gemini"
         assert "authorization" not in request.headers
         assert request.url.query == b""
-        assert request.url.path.endswith("/gemini-3.8-flash:generateContent")
+        assert request.url.path == "/v1/publishers/google/models/gemini-3.8-flash:generateContent"
         assert body["systemInstruction"]["parts"] == [{"text": MESSAGES[0]["content"]}]
         assert body["contents"] == [{"role": "user", "parts": [{"text": MESSAGES[1]["content"]}]}]
+        assert body["generationConfig"]["thinkingConfig"] == {"thinking_level": "LOW"}
         return httpx.Response(200, json=GEMINI_RESPONSE)
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
@@ -140,3 +143,32 @@ async def test_health_uses_only_provider_metadata(settings):
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
         assert await RemoteGeneration(settings, client).has_configured_provider()
+
+
+async def test_vertex_permission_error_retains_only_safe_metadata(settings, caplog):
+    class LogSink:
+        entry = None
+
+        def submit(self, request_id, attempts, key_lookup_status):
+            self.entry = attempts[0]
+
+    def handle(request):
+        if request.url.path.endswith("/get_ai_provider_keys"):
+            return httpx.Response(200, json=[{"provider": "gemini", "api_key": "secret-key"}])
+        assert request.url.host == "aiplatform.googleapis.com"
+        return httpx.Response(
+            403,
+            json={
+                "error": {"code": 403, "message": "private details", "status": "PERMISSION_DENIED"}
+            },
+        )
+
+    sink = LogSink()
+    call_log = RequestCallLog(uuid4(), sink)
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        assert await RemoteGeneration(settings, client).generate(MESSAGES, call_log) is None
+    call_log.submit()
+    assert sink.entry["http_status"] == 403
+    assert sink.entry["error_class"] == "HTTPStatusError"
+    assert "secret-key" not in caplog.text
+    assert "private details" not in caplog.text

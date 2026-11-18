@@ -20,6 +20,10 @@ df -h /opt/portfolio-rag
 
 ## 경보별 대응
 
+### Gemini 호출 HTTP 403
+
+관리자 `/admin/api-keys`의 Google Gemini 항목에는 Vertex AI Express Mode 키를 등록한다. RAG API는 `aiplatform.googleapis.com`의 전역 Express Mode 엔드포인트를 사용한다. 403이 기록되면 Google Cloud에서 키에 연결된 권한과 모델 접근 권한을 확인한다. IAM 오류에 `aiplatform.endpoints.predict`가 누락된 것으로 표시되면 호출 주체에 해당 권한이 있어야 한다. [Vertex AI Express Mode 문서](https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/express-mode/api-reference)
+
 ### `/health` 5분 실패 또는 `MODEL_UNAVAILABLE`
 
 1. Caddy가 아니라 `curl http://127.0.0.1:8090/health`로 내부 API를 확인한다.
