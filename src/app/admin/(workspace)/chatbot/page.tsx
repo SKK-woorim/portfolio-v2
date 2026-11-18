@@ -1,3 +1,4 @@
+import { ChatbotNavigation } from "@/components/admin/chatbot-navigation";
 import { ReindexAllControl, ReindexDocumentControl } from "@/components/admin/chatbot-reindex-controls";
 import { ChatbotRuntimeToggle } from "@/components/admin/chatbot-runtime-toggle";
 import { getAdminChatbotRuntimeStatus, getChatbotIndexData, type KnowledgeIndexStatus } from "@/lib/admin/queries";
@@ -37,6 +38,7 @@ export default async function AdminChatbotPage() {
 
   return (
     <div className="mx-auto max-w-7xl">
+      <ChatbotNavigation current="인덱스" />
       <section className={`mb-8 flex flex-wrap items-center justify-between gap-5 rounded-3xl border p-6 ${runtimeStatus.enabled ? "border-[#b9e8da] bg-[#f2fbf8]" : "border-[#f1d5a4] bg-[#fff9ed]"}`}>
         <div>
           <div className="flex items-center gap-2">

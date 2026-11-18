@@ -12,7 +12,7 @@ const links = [
   { href: "/admin/posts", label: "게시글", icon: FileText },
   { href: "/admin/profile", label: "사이트 프로필", icon: UserRound },
   { href: "/admin/media", label: "미디어", icon: Image },
-  { href: "/admin/chatbot", label: "챗봇 인덱스", icon: Bot },
+  { href: "/admin/chatbot", label: "챗봇", icon: Bot },
   { href: "/admin/api-keys", label: "API 키", icon: KeyRound },
   { href: "/admin/settings", label: "설정", icon: Settings },
 ];

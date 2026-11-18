@@ -3,17 +3,19 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import AsyncIterator, Sequence
+from contextlib import aclosing
 from time import monotonic
 from typing import Protocol
 from uuid import UUID
 
-import httpx
+from anyio import CancelScope
 
 from app.config import Settings
 from app.contracts import ChatRequest, ErrorPayload
 from app.embeddings import EmbeddingProvider
 from app.generation import GenerationDelta
 from app.prompting import build_messages
+from app.provider_logging import ProviderAttempt, ProviderLogSink, RequestCallLog
 from app.queue import GenerationGate, ModelBusyError
 from app.remote_generation import RemoteGeneration
 from app.retrieval import RetrievalResult, build_search_query
@@ -34,7 +36,9 @@ class Retriever(Protocol):
 
 
 class Generator(Protocol):
-    def stream(self, messages: Sequence[dict[str, str]]) -> AsyncIterator[GenerationDelta]: ...
+    def stream(
+        self, messages: Sequence[dict[str, str]], attempt: ProviderAttempt
+    ) -> AsyncIterator[GenerationDelta]: ...
 
     async def close(self) -> None: ...
 
@@ -63,6 +67,7 @@ class ChatService:
         generator: Generator,
         gate: GenerationGate,
         remote: RemoteGeneration | None = None,
+        provider_logs: ProviderLogSink | None = None,
     ) -> None:
         self.settings = settings
         self.embeddings = embeddings
@@ -70,8 +75,19 @@ class ChatService:
         self.generator = generator
         self.gate = gate
         self.remote = remote
+        self.provider_logs = provider_logs
 
     async def stream(self, request: ChatRequest, request_id: UUID) -> AsyncIterator[bytes]:
+        call_log = RequestCallLog(request_id, self.provider_logs)
+        try:
+            async with aclosing(self._stream(request, call_log)) as frames:
+                async for frame in frames:
+                    yield frame
+        finally:
+            call_log.submit()
+
+    async def _stream(self, request: ChatRequest, call_log: RequestCallLog) -> AsyncIterator[bytes]:
+        request_id = call_log.request_id
         started = monotonic()
         total_deadline = started + self.settings.chat_total_timeout_ms / 1000
         yield event("status", {"phase": "searching", "message": "관련 정보를 검색하고 있어요."})
@@ -97,9 +113,10 @@ class ChatService:
                 if not done:
                     yield heartbeat()
             result = search_task.result()
-        except asyncio.CancelledError:
+        except (asyncio.CancelledError, GeneratorExit):
             search_task.cancel()
-            await asyncio.gather(search_task, return_exceptions=True)
+            with CancelScope(shield=True):
+                await asyncio.gather(search_task, return_exceptions=True)
             raise
         except Exception as exc:  # noqa: BLE001 - convert dependency failures to the SSE contract
             logger.warning(
@@ -120,12 +137,13 @@ class ChatService:
             total_deadline - monotonic() - self.settings.chat_first_token_timeout_ms / 1000
         )
         if self.remote is not None and remote_budget > 0:
-            remote_task = asyncio.create_task(self.remote.generate(messages))
+            remote_task = asyncio.create_task(self.remote.generate(messages, call_log))
             remote_deadline = monotonic() + remote_budget
             try:
                 while not remote_task.done():
                     remaining = remote_deadline - monotonic()
                     if remaining <= 0:
+                        call_log.remote_budget_expired = True
                         break
                     done, _ = await asyncio.wait(
                         {remote_task},
@@ -134,6 +152,7 @@ class ChatService:
                     if not done and monotonic() < remote_deadline:
                         yield heartbeat()
                 if remote_task.done() and (answer := remote_task.result()) is not None:
+                    call_log.submit()
                     for offset in range(0, len(answer.content), 1_000):
                         yield event("token", {"delta": answer.content[offset : offset + 1_000]})
                     yield event(
@@ -144,7 +163,8 @@ class ChatService:
             finally:
                 if not remote_task.done():
                     remote_task.cancel()
-                    await asyncio.gather(remote_task, return_exceptions=True)
+                    with CancelScope(shield=True):
+                        await asyncio.gather(remote_task, return_exceptions=True)
 
         acquired = False
         acquire_task = asyncio.create_task(self.gate.acquire())
@@ -154,6 +174,7 @@ class ChatService:
                 if remaining <= 0:
                     acquire_task.cancel()
                     await asyncio.gather(acquire_task, return_exceptions=True)
+                    call_log.submit()
                     yield error_event("GENERATION_TIMEOUT")
                     return
                 done, _ = await asyncio.wait(
@@ -166,12 +187,16 @@ class ChatService:
                 acquire_task.result()
                 acquired = True
             except ModelBusyError:
+                call_log.submit()
                 yield error_event("MODEL_BUSY")
                 return
 
-            async for frame in self._stream_generation(messages, request_id, total_deadline):
-                yield frame
-        except asyncio.CancelledError:
+            async with aclosing(
+                self._stream_generation(messages, call_log, total_deadline)
+            ) as frames:
+                async for frame in frames:
+                    yield frame
+        except (asyncio.CancelledError, GeneratorExit):
             if acquire_task.done() and not acquire_task.cancelled() and not acquired:
                 try:
                     acquire_task.result()
@@ -180,14 +205,13 @@ class ChatService:
                     pass
             else:
                 acquire_task.cancel()
-                await asyncio.gather(acquire_task, return_exceptions=True)
+                with CancelScope(shield=True):
+                    await asyncio.gather(acquire_task, return_exceptions=True)
             raise
         finally:
-            if not acquire_task.done():
-                acquire_task.cancel()
-                await asyncio.gather(acquire_task, return_exceptions=True)
             if acquired:
-                await self.gate.release()
+                with CancelScope(shield=True):
+                    await self.gate.release()
 
     async def _search(self, query: str) -> RetrievalResult:
         vector = await self.embeddings.embed_query(query)
@@ -196,14 +220,21 @@ class ChatService:
     async def _stream_generation(
         self,
         messages: Sequence[dict[str, str]],
-        request_id: UUID,
+        call_log: RequestCallLog,
         total_deadline: float,
     ) -> AsyncIterator[bytes]:
-        iterator = self.generator.stream(messages).__aiter__()
+        started = monotonic()
+        if started >= total_deadline:
+            yield error_event("GENERATION_TIMEOUT")
+            return
+
+        request_id = call_log.request_id
+        attempt = ProviderAttempt("local", self.settings.llama_model_id)
+        iterator = self.generator.stream(messages, attempt).__aiter__()
         pending = asyncio.create_task(iterator.__anext__())
         first_token_deadline = min(
             total_deadline,
-            monotonic() + self.settings.chat_first_token_timeout_ms / 1000,
+            started + self.settings.chat_first_token_timeout_ms / 1000,
         )
         saw_token = False
         finish_reason = "stop"
@@ -215,7 +246,11 @@ class ChatService:
                 if remaining <= 0:
                     pending.cancel()
                     await asyncio.gather(pending, return_exceptions=True)
-                    yield error_event("GENERATION_TIMEOUT" if saw_token else "FIRST_TOKEN_TIMEOUT")
+                    code = "GENERATION_TIMEOUT" if saw_token else "FIRST_TOKEN_TIMEOUT"
+                    error_class = "GenerationTimeout" if saw_token else "FirstTokenTimeout"
+                    call_log.finish(attempt, "timeout", error_class)
+                    call_log.submit()
+                    yield error_event(code)
                     return
                 done, _ = await asyncio.wait(
                     {pending},
@@ -241,16 +276,26 @@ class ChatService:
                 pending = asyncio.create_task(iterator.__anext__())
 
             if not saw_token:
+                call_log.finish(attempt, "error", "EmptyResponse")
+                call_log.submit()
                 yield error_event("MODEL_UNAVAILABLE")
                 return
+            if finish_reason == "cancelled":
+                call_log.finish(attempt, "cancelled", "CancelledError")
+            else:
+                call_log.finish(attempt)
+            call_log.submit()
             yield event(
                 "done",
                 {"requestId": str(request_id), "finishReason": finish_reason},
             )
-        except asyncio.CancelledError:
-            pending.cancel()
+        except (asyncio.CancelledError, GeneratorExit):
+            if not attempt.finished:
+                call_log.finish(attempt, "cancelled", "CancelledError")
             raise
-        except (httpx.HTTPError, OSError, RuntimeError, ValueError) as exc:
+        except Exception as exc:  # noqa: BLE001 - convert model failures to the SSE contract
+            call_log.failure(attempt, exc)
+            call_log.submit()
             logger.warning(
                 "generation failed request_id=%s error_type=%s",
                 request_id,
@@ -258,14 +303,17 @@ class ChatService:
             )
             yield error_event("MODEL_UNAVAILABLE")
         finally:
-            if not pending.done():
-                pending.cancel()
+            with CancelScope(shield=True):
+                if not pending.done():
+                    pending.cancel()
                 await asyncio.gather(pending, return_exceptions=True)
-            aclose = getattr(iterator, "aclose", None)
-            if aclose is not None:
-                await aclose()
+                aclose = getattr(iterator, "aclose", None)
+                if aclose is not None:
+                    await aclose()
 
     async def close(self) -> None:
+        if self.provider_logs is not None:
+            await self.provider_logs.close()
         if self.remote is not None:
             await self.remote.close()
         await self.generator.close()

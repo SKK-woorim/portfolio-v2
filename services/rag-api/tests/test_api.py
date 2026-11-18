@@ -23,7 +23,7 @@ class EmptyRetriever:
 
 
 class UnusedGenerator:
-    async def stream(self, messages):
+    async def stream(self, messages, attempt=None):
         if False:
             yield None
 

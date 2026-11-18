@@ -249,4 +249,30 @@ for (const signature of ["get_ai_provider_keys(boolean)", "set_ai_provider_key(t
 }
 requireOccurrences(aiProviderKeys, "security invoker", 2);
 
+const chatbotCallLogs = "20261118014410_chatbot_call_logs.sql";
+requireContract(chatbotCallLogs, [
+  "create extension if not exists pg_cron",
+  "references portfolio_private.chatbot_call_requests (request_id) on delete cascade",
+  "primary key (request_id, attempt_order)",
+  "on portfolio_private.chatbot_call_requests (started_at desc, request_id desc)",
+  "alter table portfolio_private.chatbot_call_requests enable row level security",
+  "alter table portfolio_private.chatbot_call_attempts enable row level security",
+  "revoke all on table portfolio_private.chatbot_call_requests, portfolio_private.chatbot_call_attempts\n  from public, anon, authenticated, service_role",
+  "grant select, insert on table portfolio_private.chatbot_call_requests, portfolio_private.chatbot_call_attempts\n  to service_role",
+  "on conflict (request_id) do nothing",
+  "with ordinality",
+  "order by attempt.attempt_order",
+  "'total_count'",
+  "select cron.schedule(",
+  "delete from portfolio_private.chatbot_call_requests\n    where started_at <= statement_timestamp() - interval '30 days'",
+]);
+for (const signature of ["record_chatbot_call_log(uuid, jsonb, text)", "list_chatbot_call_logs(integer, integer)"]) {
+  requireContract(chatbotCallLogs, [
+    `revoke all on function public.${signature} from public, anon, authenticated`,
+    `grant execute on function public.${signature} to service_role`,
+  ]);
+}
+requireOccurrences(chatbotCallLogs, "security invoker", 2);
+requireOccurrences(chatbotCallLogs, "where started_at > statement_timestamp() - interval '30 days'", 2);
+
 console.log(`Migration contracts verified across ${entries.length} forward SQL files.`);

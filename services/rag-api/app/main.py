@@ -7,15 +7,18 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import uvicorn
+from anyio import CancelScope
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
+from starlette.types import Send
 
 from app.config import Settings, get_settings
 from app.contracts import ChatRequest
 from app.embeddings import EmbeddingProvider, SentenceTransformerEmbedding
 from app.generation import LlamaCppClient
 from app.middleware import BodyLimitMiddleware
+from app.provider_logging import ProviderLogSink
 from app.queue import GenerationGate
 from app.remote_generation import RemoteGeneration
 from app.retrieval import SupabaseRetriever
@@ -31,6 +34,16 @@ class Components:
     service: ChatService
     verifier: HmacVerifier
     embeddings: EmbeddingProvider
+
+
+class ChatStreamingResponse(StreamingResponse):
+    async def stream_response(self, send: Send) -> None:
+        try:
+            await super().stream_response(send)
+        finally:
+            # A disconnect while sending a frame leaves the iterator suspended at yield.
+            with CancelScope(shield=True):
+                await self.body_iterator.aclose()
 
 
 async def build_components(settings: Settings) -> Components:
@@ -58,7 +71,13 @@ async def build_components(settings: Settings) -> Components:
     )
     gate = GenerationGate(settings.chat_queue_waiters)
     service = ChatService(
-        settings, embeddings, retriever, generator, gate, RemoteGeneration(settings)
+        settings,
+        embeddings,
+        retriever,
+        generator,
+        gate,
+        RemoteGeneration(settings),
+        ProviderLogSink(settings),
     )
     verifier = HmacVerifier(
         settings.chat_backend_secret.get_secret_value(),
@@ -149,7 +168,7 @@ def create_app(
         if content_type != "application/json":
             raise HTTPException(status_code=415, detail="content-type must be application/json")
         resolved: Components = request.app.state.components
-        return StreamingResponse(
+        return ChatStreamingResponse(
             resolved.service.stream(payload, request_id),
             media_type="text/event-stream",
             headers={
