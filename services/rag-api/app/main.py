@@ -17,6 +17,7 @@ from app.embeddings import EmbeddingProvider, SentenceTransformerEmbedding
 from app.generation import LlamaCppClient
 from app.middleware import BodyLimitMiddleware
 from app.queue import GenerationGate
+from app.remote_generation import RemoteGeneration
 from app.retrieval import SupabaseRetriever
 from app.security import AuthenticationError, HmacVerifier, ReplayCache, SignedHeaders
 from app.service import ChatService
@@ -56,7 +57,9 @@ async def build_components(settings: Settings) -> Components:
         top_p=settings.chat_top_p,
     )
     gate = GenerationGate(settings.chat_queue_waiters)
-    service = ChatService(settings, embeddings, retriever, generator, gate)
+    service = ChatService(
+        settings, embeddings, retriever, generator, gate, RemoteGeneration(settings)
+    )
     verifier = HmacVerifier(
         settings.chat_backend_secret.get_secret_value(),
         ReplayCache(ttl_seconds=settings.chat_replay_ttl_seconds),
@@ -160,7 +163,8 @@ def create_app(
     async def health(request: Request) -> JSONResponse:
         resolved: Components = request.app.state.components
         snapshot = await resolved.service.gate.snapshot()
-        model_ready = await resolved.service.model_healthy()
+        local_ready = await resolved.service.model_healthy()
+        model_ready = local_ready or await resolved.service.has_remote_provider()
         ready = bool(request.app.state.ready and resolved.embeddings.ready and model_ready)
         return JSONResponse(
             status_code=200 if ready else 503,
@@ -168,7 +172,7 @@ def create_app(
                 "status": "ok" if ready else "not_ready",
                 "embeddingReady": resolved.embeddings.ready,
                 "modelReady": model_ready,
-                "modelLabel": resolved.settings.llama_model_label,
+                "modelLabel": resolved.settings.llama_model_label if local_ready else None,
                 "generation": {
                     "running": snapshot.running,
                     "waiting": snapshot.waiting,

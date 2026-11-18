@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 from typing import Annotated, Any
 from urllib.parse import urlsplit
@@ -36,6 +37,8 @@ class Settings(BaseSettings):
     llama_base_url: str = "http://127.0.0.1:8080"
     llama_model_id: str
     llama_model_label: OptionalString = Field(default=None, max_length=80)
+    openai_model_id: str = "gpt-6-luna"
+    gemini_model_id: str = "gemini-3.8-flash"
     embedding_model_id: str
     embedding_dimension: int = Field(default=768, ge=1)
 
@@ -46,6 +49,7 @@ class Settings(BaseSettings):
     rag_max_context_tokens: int = Field(default=1500, ge=128, le=8000)
 
     chat_search_timeout_ms: int = Field(default=15_000, ge=100)
+    chat_provider_timeout_ms: int = Field(default=8_000, ge=100, le=30_000)
     chat_first_token_timeout_ms: int = Field(default=90_000, ge=100)
     chat_total_timeout_ms: int = Field(default=240_000, ge=1000)
     chat_heartbeat_seconds: float = Field(default=8.0, ge=1.0, le=10.0)
@@ -120,6 +124,13 @@ class Settings(BaseSettings):
         if any(ord(char) < 32 or ord(char) == 127 for char in clean):
             raise ValueError("model label must be a single line")
         return clean or None
+
+    @field_validator("openai_model_id", "gemini_model_id")
+    @classmethod
+    def validate_remote_model_id(cls, value: str) -> str:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}", value):
+            raise ValueError("must be a model ID")
+        return value
 
     @field_validator("log_level")
     @classmethod

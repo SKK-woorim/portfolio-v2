@@ -154,3 +154,52 @@ async def test_cancelled_queue_wait_is_removed(settings) -> None:
         await task
     assert (await gate.snapshot()).waiting == 0
     await gate.release()
+
+
+@pytest.mark.parametrize("remote_answer", [True, False])
+async def test_remote_answer_or_local_fallback_reuses_retrieved_context(settings, remote_answer):
+    class Remote:
+        async def generate(self, messages):
+            assert "공개된 근거 본문" in messages[-1]["content"]
+            if remote_answer:
+                return GenerationDelta("원격 근거 답변 [S1]", "stop")
+            return None
+
+    service = ChatService(
+        settings,
+        FakeEmbedding(),
+        Retriever(),
+        ImmediateGenerator(),
+        GenerationGate(),
+        Remote(),
+    )
+    request_id = uuid4()
+    frames = b"".join([frame async for frame in service.stream(request(), request_id)]).decode()
+    assert "event: sources" in frames
+    assert frames.count("event: token") == 1
+    expected = "원격 근거 답변 [S1]" if remote_answer else "근거 답변 [S1]"
+    assert f'"delta":"{expected}"' in frames
+    assert f'"requestId":"{request_id}"' in frames
+    assert "event: error" not in frames
+
+
+async def test_remote_budget_cancels_slow_request_and_preserves_local_first_token(settings):
+    cancelled = asyncio.Event()
+
+    class Remote:
+        async def generate(self, messages):
+            try:
+                await asyncio.sleep(5)
+            finally:
+                cancelled.set()
+
+    settings = settings.model_copy(
+        update={"chat_first_token_timeout_ms": 900, "chat_total_timeout_ms": 1000}
+    )
+    service = ChatService(
+        settings, FakeEmbedding(), Retriever(), ImmediateGenerator(), GenerationGate(), Remote()
+    )
+    frames = b"".join([frame async for frame in service.stream(request(), uuid4())]).decode()
+    assert cancelled.is_set()
+    assert '"delta":"근거 답변 [S1]"' in frames
+    assert "event: error" not in frames

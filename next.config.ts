@@ -1,6 +1,5 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
-import { getBuildModelLabel } from "./src/lib/chat/build-model-label";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const contentSecurityPolicy = [
@@ -59,16 +58,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-let configured: Promise<NextConfig> | undefined;
-
-export default function configure() {
-  configured ??= getBuildModelLabel().then((modelLabel) => withSentryConfig({
-    ...nextConfig,
-    env: { NEXT_PUBLIC_CHATBOT_MODEL_LABEL: modelLabel },
-  }, {
-    silent: true,
-    sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
-    webpack: { treeshake: { removeDebugLogging: true } },
-  }));
-  return configured;
-}
+export default withSentryConfig(nextConfig, {
+  silent: true,
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+  webpack: { treeshake: { removeDebugLogging: true } },
+});

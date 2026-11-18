@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Trash2 } from "lucide-react";
 import { deleteMedia } from "@/app/admin/actions";
 import type { FormState } from "@/lib/validation/content";
+import { FormStatus } from "./form-status";
 
 const initialState: FormState = {};
 
@@ -19,7 +20,6 @@ export function MediaDeleteForm({ id, retry = false }: { id: string; retry?: boo
     >
       <Trash2 size={15} /> {pending ? "삭제 확인 중…" : retry ? "파일 삭제 재시도" : "삭제"}
     </button>
-    {state.error ? <p role="alert" className="text-xs leading-5 text-[#a22b38]">{state.error}</p> : null}
-    {state.success ? <p role="status" className="text-xs leading-5 text-[#146b58]">{state.success}</p> : null}
+    <FormStatus variant="text" result={state} error={state.error} success={state.success} className="leading-5" />
   </form>;
 }

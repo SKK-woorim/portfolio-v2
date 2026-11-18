@@ -228,4 +228,25 @@ requireStatementContract(contractMigration, "revoke insert, update, delete on ta
   "from authenticated",
 ]);
 
+const aiProviderKeys = "20261118011930_ai_provider_keys.sql";
+requireContract(aiProviderKeys, [
+  "create extension if not exists supabase_vault",
+  "revoke all on schema portfolio_private from public, anon, authenticated",
+  "grant usage on schema portfolio_private to service_role",
+  "if p_include_values is true then",
+  "join vault.decrypted_secrets",
+  "join vault.secrets",
+  "p_provider not in ('openai', 'gemini')",
+  "pg_advisory_xact_lock",
+]);
+for (const signature of ["get_ai_provider_keys(boolean)", "set_ai_provider_key(text, text)"]) {
+  for (const schema of ["public", "portfolio_private"]) {
+    requireContract(aiProviderKeys, [
+      `revoke all on function ${schema}.${signature} from public, anon, authenticated`,
+      `grant execute on function ${schema}.${signature} to service_role`,
+    ]);
+  }
+}
+requireOccurrences(aiProviderKeys, "security invoker", 2);
+
 console.log(`Migration contracts verified across ${entries.length} forward SQL files.`);

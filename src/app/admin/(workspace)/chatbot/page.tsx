@@ -73,26 +73,28 @@ export default async function AdminChatbotPage() {
       </div>
 
       <section className="mt-8 overflow-hidden rounded-3xl border border-[var(--border)] bg-white">
-        <div className="overflow-x-auto">
+        {/* 가로로 스크롤되는 표: 키보드로도 스크롤하도록 초점을 받고, 표 제목으로 영역 이름을 붙인다. */}
+        <div className="focus-ring-inset overflow-x-auto" tabIndex={0} role="region" aria-labelledby="admin-chatbot-table-caption">
           <table className="w-full min-w-260 text-left text-sm">
+            <caption id="admin-chatbot-table-caption" className="sr-only">챗봇 지식 문서 목록</caption>
             <thead className="border-b border-[var(--border)] bg-[#f8fbff] text-xs text-[var(--muted)]">
               <tr>
-                <th className="px-5 py-4 font-semibold">문서</th>
-                <th className="px-5 py-4 font-semibold">종류</th>
-                <th className="px-5 py-4 font-semibold">원본 수정</th>
-                <th className="px-5 py-4 font-semibold">인덱싱</th>
-                <th className="px-5 py-4 font-semibold">상태</th>
-                <th className="px-5 py-4 font-semibold">오류</th>
-                <th className="px-5 py-4" />
+                <th scope="col" className="px-5 py-4 font-semibold">문서</th>
+                <th scope="col" className="px-5 py-4 font-semibold">종류</th>
+                <th scope="col" className="px-5 py-4 font-semibold">원본 수정</th>
+                <th scope="col" className="px-5 py-4 font-semibold">인덱싱</th>
+                <th scope="col" className="px-5 py-4 font-semibold">상태</th>
+                <th scope="col" className="px-5 py-4 font-semibold">오류</th>
+                <th scope="col" className="px-5 py-4"><span className="sr-only">작업</span></th>
               </tr>
             </thead>
             <tbody>
               {data.documents.map((document) => (
                 <tr key={document.id} className="border-b border-[var(--border)] align-top last:border-0">
-                  <td className="px-5 py-4">
+                  <th scope="row" className="px-5 py-4 text-left font-normal">
                     <p className="max-w-64 truncate font-semibold text-[var(--ink)]">{document.title}</p>
                     <p className="mt-1 max-w-64 truncate text-xs text-[var(--muted)]">{document.source_url}</p>
-                  </td>
+                  </th>
                   <td className="px-5 py-4 text-[var(--body)]">{sourceLabels[document.source_type]}</td>
                   <td className="px-5 py-4 text-xs text-[var(--body)]">{displayDate(document.source_updated_at)}</td>
                   <td className="px-5 py-4 text-xs text-[var(--body)]">{displayDate(document.indexed_at)}</td>

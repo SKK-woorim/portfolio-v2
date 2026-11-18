@@ -1,8 +1,9 @@
 /** @vitest-environment jsdom */
 
 import { createElement, StrictMode, useState, type ChangeEvent } from "react";
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { installNativeDialogMock } from "@/test-utils/native-dialog";
 import { getDraftStorageIdentity, hasRecoverableLocalDraft, MarkdownEditor, shouldHydrateDraftStorage } from "./markdown-editor";
 
 const legacyDocument = {
@@ -29,10 +30,17 @@ function MetadataDraftHarness() {
   );
 }
 
+let uninstallDialogMock: () => void;
+
+beforeEach(() => {
+  uninstallDialogMock = installNativeDialogMock();
+});
+
 afterEach(() => {
   cleanup();
   localStorage.clear();
   vi.restoreAllMocks();
+  uninstallDialogMock();
 });
 
 describe("MarkdownEditor", () => {
@@ -61,6 +69,111 @@ describe("MarkdownEditor", () => {
     fireEvent.click(view.getByRole("button", { name: "본문에 넣기" }));
 
     expect(editor.value).toBe("앞![프로젝트 화면](<https://example.com/image.png>)뒤");
+  });
+
+  it("opens the image picker as a native modal with focus in the search field", () => {
+    const view = render(createElement(MarkdownEditor, {
+      name: "contentMarkdown",
+      media: [{ id: "media-1", public_url: "https://example.com/image.png", alt: "프로젝트 화면", storage_key: "2026/image.png" }],
+    }));
+    const dialog = view.container.querySelector("dialog")!;
+    expect(dialog.hasAttribute("open")).toBe(false);
+    expect(view.queryByRole("heading", { name: "본문 이미지 넣기" })).toBeNull();
+
+    fireEvent.click(view.getByRole("button", { name: "이미지 넣기" }));
+
+    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
+    expect(dialog.hasAttribute("open")).toBe(true);
+    expect(dialog.getAttribute("role")).toBeNull();
+    expect(dialog.getAttribute("aria-modal")).toBeNull();
+    expect(dialog.getAttribute("closedby")).toBe("any");
+    expect(dialog.getAttribute("aria-labelledby")).toBe(view.getByRole("heading", { name: "본문 이미지 넣기" }).id);
+    expect(document.activeElement).toBe(view.getByRole("textbox", { name: "미디어 검색" }));
+    const thumbnail = dialog.querySelector("img")!;
+    expect(thumbnail.getAttribute("loading")).toBe("lazy");
+    expect(thumbnail.getAttribute("decoding")).toBe("async");
+  });
+
+  it("closes from the close button and keeps state in sync when the browser closes it (Esc or light dismiss)", () => {
+    const view = render(createElement(MarkdownEditor, {
+      name: "contentMarkdown",
+      media: [{ id: "media-1", public_url: "https://example.com/image.png", alt: "프로젝트 화면", storage_key: "2026/image.png" }],
+    }));
+    const dialog = view.container.querySelector("dialog")!;
+    const openButton = view.getByRole("button", { name: "이미지 넣기" });
+
+    fireEvent.click(openButton);
+    fireEvent.click(view.getByRole("button", { name: "이미지 선택 닫기" }));
+    expect(HTMLDialogElement.prototype.close).toHaveBeenCalledTimes(1);
+    expect(dialog.hasAttribute("open")).toBe(false);
+    expect(view.queryByRole("heading", { name: "본문 이미지 넣기" })).toBeNull();
+
+    fireEvent.click(openButton);
+    fireEvent.change(view.getByRole("textbox", { name: "미디어 검색" }), { target: { value: "없는 이미지" } });
+    // 브라우저가 Esc·바깥 클릭으로 닫으면 close 이벤트만 온다.
+    act(() => {
+      dialog.removeAttribute("open");
+      dialog.dispatchEvent(new Event("close"));
+    });
+    expect(view.queryByRole("heading", { name: "본문 이미지 넣기" })).toBeNull();
+
+    // 다시 열면 이전 검색어 없이 새로 시작한다.
+    fireEvent.click(openButton);
+    expect(dialog.hasAttribute("open")).toBe(true);
+    expect((view.getByRole("textbox", { name: "미디어 검색" }) as HTMLInputElement).value).toBe("");
+    expect(view.getByRole("button", { name: /프로젝트 화면/ })).toBeTruthy();
+  });
+
+  it("returns focus to the editor at the new cursor after inserting an image", async () => {
+    const view = render(createElement(MarkdownEditor, {
+      name: "contentMarkdown",
+      initialValue: { type: "markdown", markdown: "앞뒤" },
+      media: [{ id: "media-1", public_url: "https://example.com/image.png", alt: "화면", storage_key: "2026/image.png" }],
+    }));
+    const editor = view.getByLabelText(/본문/) as HTMLTextAreaElement;
+    editor.setSelectionRange(1, 1);
+    fireEvent.select(editor);
+    fireEvent.click(view.getByRole("button", { name: "이미지 넣기" }));
+    fireEvent.click(view.getByRole("button", { name: /화면/ }));
+    fireEvent.click(view.getByRole("button", { name: "본문에 넣기" }));
+
+    expect(view.container.querySelector("dialog")!.hasAttribute("open")).toBe(false);
+    const inserted = "![화면](<https://example.com/image.png>)";
+    await waitFor(() => expect(document.activeElement).toBe(editor));
+    expect(editor.selectionStart).toBe(1 + inserted.length);
+  });
+
+  it("keeps Enter in the picker's text fields from submitting the enclosing content form", () => {
+    const onSubmit = vi.fn((event: Event) => event.preventDefault());
+    const view = render(createElement("form", { onSubmit }, createElement(MarkdownEditor, {
+      name: "contentMarkdown",
+      media: [{ id: "media-1", public_url: "https://example.com/image.png", alt: "프로젝트 화면", storage_key: "2026/image.png" }],
+      uploadAction: vi.fn(),
+    }), createElement("button", { type: "submit" }, "저장")));
+    const requestSubmit = vi.spyOn(HTMLFormElement.prototype, "requestSubmit");
+    fireEvent.click(view.getByRole("button", { name: "이미지 넣기" }));
+    fireEvent.click(view.getByRole("button", { name: /프로젝트 화면/ }));
+
+    // fireEvent는 취소되면 false를 돌려준다. jsdom은 암묵적 제출을 구현하지 않으므로 기본 동작 취소 여부로 확인한다.
+    const search = view.getByRole("textbox", { name: "미디어 검색" });
+    const alt = view.getByLabelText("대체 텍스트");
+    const uploadAlt = view.getByLabelText("새 이미지 대체 텍스트");
+    expect(fireEvent.keyDown(search, { key: "Enter", keyCode: 13 })).toBe(false);
+    expect(fireEvent.keyDown(alt, { key: "Enter", keyCode: 13 })).toBe(false);
+    expect(fireEvent.keyDown(uploadAlt, { key: "Enter", keyCode: 13 })).toBe(false);
+    // IME 확정 Enter도 막고, 그 밖의 동작으로 이어지지 않는다.
+    expect(fireEvent.keyDown(search, { key: "Enter", keyCode: 229 })).toBe(false);
+    expect(fireEvent.keyDown(search, { key: "Enter", isComposing: true })).toBe(false);
+    expect(view.container.querySelector("dialog")!.hasAttribute("open")).toBe(true);
+
+    // 버튼의 Enter, 파일 선택의 Enter, 체크박스의 Space, 일반 글자 입력은 막지 않는다.
+    expect(fireEvent.keyDown(view.getByRole("button", { name: "이미지 선택 닫기" }), { key: "Enter", keyCode: 13 })).toBe(true);
+    expect(fireEvent.keyDown(view.getByLabelText("새 이미지 파일"), { key: "Enter", keyCode: 13 })).toBe(true);
+    expect(fireEvent.keyDown(view.getByRole("checkbox", { name: /장식용 이미지입니다/ }), { key: " ", keyCode: 32 })).toBe(true);
+    expect(fireEvent.keyDown(search, { key: "a", keyCode: 65 })).toBe(true);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(requestSubmit).not.toHaveBeenCalled();
   });
 
   it("keeps insertion disabled until alt text is supplied for media without alt", () => {

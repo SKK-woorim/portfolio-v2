@@ -85,7 +85,7 @@ function ChatbotFloating() {
           runtimeAvailability={runtimeAvailability}
           announcement={chatbot.announcement}
           suggestedQuestions={chatbot.suggestions}
-          slowNotice={<ChatbotSlowNotice show={chatbot.progress.slowNotice} modelLabel={chatbot.modelLabel} />}
+          slowNotice={<ChatbotSlowNotice show={chatbot.progress.slowNotice} />}
           onInputChange={chatbot.setInput}
           onSubmit={chatbot.sendMessage}
           onRetry={chatbot.sendMessage}

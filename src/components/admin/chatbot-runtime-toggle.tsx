@@ -5,6 +5,7 @@ import { Power, PowerOff } from "lucide-react";
 import { setChatbotRuntimeEnabled } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import type { FormState } from "@/lib/validation/content";
+import { FormStatus } from "./form-status";
 
 const initialState: FormState = {};
 
@@ -19,8 +20,7 @@ export function ChatbotRuntimeToggle({ enabled }: { enabled: boolean }) {
         {nextEnabled ? <Power size={16} aria-hidden="true" /> : <PowerOff size={16} aria-hidden="true" />}
         {pending ? "변경 중…" : nextEnabled ? "챗봇 활성화" : "챗봇 비활성화"}
       </Button>
-      {state.error ? <p role="alert" className="mt-2 max-w-80 text-xs text-[#a22b38]">{state.error}</p> : null}
-      {state.success ? <p role="status" className="mt-2 max-w-80 text-xs text-[#146b58]">{state.success}</p> : null}
+      <FormStatus variant="text" result={state} error={state.error} success={state.success} className="mt-2 max-w-80" />
     </form>
   );
 }

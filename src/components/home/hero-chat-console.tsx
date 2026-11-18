@@ -21,7 +21,7 @@ const STATE_LABEL: Record<ChatbotRuntimeAvailability, string> = {
 
 const OFFLINE_COPY = {
   disabled: {
-    title: "지금은 로컬 AI를 쉬게 해 두었어요",
+    title: "지금은 AI 챗봇 연결이 꺼져 있어요",
     copy: "질문에 답할 수는 없지만, 궁금한 내용은 아래 페이지에서 바로 확인할 수 있어요.",
     placeholder: "AI 연결이 꺼져 있어 지금은 질문을 받지 않아요",
   },
@@ -129,7 +129,7 @@ export function HeroChatConsole({ evaluationTotal, featuredProject }: HeroChatCo
         </span>
         <span className="console-badge tabular">{indexStats ? `공개 페이지 ${indexStats.documents}` : `평가 질문 ${evaluationTotal}개`}</span>
       </div>
-      <ChatbotSlowNotice show={progress.slowNotice && !offline} modelLabel={chatbot.modelLabel} />
+      <ChatbotSlowNotice show={progress.slowNotice && !offline} />
 
       {offlineCopy ? (
         <div className="console-offline" role="status">

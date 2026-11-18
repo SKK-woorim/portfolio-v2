@@ -7,6 +7,8 @@ import { MediaDeleteForm } from "@/components/admin/media-delete-form";
 import { MediaUrlCopyButton } from "@/components/admin/media-url-copy-button";
 import { getAdminMedia, getAdminMediaDeletionJobs } from "@/lib/admin/queries";
 
+const FIRST_ROW_COUNT = 3;
+
 function fileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(bytes >= 1024 * 1024 ? 1 : 2)} MB`;
 }
@@ -35,9 +37,10 @@ export default async function AdminMediaPage() {
     <div className="mt-8 grid gap-6 lg:grid-cols-[340px_1fr]">
       <MediaUploadForm />
       <section aria-label="업로드한 미디어" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {media.map((item) => <article className="overflow-hidden rounded-3xl border border-[var(--border)] bg-white" key={item.id}>
+        {/* 첫 줄(넓은 화면 3열)은 기본 로딩, 그 아래는 화면에 가까워질 때 불러온다. fetchpriority는 브라우저 기본값에 맡긴다. */}
+        {media.map((item, index) => <article className="overflow-hidden rounded-3xl border border-[var(--border)] bg-white" key={item.id}>
           <div className="aspect-[4/3] bg-[#edf3fb]">
-            <img className="size-full object-cover" src={item.public_url} alt={item.alt || ""} />
+            <img className="size-full object-cover" src={item.public_url} alt={item.alt || ""} loading={index < FIRST_ROW_COUNT ? undefined : "lazy"} decoding="async" />
           </div>
           <div className="p-4">
             <p className="truncate text-sm font-semibold">{item.alt || "장식용 이미지"}</p>

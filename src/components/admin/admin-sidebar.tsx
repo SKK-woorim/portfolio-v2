@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, FileText, FolderKanban, Image, LayoutDashboard, LogOut, Settings, UserRound } from "lucide-react";
+import { Bot, FileText, FolderKanban, Image, KeyRound, LayoutDashboard, LogOut, Settings, UserRound } from "lucide-react";
 import { logout } from "@/app/admin/login/actions";
 import { cn } from "@/lib/utils";
 
@@ -13,10 +13,28 @@ const links = [
   { href: "/admin/profile", label: "사이트 프로필", icon: UserRound },
   { href: "/admin/media", label: "미디어", icon: Image },
   { href: "/admin/chatbot", label: "챗봇 인덱스", icon: Bot },
+  { href: "/admin/api-keys", label: "API 키", icon: KeyRound },
   { href: "/admin/settings", label: "설정", icon: Settings },
 ];
 
+/**
+ * 메뉴 링크의 aria-current 값. 해당 페이지 자체면 "page", 그 아래 화면(예: /admin/posts/new)이면 "true"(현재 구역),
+ * 아니면 속성을 달지 않는다.
+ */
+export function getCurrentState(pathname: string, href: string): "page" | "true" | undefined {
+  if (pathname === href) return "page";
+  if (href !== "/admin" && pathname.startsWith(`${href}/`)) return "true";
+  return undefined;
+}
+
 export function AdminSidebar({ email }: { email: string }) {
   const pathname = usePathname();
-  return <aside className="border-b border-[var(--border)] bg-white lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r"><div className="flex h-16 items-center px-6 text-base font-bold tracking-[-.03em] text-[var(--primary)]">Portfolio CMS</div><nav className="flex overflow-x-auto px-3 pb-3 lg:flex-col lg:gap-1" aria-label="관리자 메뉴">{links.map(({ href, label, icon: Icon }) => { const active = href === "/admin" ? pathname === href : pathname.startsWith(href); return <Link key={href} href={href} className={cn("focus-ring flex shrink-0 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium", active ? "bg-[var(--primary-soft)] text-[var(--primary)]" : "text-[var(--body)] hover:bg-[#f3f7fc]")}><Icon size={17} />{label}</Link>; })}</nav><div className="flex items-center justify-between gap-4 border-t border-[var(--border)] px-5 py-4 lg:hidden"><p className="min-w-0 truncate text-xs text-[var(--muted)]">{email}</p><form action={logout}><button className="focus-ring inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-[var(--border)] px-3 text-sm font-semibold text-[var(--body)] hover:border-[var(--primary)] hover:text-[var(--primary)]"><LogOut size={16} /> 로그아웃</button></form></div><div className="hidden px-6 py-6 lg:block"><p className="truncate text-xs text-[var(--muted)]">{email}</p><form action={logout}><button className="focus-ring mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[var(--body)] hover:text-[var(--primary)]"><LogOut size={16} /> 로그아웃</button></form></div></aside>;
+  return <aside className="border-b border-[var(--border)] bg-white lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r"><div className="flex h-16 items-center px-6 text-base font-bold tracking-[-.03em] text-[var(--primary)]">Portfolio CMS</div><nav className="flex overflow-x-auto px-3 pb-3 lg:flex-col lg:gap-1" aria-label="관리자 메뉴">{links.map(({ href, label, icon: Icon }) => {
+      const current = getCurrentState(pathname, href);
+      // 스타일 기준은 aria-current다. 색 외에 굵기와 안쪽 막대(모바일 아래, 넓은 화면 왼쪽)로도 현재 위치를 표시한다.
+      return <Link key={href} href={href} aria-current={current} className={cn(
+        "focus-ring flex shrink-0 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[var(--body)] hover:bg-[#f3f7fc]",
+        "[&[aria-current]]:bg-[var(--primary-soft)] [&[aria-current]]:font-bold [&[aria-current]]:text-[var(--primary)] [&[aria-current]]:shadow-[inset_0_-3px_0_var(--primary)] lg:[&[aria-current]]:shadow-[inset_3px_0_0_var(--primary)]",
+      )}><Icon size={17} aria-hidden="true" />{label}</Link>;
+    })}</nav><div className="flex items-center justify-between gap-4 border-t border-[var(--border)] px-5 py-4 lg:hidden"><p className="min-w-0 truncate text-xs text-[var(--muted)]">{email}</p><form action={logout}><button className="focus-ring inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-[var(--border)] px-3 text-sm font-semibold text-[var(--body)] hover:border-[var(--primary)] hover:text-[var(--primary)]"><LogOut size={16} /> 로그아웃</button></form></div><div className="hidden px-6 py-6 lg:block"><p className="truncate text-xs text-[var(--muted)]">{email}</p><form action={logout}><button className="focus-ring mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[var(--body)] hover:text-[var(--primary)]"><LogOut size={16} /> 로그아웃</button></form></div></aside>;
 }

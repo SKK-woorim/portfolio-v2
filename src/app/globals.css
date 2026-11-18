@@ -62,6 +62,15 @@ body {
   transition: transform 120ms ease;
 }
 .skip-link:focus-visible { outline: 3px solid #78b5ff; outline-offset: 3px; transform: translateY(0); }
+/* overflow-hidden 부모 안을 꽉 채우는 요소(관리자 표 스크롤 래퍼)는 바깥 outline이 잘리므로 안쪽에 그린다. */
+.focus-ring-inset:focus-visible { outline: 3px solid #78b5ff; outline-offset: -3px; }
+
+/* 관리자 네이티브 모달(<dialog> + showModal). display는 주지 않는다(닫힌 상태의 display: none을 덮어쓰지 않게). */
+/* Tailwind preflight가 margin을 0으로 초기화하므로 UA의 가운데 정렬(margin: auto)을 되살린다. */
+.admin-dialog { margin: auto; }
+/* 다이얼로그 안·배경 위의 스크롤이 뒤 페이지로 이어지지 않게 한다. ::backdrop은 기본이 overflow: visible이라 hidden이어야 스크롤 컨테이너가 된다. */
+.admin-dialog:modal { overscroll-behavior: contain; }
+.admin-dialog::backdrop { overflow: hidden; overscroll-behavior: contain; background: rgb(0 0 0 / .45); }
 .on-light-cta { color: var(--primary) !important; }
 
 .site-theme {

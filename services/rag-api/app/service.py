@@ -15,6 +15,7 @@ from app.embeddings import EmbeddingProvider
 from app.generation import GenerationDelta
 from app.prompting import build_messages
 from app.queue import GenerationGate, ModelBusyError
+from app.remote_generation import RemoteGeneration
 from app.retrieval import RetrievalResult, build_search_query
 from app.sse import event, heartbeat
 
@@ -61,12 +62,14 @@ class ChatService:
         retriever: Retriever,
         generator: Generator,
         gate: GenerationGate,
+        remote: RemoteGeneration | None = None,
     ) -> None:
         self.settings = settings
         self.embeddings = embeddings
         self.retriever = retriever
         self.generator = generator
         self.gate = gate
+        self.remote = remote
 
     async def stream(self, request: ChatRequest, request_id: UUID) -> AsyncIterator[bytes]:
         started = monotonic()
@@ -113,6 +116,36 @@ class ChatService:
 
         yield event("status", {"phase": "generating", "message": "답변을 생성하고 있어요."})
         messages = build_messages(request.message, request.history, result)
+        remote_budget = (
+            total_deadline - monotonic() - self.settings.chat_first_token_timeout_ms / 1000
+        )
+        if self.remote is not None and remote_budget > 0:
+            remote_task = asyncio.create_task(self.remote.generate(messages))
+            remote_deadline = monotonic() + remote_budget
+            try:
+                while not remote_task.done():
+                    remaining = remote_deadline - monotonic()
+                    if remaining <= 0:
+                        break
+                    done, _ = await asyncio.wait(
+                        {remote_task},
+                        timeout=min(self.settings.chat_heartbeat_seconds, remaining),
+                    )
+                    if not done and monotonic() < remote_deadline:
+                        yield heartbeat()
+                if remote_task.done() and (answer := remote_task.result()) is not None:
+                    for offset in range(0, len(answer.content), 1_000):
+                        yield event("token", {"delta": answer.content[offset : offset + 1_000]})
+                    yield event(
+                        "done",
+                        {"requestId": str(request_id), "finishReason": answer.finish_reason},
+                    )
+                    return
+            finally:
+                if not remote_task.done():
+                    remote_task.cancel()
+                    await asyncio.gather(remote_task, return_exceptions=True)
+
         acquired = False
         acquire_task = asyncio.create_task(self.gate.acquire())
         try:
@@ -233,6 +266,8 @@ class ChatService:
                 await aclose()
 
     async def close(self) -> None:
+        if self.remote is not None:
+            await self.remote.close()
         await self.generator.close()
         await self.retriever.close()
         await self.embeddings.close()
@@ -246,3 +281,6 @@ class ChatService:
         except Exception as exc:  # noqa: BLE001 - health checks must return not-ready, never 500
             logger.warning("model health check failed error_type=%s", type(exc).__name__)
             return False
+
+    async def has_remote_provider(self) -> bool:
+        return self.remote is not None and await self.remote.has_configured_provider()

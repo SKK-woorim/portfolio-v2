@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Eye, FileCode2, ImagePlus, Search, X } from "lucide-react";
 import { MarkdownContent } from "@/components/markdown-content";
+import { fieldTextClass, fileFieldClass, inputFieldMediumClass } from "@/components/ui/field-classes";
+import { useDialogLightDismiss } from "@/components/use-dialog-light-dismiss";
 import { contentToMarkdown } from "@/lib/content/markdown";
 import { cn } from "@/lib/utils";
 import type { ContentSaveState, MediaUploadState } from "@/lib/validation/content";
@@ -57,6 +59,9 @@ export function hasRecoverableLocalDraft(value: unknown, baseline: string, seria
   return value.markdown !== baseline || storedFields !== serializedFields;
 }
 
+/** Enter의 기본 동작이 제출이 아니라 그 컨트롤 자체의 동작인 input 종류. */
+const KEEP_ENTER_INPUT_TYPES = new Set(["file", "button", "submit", "reset", "image"]);
+
 function escapeMarkdownAlt(alt: string) {
   return alt.replace(/\\/g, "\\\\").replace(/\[/g, "\\[").replace(/\]/g, "\\]");
 }
@@ -100,9 +105,8 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
   const [localSavedAt, setLocalSavedAt] = useState<number | null>(null);
   const [draftStorageError, setDraftStorageError] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const imageButtonRef = useRef<HTMLButtonElement>(null);
-  const dialogTitleRef = useRef<HTMLHeadingElement>(null);
-  const dialogRef = useRef<HTMLElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const previousStorageKeyRef = useRef<string | null>(null);
   const hydratedStorageIdentityRef = useRef<string | null>(null);
   const handledSaveStateRef = useRef<ContentSaveState | undefined>(undefined);
@@ -118,8 +122,12 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
     return !needle || `${item.alt} ${item.storage_key}`.toLocaleLowerCase().includes(needle);
   });
 
+  // closedby="any"를 지원하지 않는 브라우저에서도 배경을 눌러 닫는다(기존 동작 유지).
+  useDialogLightDismiss(dialogRef);
+
+  // 내용은 열릴 때 마운트되므로 React autoFocus에 기대지 않고, 열린 뒤 검색 입력으로 초기 포커스를 옮긴다.
   useEffect(() => {
-    if (isMediaDialogOpen) dialogTitleRef.current?.focus();
+    if (isMediaDialogOpen) searchInputRef.current?.focus();
   }, [isMediaDialogOpen]);
 
   useEffect(() => {
@@ -235,11 +243,16 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
     setUploadDecorative(false);
     setUploadError("");
     setIsMediaDialogOpen(true);
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
   }
 
+  // 닫힌 뒤의 상태 동기화는 onClose가 맡는다. Esc·바깥 클릭으로 닫혀도 같은 경로를 탄다.
+  // 호출 요소(이미지 넣기 버튼 또는 Ctrl/Cmd+I를 누른 본문)로의 포커스 복귀는 브라우저가 한다.
   function closeMediaDialog() {
-    setIsMediaDialogOpen(false);
-    requestAnimationFrame(() => imageButtonRef.current?.focus());
+    const dialog = dialogRef.current;
+    if (dialog?.open) dialog.close();
+    else setIsMediaDialogOpen(false);
   }
 
   function selectMedia(item: EditorMedia) {
@@ -288,24 +301,16 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
     });
   }
 
-  function onDialogKeyDown(event: React.KeyboardEvent<HTMLElement>) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeMediaDialog();
-      return;
-    }
-    if (event.key !== "Tab" || !dialogRef.current) return;
-    const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>("button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex='-1'])")];
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable.at(-1)!;
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
+  // 선택 창은 게시글·포트폴리오 <form> 안에 있어, 창 안의 입력에서 Enter를 누르면 바깥 폼이 암묵적으로 제출된다.
+  // Enter에 별도 동작을 주지 않고 그 제출만 막는다. ime-safe-enter-submit 패턴대로 preventDefault를 먼저 하므로
+  // IME 확정 Enter(isComposing·keyCode 229)도 어떤 동작으로 이어지지 않는다.
+  // 버튼(Enter로 누름)과 파일 선택(Enter로 파일 창 열기)은 기본 동작을 그대로 둔다. Space는 건드리지 않는다.
+  function onMediaDialogKeyDown(event: React.KeyboardEvent<HTMLDialogElement>) {
+    if (event.key !== "Enter" || !(event.target instanceof HTMLInputElement)) return;
+    if (KEEP_ENTER_INPUT_TYPES.has(event.target.type)) return;
+    // 막기만 하고 다른 동작은 없다. Enter에 동작을 붙이게 되면 이 아래에서
+    // `if (event.nativeEvent.isComposing || event.keyCode === 229) return;`로 IME 확정 Enter를 먼저 걸러야 한다.
+    event.preventDefault();
   }
 
   function onEditorKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -342,7 +347,7 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
     <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
       <label htmlFor={name} className="text-sm font-semibold text-[var(--ink)]">{label} <span className="font-normal text-[var(--muted)]">(Markdown)</span></label>
       <div className="flex flex-wrap items-center gap-2">
-        <button ref={imageButtonRef} type="button" onClick={openMediaDialog} disabled={disabled} className="focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg border border-[var(--border)] bg-white px-2.5 text-xs font-semibold text-[var(--ink)] hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50"><ImagePlus size={14} /> 이미지 넣기</button>
+        <button type="button" onClick={openMediaDialog} disabled={disabled} className="focus-ring inline-flex min-h-8 items-center gap-1 rounded-lg border border-[var(--border)] bg-white px-2.5 text-xs font-semibold text-[var(--ink)] hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50"><ImagePlus size={14} /> 이미지 넣기</button>
         <div role="tablist" aria-label="편집 모드" className="inline-flex rounded-lg border border-[var(--border)] bg-white p-1 text-xs font-semibold">
           <button type="button" role="tab" aria-selected={mode === "write"} onClick={() => setMode("write")} className={cn("focus-ring inline-flex min-h-8 items-center gap-1 rounded-md px-2.5", mode === "write" && "bg-[var(--primary-soft)] text-[var(--primary)]")}><FileCode2 size={14} /> 작성</button>
           <button type="button" role="tab" aria-selected={mode === "preview"} onClick={() => setMode("preview")} className={cn("focus-ring inline-flex min-h-8 items-center gap-1 rounded-md px-2.5", mode === "preview" && "bg-[var(--primary-soft)] text-[var(--primary)]")}><Eye size={14} /> 미리보기</button>
@@ -350,7 +355,7 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
       </div>
     </div>
     <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-white focus-within:border-2 focus-within:border-[var(--primary-action)]">
-      {mode === "write" ? <textarea ref={textareaRef} id={name} name={name} required value={markdown} onChange={(event) => setMarkdown(event.target.value)} onSelect={rememberSelection} onKeyUp={rememberSelection} onClick={rememberSelection} onKeyDown={onEditorKeyDown} disabled={disabled} rows={18} spellCheck className="block min-h-80 w-full resize-y bg-transparent px-4 py-4 font-mono text-sm leading-7 text-[var(--ink)] outline-none disabled:cursor-wait disabled:opacity-60" placeholder={"## 프로젝트 개요\n\n**핵심 성과**를 작성하세요.\n\n- 항목 1\n- 항목 2\n\n```ts\nconst result = '완료';\n```"} /> : <><input type="hidden" name={name} value={markdown} /><div className="min-h-80 px-5 py-4 text-base leading-8 text-[var(--body)]"><MarkdownContent markdown={markdown} /></div></>}
+      {mode === "write" ? <textarea ref={textareaRef} id={name} name={name} required value={markdown} onChange={(event) => setMarkdown(event.target.value)} onSelect={rememberSelection} onKeyUp={rememberSelection} onClick={rememberSelection} onKeyDown={onEditorKeyDown} disabled={disabled} rows={18} spellCheck className={cn("block max-h-[80vh] min-h-[calc(18lh+2rem)] w-full resize-y field-sizing-content bg-transparent px-4 py-4 font-mono leading-7 text-[var(--ink)] outline-none disabled:cursor-wait disabled:opacity-60", fieldTextClass)} placeholder={"## 프로젝트 개요\n\n**핵심 성과**를 작성하세요.\n\n- 항목 1\n- 항목 2\n\n```ts\nconst result = '완료';\n```"} /> : <><input type="hidden" name={name} value={markdown} /><div className="min-h-80 px-5 py-4 text-base leading-8 text-[var(--body)]"><MarkdownContent markdown={markdown} /></div></>}
     </div>
     <p className="mt-2 text-xs text-[var(--muted)]">제목(`#`), 굵게(`**텍스트**`), 목록, 인용문(`&gt;`), 코드 블록, 링크, 이미지, 표와 체크 목록을 지원합니다. 이미지 넣기는 Ctrl/Cmd+I로도 열 수 있습니다.</p>
     {storageKey ? <div className="mt-3" aria-live="polite">
@@ -363,32 +368,40 @@ export function MarkdownEditor({ name, initialValue, label = "본문", media = [
     </div> : null}
     <input type="hidden" name="inlineMediaIds" value={JSON.stringify(inlineMediaIds)} />
     <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
-    {isMediaDialogOpen ? <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) closeMediaDialog(); }}>
-      <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={`${name}-media-dialog-title`} className="max-h-[min(46rem,calc(100vh-2rem))] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl sm:p-6" onKeyDown={onDialogKeyDown}>
+    {/* 네이티브 모달: 배경 inert·포커스 가두기·Esc·포커스 복귀는 브라우저가 맡는다. display 유틸리티를 주지 않는다(닫힌 상태 유지). */}
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={`${name}-media-dialog-title`}
+      onClose={() => setIsMediaDialogOpen(false)}
+      onKeyDown={onMediaDialogKeyDown}
+      className="admin-dialog max-h-[min(46rem,calc(100vh-2rem))] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto rounded-3xl bg-white p-5 text-[var(--ink)] shadow-2xl sm:p-6"
+      {...({ closedby: "any" } as Record<string, string>)}
+    >
+      {isMediaDialogOpen ? <>
         <div className="flex items-start justify-between gap-4">
-          <div><h2 ref={dialogTitleRef} id={`${name}-media-dialog-title`} tabIndex={-1} className="text-xl font-semibold outline-none">본문 이미지 넣기</h2><p className="mt-1 text-sm text-[var(--body)]">자산을 고른 뒤 대체 텍스트를 확인해 본문 커서 위치에 삽입합니다.</p></div>
+          <div><h2 id={`${name}-media-dialog-title`} className="text-xl font-semibold">본문 이미지 넣기</h2><p className="mt-1 text-sm text-[var(--body)]">자산을 고른 뒤 대체 텍스트를 확인해 본문 커서 위치에 삽입합니다.</p></div>
           <button type="button" onClick={closeMediaDialog} className="focus-ring inline-grid size-10 shrink-0 place-items-center rounded-full text-[var(--body)] hover:bg-[#f2f5f9]" aria-label="이미지 선택 닫기"><X size={18} /></button>
         </div>
         {uploadAction ? <div className="mt-5 grid gap-3 rounded-2xl border border-[var(--border)] bg-[#f8fbff] p-4">
           <div><h3 className="text-sm font-semibold text-[var(--ink)]">새 이미지 바로 올리기</h3><p className="mt-1 text-xs leading-5 text-[var(--muted)]">실제 파일 형식을 검사하고 WebP로 최적화한 뒤 현재 커서에 바로 넣습니다.</p></div>
-          <label className="grid gap-2 text-sm font-semibold">새 이미지 파일<input aria-label="새 이미지 파일" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={disabled} onChange={(event) => { setUploadFile(event.target.files?.[0] ?? null); setUploadError(""); }} className="min-h-11 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-normal disabled:cursor-not-allowed disabled:opacity-60" /></label>
-          <label className="grid gap-2 text-sm font-semibold">새 이미지 대체 텍스트<input aria-label="새 이미지 대체 텍스트" value={uploadAlt} onChange={(event) => setUploadAlt(event.target.value)} maxLength={200} disabled={disabled || uploadDecorative} className="min-h-11 rounded-xl border border-[var(--border)] bg-white px-3 font-normal outline-none focus:border-2 focus:border-[var(--primary-action)] disabled:cursor-not-allowed disabled:bg-[#eef1f5]" placeholder="이미지를 설명하는 문장" /></label>
+          <label className="grid gap-2 text-sm font-semibold">새 이미지 파일<input aria-label="새 이미지 파일" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={disabled} onChange={(event) => { setUploadFile(event.target.files?.[0] ?? null); setUploadError(""); }} className={fileFieldClass} /></label>
+          <label className="grid gap-2 text-sm font-semibold">새 이미지 대체 텍스트<input aria-label="새 이미지 대체 텍스트" value={uploadAlt} onChange={(event) => setUploadAlt(event.target.value)} maxLength={200} disabled={disabled || uploadDecorative} className={inputFieldMediumClass} placeholder="이미지를 설명하는 문장" /></label>
           <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={uploadDecorative} disabled={disabled} onChange={(event) => setUploadDecorative(event.target.checked)} /> 새 이미지는 장식용입니다 (빈 alt 허용)</label>
           {uploadError ? <p role="alert" className="rounded-xl bg-[#fff0f1] px-3 py-2 text-sm text-[#a22b38]">{uploadError}</p> : null}
           <div><button type="button" onClick={uploadAndInsert} disabled={disabled || isUploading || !uploadFile || (!uploadDecorative && !uploadAlt.trim())} className="focus-ring min-h-10 rounded-full bg-[var(--primary)] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-45">{isUploading ? "검사·최적화 중…" : "업로드하고 본문에 넣기"}</button></div>
         </div> : null}
-        <label className="mt-5 flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3"><Search size={16} aria-hidden="true" className="text-[var(--muted)]" /><span className="sr-only">미디어 검색</span><input autoFocus value={query} disabled={disabled} onChange={(event) => setQuery(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm outline-none disabled:cursor-not-allowed disabled:opacity-60" placeholder="파일명 또는 대체 텍스트로 검색" /></label>
+        <label className="mt-5 flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 focus-within:border-2 focus-within:border-[var(--primary-action)]"><Search size={16} aria-hidden="true" className="text-[var(--muted)]" /><span className="sr-only">미디어 검색</span><input ref={searchInputRef} type="text" value={query} disabled={disabled} onChange={(event) => setQuery(event.target.value)} className={cn("min-w-0 flex-1 bg-transparent outline-none disabled:cursor-not-allowed disabled:opacity-60", fieldTextClass)} placeholder="파일명 또는 대체 텍스트로 검색" /></label>
         <div className="mt-4 grid max-h-72 gap-3 overflow-y-auto sm:grid-cols-2">
           {visibleMedia.map((item) => <button key={item.id} type="button" aria-pressed={item.id === selectedMediaId} disabled={disabled} onClick={() => selectMedia(item)} className={cn("focus-ring grid grid-cols-[88px_1fr] gap-3 rounded-2xl border p-2 text-left disabled:cursor-not-allowed disabled:opacity-60", item.id === selectedMediaId ? "border-[var(--primary-action)] bg-[var(--primary-soft)]" : "border-[var(--border)] hover:bg-[#f8fbff]")}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={item.public_url} alt="" className="aspect-square w-full rounded-xl object-cover" />
+            <img src={item.public_url} alt="" loading="lazy" decoding="async" className="aspect-square w-full rounded-xl object-cover" />
             <span className="min-w-0 self-center"><span className="block truncate text-sm font-semibold text-[var(--ink)]">{item.alt || item.storage_key}</span><span className="mt-1 block truncate text-xs text-[var(--muted)]">{item.storage_key}</span><span className="mt-2 block text-xs font-semibold text-[var(--primary)]">{item.id === selectedMediaId ? "선택됨" : "선택"}</span></span>
           </button>)}
           {!visibleMedia.length ? <p className="sm:col-span-2 rounded-2xl border border-dashed border-[var(--border)] p-7 text-center text-sm text-[var(--body)]">조건에 맞는 기존 미디어가 없습니다.{uploadAction ? " 위에서 새 이미지를 바로 올릴 수 있습니다." : " 미디어 페이지에서 먼저 업로드해 주세요."}</p> : null}
         </div>
-        {selectedMedia ? <div className="mt-5 grid gap-3 rounded-2xl bg-[#f8fbff] p-4"><p className="text-sm font-semibold">선택한 이미지: <span className="font-normal">{selectedMedia.storage_key}</span></p><label className="grid gap-2 text-sm font-semibold">대체 텍스트 <input value={alt} onChange={(event) => setAlt(event.target.value)} maxLength={200} disabled={disabled || isDecorative} aria-describedby={`${name}-alt-help`} className="min-h-11 rounded-xl border border-[var(--border)] bg-white px-3 font-normal outline-none focus:border-2 focus:border-[var(--primary-action)] disabled:cursor-not-allowed disabled:bg-[#eef1f5]" placeholder="이미지를 설명하는 문장" /></label><p id={`${name}-alt-help`} className="text-xs text-[var(--muted)]">이미지의 의미와 내용을 설명하세요. 장식용이 아닌 이미지는 필수입니다.</p><label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={isDecorative} disabled={disabled} onChange={(event) => setIsDecorative(event.target.checked)} /> 장식용 이미지입니다 (빈 alt 허용)</label></div> : null}
+        {selectedMedia ? <div className="mt-5 grid gap-3 rounded-2xl bg-[#f8fbff] p-4"><p className="text-sm font-semibold">선택한 이미지: <span className="font-normal">{selectedMedia.storage_key}</span></p><label className="grid gap-2 text-sm font-semibold">대체 텍스트 <input value={alt} onChange={(event) => setAlt(event.target.value)} maxLength={200} disabled={disabled || isDecorative} aria-describedby={`${name}-alt-help`} className={inputFieldMediumClass} placeholder="이미지를 설명하는 문장" /></label><p id={`${name}-alt-help`} className="text-xs text-[var(--muted)]">이미지의 의미와 내용을 설명하세요. 장식용이 아닌 이미지는 필수입니다.</p><label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={isDecorative} disabled={disabled} onChange={(event) => setIsDecorative(event.target.checked)} /> 장식용 이미지입니다 (빈 alt 허용)</label></div> : null}
         <div className="mt-6 flex flex-wrap justify-end gap-3"><button type="button" onClick={closeMediaDialog} className="focus-ring min-h-11 rounded-full border border-[var(--border)] px-5 text-sm font-semibold">취소</button><button type="button" onClick={insertImage} disabled={disabled || !selectedMedia || (!isDecorative && !alt.trim())} className="focus-ring min-h-11 rounded-full bg-[var(--primary)] px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-45">본문에 넣기</button></div>
-      </section>
-    </div> : null}
+      </> : null}
+    </dialog>
   </div>;
 }

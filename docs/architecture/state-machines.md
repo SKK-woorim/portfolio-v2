@@ -35,6 +35,7 @@
 | 16 | 복사 버튼 | `idle` `copied` `failed`(또는 `selected`) | 각 컴포넌트 | `contact-copy-button.test.ts` |
 | 17 | 준비 상태 점검 | 구성 요소별 `ready` `not_ready` `disabled` | `src/lib/health/readiness.ts` | `readiness.test.ts` |
 | 18 | 저장된 답변 유효성 | 현재 콘텐츠와 지문 일치 / 불일치 | `src/lib/chat/cached-answers.ts` `isCurrent` | `cached-answers.test.ts` |
+| 19 | 챗봇 생성 모델 선택 | GPT → Gemini → 로컬 모델 | `services/rag-api/app/remote_generation.py`, `services/rag-api/app/service.py` | `services/rag-api/tests/test_remote_generation.py`, `test_service.py` |
 
 ## 1. 챗봇 요청 단계
 
@@ -194,7 +195,18 @@ reserve(예약) ─▶ signInWithPassword ─▶ finalize(success | failure | ab
 | 초대 링크 확인 | `checking` `ready` `expired` + `pending` + `message` | 이미 이름 붙은 상태이고 화면 하나에만 쓰인다. |
 | 테마 | 저장된 선호 + `data-site-theme` | 토글은 `light`↔`dark`만 오가고 `system`으로 돌아가는 길이 없다. 의도된 단순화로 보고 두었다. |
 | 복사 버튼 3종 | 컴포넌트마다 상태 이름이 조금씩 다름 | 실패했을 때 하는 일이 서로 다르다(안내만 / 주소 선택). 공통 훅으로 묶을 만큼 겹치지 않는다. |
-| Python 서비스 | 검색 → 생성 대기열 → 생성 → 스트림을 한 코루틴이 순서대로 진행 | 별도 호스트에 배포된 서비스다. 프로토콜(6번)만 문서로 고정했다. |
+
+## 19. 챗봇 생성 모델 선택
+
+```text
+공개 근거 검색 → GPT → Gemini → 로컬 대기열 → 로컬 토큰 스트림
+                   │      │
+                   └──────┴── 완료되고 본문이 있는 답변 → token… → done
+```
+
+- GPT와 Gemini는 근거가 있는 질문에 대해서만 시도한다. 키가 없거나 응답이 실패하거나 시간 초과가 나면 다음 모델로 넘어간다.
+- 원격 후보 하나에 기본 8초를 할당하고, 전체 요청 제한에서 로컬 첫 토큰 대기 시간을 확보한다.
+- 첫 번째 성공한 원격 답변을 SSE로 보낸다. 원격 후보가 모두 실패하면 기존 로컬 대기열과 스트림을 사용한다.
 
 ## 화면에서 상태 읽기
 

@@ -1,17 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { reindexAllKnowledgeDocuments, reindexKnowledgeDocument } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import type { FormState } from "@/lib/validation/content";
+import { ConfirmDialog } from "./confirm-dialog";
+import { FormStatus } from "./form-status";
 
 const initialState: FormState = {};
 
 function ActionMessage({ state }: { state: FormState }) {
-  if (state.error) return <p role="alert" className="mt-2 max-w-72 text-xs text-[#a22b38]">{state.error}</p>;
-  if (state.success) return <p role="status" className="mt-2 max-w-72 text-xs text-[#146b58]">{state.success}</p>;
-  return null;
+  return <FormStatus variant="text" result={state} error={state.error} success={state.success} className="mt-2 max-w-72" />;
 }
 
 export function ReindexDocumentControl({ documentId }: { documentId: string }) {
@@ -30,19 +30,47 @@ export function ReindexDocumentControl({ documentId }: { documentId: string }) {
 
 export function ReindexAllControl() {
   const [state, formAction, pending] = useActionState(reindexAllKnowledgeDocuments, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
+  // 확인 창에서 승인한 뒤 다시 보내는 제출 한 번만 통과시킨다.
+  const approvedRef = useRef(false);
+  const [confirming, setConfirming] = useState(false);
+
+  function submitApproved() {
+    setConfirming(false);
+    approvedRef.current = true;
+    formRef.current?.requestSubmit();
+  }
+
   return (
-    <form
-      action={formAction}
-      onSubmit={(event) => {
-        if (!window.confirm("모든 콘텐츠의 챗봇 인덱스를 다시 생성할까요?")) event.preventDefault();
-      }}
-    >
-      <input type="hidden" name="confirmed" value="true" />
-      <Button type="submit" size="large" disabled={pending}>
-        <RefreshCw size={16} aria-hidden="true" />
-        {pending ? "전체 요청 중…" : "전체 재인덱싱"}
-      </Button>
-      <ActionMessage state={state} />
-    </form>
+    // 확인 창 안의 <form method="dialog">가 제출 폼 안에 중첩되지 않도록 형제로 둔다.
+    <div>
+      <form
+        ref={formRef}
+        action={formAction}
+        onSubmit={(event) => {
+          if (approvedRef.current) {
+            approvedRef.current = false;
+            return;
+          }
+          event.preventDefault();
+          setConfirming(true);
+        }}
+      >
+        <input type="hidden" name="confirmed" value="true" />
+        <Button type="submit" size="large" disabled={pending}>
+          <RefreshCw size={16} aria-hidden="true" />
+          {pending ? "전체 요청 중…" : "전체 재인덱싱"}
+        </Button>
+        <ActionMessage state={state} />
+      </form>
+      <ConfirmDialog
+        open={confirming}
+        title="모든 콘텐츠의 챗봇 인덱스를 다시 생성할까요?"
+        confirmLabel="전체 재인덱싱"
+        tone="primary"
+        onConfirm={submitApproved}
+        onCancel={() => setConfirming(false)}
+      />
+    </div>
   );
 }

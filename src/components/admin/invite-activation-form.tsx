@@ -3,15 +3,21 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { inputFieldClass } from "@/components/ui/field-classes";
 import { createClient } from "@/lib/supabase/client";
+import type { FormState } from "@/lib/validation/content";
+import { FormStatus } from "./form-status";
+import { PasswordField } from "./password-field";
+
+const labelClass = "text-sm font-semibold text-[var(--ink)]";
+const PASSWORD_MIN_LENGTH = 8;
 
 export function InviteActivationForm() {
   const router = useRouter();
   const [status, setStatus] = useState<"checking" | "ready" | "expired">("checking");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmation, setConfirmation] = useState("");
-  const [message, setMessage] = useState("");
+  const [feedback, setFeedback] = useState<FormState>({});
   const [pending, setPending] = useState(false);
 
   useEffect(() => {
@@ -57,13 +63,10 @@ export function InviteActivationForm() {
 
   async function setAdminPassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage("");
-    if (password.length < 8) {
-      setMessage("비밀번호는 8자 이상으로 설정해 주세요.");
-      return;
-    }
-    if (password !== confirmation) {
-      setMessage("비밀번호 확인이 일치하지 않습니다.");
+    setFeedback({});
+    // 확인 입력을 두 번 받지 않는다(표시 토글로 직접 확인). minLength가 막지 못한 경우만 여기서 안내한다.
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      setFeedback({ error: "비밀번호는 8자 이상으로 설정해 주세요." });
       return;
     }
 
@@ -71,7 +74,7 @@ export function InviteActivationForm() {
     const { error } = await createClient().auth.updateUser({ password });
     setPending(false);
     if (error) {
-      setMessage("비밀번호를 설정하지 못했습니다. 새 초대 링크로 다시 시도해 주세요.");
+      setFeedback({ error: "비밀번호를 설정하지 못했습니다. 새 초대 링크로 다시 시도해 주세요." });
       return;
     }
 
@@ -81,16 +84,16 @@ export function InviteActivationForm() {
 
   async function requestNewLink(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage("");
+    setFeedback({});
     setPending(true);
     const redirectTo = new URL("/admin/activate", window.location.origin).toString();
     const { error } = await createClient().auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo });
     setPending(false);
     if (error) {
-      setMessage("이메일을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      setFeedback({ error: "이메일을 보내지 못했습니다. 잠시 후 다시 시도해 주세요." });
       return;
     }
-    setMessage("비밀번호 설정 이메일을 보냈습니다. 메일의 최신 링크를 한 번만 열어 주세요.");
+    setFeedback({ success: "비밀번호 설정 이메일을 보냈습니다. 메일의 최신 링크를 한 번만 열어 주세요." });
   }
 
   if (status === "checking") {
@@ -98,19 +101,27 @@ export function InviteActivationForm() {
   }
 
   if (status === "expired") {
-    return <section className="mt-6"><p role="alert" className="rounded-2xl bg-[#fff0f1] p-4 text-sm leading-6 text-[#a22b38]">이 초대 링크는 만료되었거나 이미 사용되었습니다. 아래에서 새 비밀번호 설정 링크를 받을 수 있습니다.</p><form onSubmit={requestNewLink} className="mt-5 grid gap-5"><label className="grid gap-2 text-sm font-semibold text-[var(--ink)]">관리자 이메일<input required autoComplete="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="min-h-12 rounded-xl border border-[var(--border)] px-4 font-normal outline-none focus:border-2 focus:border-[var(--primary-action)]" /></label>{message ? <p role="status" className="rounded-xl bg-[#edf8f1] px-4 py-3 text-sm text-[#17613b]">{message}</p> : null}<Button type="submit" size="large" disabled={pending}>{pending ? "보내는 중…" : "비밀번호 설정 이메일 보내기"}</Button></form></section>;
+    return <section className="mt-6">
+      <p role="alert" className="rounded-2xl bg-[#fff0f1] p-4 text-sm leading-6 text-[#a22b38]">이 초대 링크는 만료되었거나 이미 사용되었습니다. 아래에서 새 비밀번호 설정 링크를 받을 수 있습니다.</p>
+      <form onSubmit={requestNewLink} className="mt-5 grid gap-5">
+        <div className="grid gap-2">
+          <label htmlFor="admin-activate-email" className={labelClass}>관리자 이메일</label>
+          <input id="admin-activate-email" name="email" required autoComplete="email" type="email" spellCheck={false} enterKeyHint="send" value={email} onChange={(event) => setEmail(event.target.value)} className={inputFieldClass} />
+        </div>
+        <FormStatus result={feedback} error={feedback.error} success={feedback.success} />
+        <Button type="submit" size="large" disabled={pending}>{pending ? "보내는 중…" : "비밀번호 설정 이메일 보내기"}</Button>
+      </form>
+    </section>;
   }
 
   return <form onSubmit={setAdminPassword} className="mt-7 grid gap-5">
-    <label className="grid gap-2 text-sm font-semibold text-[var(--ink)]">
-      새 비밀번호
-      <input required minLength={8} autoComplete="new-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-12 rounded-xl border border-[var(--border)] px-4 font-normal outline-none focus:border-2 focus:border-[var(--primary-action)]" />
-    </label>
-    <label className="grid gap-2 text-sm font-semibold text-[var(--ink)]">
-      비밀번호 확인
-      <input required minLength={8} autoComplete="new-password" type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} className="min-h-12 rounded-xl border border-[var(--border)] px-4 font-normal outline-none focus:border-2 focus:border-[var(--primary-action)]" />
-    </label>
-    {message ? <p role="alert" className="rounded-xl bg-[#fff0f1] px-4 py-3 text-sm text-[#a22b38]">{message}</p> : null}
+    <div className="grid gap-2">
+      <label htmlFor="admin-new-password" className={labelClass}>새 비밀번호</label>
+      {/* 규칙은 입력 위에 늘 보이게 두고 aria-describedby로 연결한다. placeholder나 오류 메시지에만 두지 않는다. */}
+      <p id="admin-new-password-hint" className="text-xs leading-5 text-[var(--muted)]">8자 이상으로 입력해 주세요.</p>
+      <PasswordField id="admin-new-password" name="new-password" required minLength={PASSWORD_MIN_LENGTH} autoComplete="new-password" enterKeyHint="done" aria-describedby="admin-new-password-hint" value={password} onChange={(event) => setPassword(event.target.value)} />
+    </div>
+    <FormStatus result={feedback} error={feedback.error} />
     <Button type="submit" size="large" disabled={pending}>{pending ? "설정 중…" : "비밀번호 설정하고 시작하기"}</Button>
   </form>;
 }

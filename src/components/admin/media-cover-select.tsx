@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import type { EditorMedia } from "@/components/markdown-editor";
+import { selectFieldClass } from "@/components/ui/field-classes";
 
 type MediaCoverSelectProps = {
   media: EditorMedia[];
@@ -19,7 +20,7 @@ export function MediaCoverSelect({ media, defaultValue = "", value, onChange, he
 
   return <div className="grid gap-3">
     <label className="grid gap-2 text-sm font-semibold">대표 이미지
-      <select name="coverMediaId" value={selectedId} onChange={(event) => { const nextValue = event.target.value; if (value === undefined) setUncontrolledValue(nextValue); onChange?.(nextValue); }} className="min-h-12 rounded-xl border border-[var(--border)] bg-white px-4 font-normal outline-none focus:border-2 focus:border-[var(--primary-action)]">
+      <select name="coverMediaId" value={selectedId} onChange={(event) => { const nextValue = event.target.value; if (value === undefined) setUncontrolledValue(nextValue); onChange?.(nextValue); }} className={selectFieldClass}>
         <option value="">대표 이미지 없음</option>
         {media.map((item) => <option key={item.id} value={item.id}>{item.alt || item.storage_key}</option>)}
       </select>
